@@ -47,10 +47,7 @@ public final class Auton {
         // Autonomous Sequence
         ctx.schedule(sequence(
                 waitUntil(ctx::inLoop),
-                exec(() -> { /* INITIAL SETUP placeholder */ }),
-                exec(() -> { /* MOVEMENT STEP 1 placeholder */ }),
-                exec(() -> { /* MECHANISM STEP placeholder */ }),
-                exec(() -> { /* VISION BRANCH placeholder */ }),
+                exec(() -> { /* CODE LINES HERE */ }),
 
                 // End Auton
                 exec(() -> {
@@ -95,10 +92,7 @@ public final class Auton {
         // Autonomous Sequence
         ctx.schedule(sequence(
                 waitUntil(ctx::inLoop),
-                exec(() -> { /* INITIAL SETUP placeholder */ }),
-                exec(() -> { /* MOVEMENT STEP 1 placeholder */ }),
-                exec(() -> { /* MECHANISM STEP placeholder */ }),
-                exec(() -> { /* VISION BRANCH placeholder */ }),
+                exec(() -> { /* CODE LINES HERE */ }),
 
                 // End Auton
                 exec(() -> {
@@ -143,10 +137,7 @@ public final class Auton {
         // Autonomous Sequence
         ctx.schedule(sequence(
                 waitUntil(ctx::inLoop),
-                exec(() -> { /* INITIAL SETUP placeholder */ }),
-                exec(() -> { /* MOVEMENT STEP 1 placeholder */ }),
-                exec(() -> { /* MECHANISM STEP placeholder */ }),
-                exec(() -> { /* VISION BRANCH placeholder */ }),
+                exec(() -> { /* CODE LINES HERE */ }),
 
                 // End Auton
                 exec(() -> {
@@ -191,10 +182,7 @@ public final class Auton {
         // Autonomous Sequence
         ctx.schedule(sequence(
                 waitUntil(ctx::inLoop),
-                exec(() -> { /* INITIAL SETUP placeholder */ }),
-                exec(() -> { /* MOVEMENT STEP 1 placeholder */ }),
-                exec(() -> { /* MECHANISM STEP placeholder */ }),
-                exec(() -> { /* VISION BRANCH placeholder */ }),
+                exec(() -> { /* CODE LINES HERE */ }),
 
                 // End Auton
                 exec(() -> {

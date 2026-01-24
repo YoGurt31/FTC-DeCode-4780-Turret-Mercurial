@@ -71,20 +71,7 @@ public final class TeleOp {
             );
 
             // Flywheel
-            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().right_trigger > 0.05),
-                    exec(() -> Flywheel.INSTANCE.enableAutoRange())
-            );
-            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().right_trigger <= 0.05),
-                    exec(() -> Flywheel.INSTANCE.stop())
-            );
 
-            // Shooter Gates
-            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x),
-                    exec(() -> Release.INSTANCE.startLeftShot())
-            );
-            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().b),
-                    exec(() -> Release.INSTANCE.startRightShot())
-            );
 
             // Shut Off
             ctx.dropToScheduler();

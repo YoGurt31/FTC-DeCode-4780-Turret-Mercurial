@@ -16,12 +16,11 @@ public class Intake {
 
     public enum Mode {
         IDLE,
-        LEFT,
-        RIGHT,
+        INTAKE,
         EJECT
     }
 
-    private DcMotorEx roller, sorter;
+    private DcMotorEx roller;
 
     @SuppressWarnings("unused")
     private Telemetry telemetry;
@@ -32,15 +31,10 @@ public class Intake {
         this.telemetry = telem;
 
         roller = hw.get(DcMotorEx.class, Constants.Intake.rollerIntake);
-        sorter = hw.get(DcMotorEx.class, Constants.Intake.sorterIntake);
 
         roller.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         roller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         roller.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        sorter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        sorter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        sorter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         setMode(Mode.IDLE);
         apply();
@@ -55,28 +49,20 @@ public class Intake {
     }
 
     public void apply() {
-        if (roller == null || sorter == null) return;
+        if (roller == null) return;
 
         switch (mode) {
-            case LEFT:
+            case INTAKE:
                 roller.setPower(Constants.Intake.INTAKE_POWER);
-                sorter.setPower(Constants.Intake.INTAKE_POWER);
-                break;
-
-            case RIGHT:
-                roller.setPower(Constants.Intake.INTAKE_POWER);
-                sorter.setPower(-Constants.Intake.INTAKE_POWER);
                 break;
 
             case EJECT:
                 roller.setPower(Constants.Intake.OUTTAKE_POWER);
-                sorter.setPower(0);
                 break;
 
             case IDLE:
             default:
                 roller.setPower(0);
-                sorter.setPower(0);
                 break;
         }
     }
@@ -88,10 +74,8 @@ public class Intake {
 
     public String getSortingStatus() {
         switch (mode) {
-            case LEFT:
-                return "Left";
-            case RIGHT:
-                return "Right";
+            case INTAKE:
+                return "Intake";
             case EJECT:
                 return "Eject";
             case IDLE:

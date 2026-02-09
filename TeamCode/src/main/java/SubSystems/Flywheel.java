@@ -104,6 +104,7 @@ public class Flywheel {
         return (getRps1() + getRps2()) / 2.0;
     }
 
+    // TODO: CREATE EQUATION FOR VARIABLE RPS
     public double getTargetRps() {
         if (Vision.INSTANCE.getTA() >= Constants.Vision.TAG_AREA_THRESHOLD) {
             return Constants.Flywheel.CLOSE_TARGET_RPS;

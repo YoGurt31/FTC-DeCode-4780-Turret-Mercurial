@@ -20,10 +20,11 @@ public final class Auton {
     // XXX: Red Far
     public static final Mercurial.RegisterableProgram RedFar = Mercurial.autonomous(ctx -> {
         // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Vision.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.RED_PIPELINE);
+            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
         Intake.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Flywheel.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
@@ -65,10 +66,11 @@ public final class Auton {
     // XXX: Red Close
     public static final Mercurial.RegisterableProgram RedClose = Mercurial.autonomous(ctx -> {
         // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Vision.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.RED_PIPELINE);
+            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
         Intake.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Flywheel.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
@@ -110,10 +112,11 @@ public final class Auton {
     // XXX: Blue Far
     public static final Mercurial.RegisterableProgram BlueFar = Mercurial.autonomous(ctx -> {
         // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Vision.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.BLUE_PIPELINE);
+            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
         Intake.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Flywheel.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
@@ -155,10 +158,11 @@ public final class Auton {
     // XXX: Blue Close
     public static final Mercurial.RegisterableProgram BlueClose = Mercurial.autonomous(ctx -> {
         // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Vision.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.BLUE_PIPELINE);
+            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
         Intake.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
         Flywheel.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());

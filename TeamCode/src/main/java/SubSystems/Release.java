@@ -13,16 +13,14 @@ public class Release {
     private Release() {
     }
 
-    private Servo left;
-    private Servo right;
+    private Servo release;
 
     @SuppressWarnings("unused")
     private Telemetry telemetry;
 
     private enum Shot {
         NONE,
-        LEFT,
-        RIGHT
+        SHOOTING
     }
 
     private Shot activeShot = Shot.NONE;
@@ -31,30 +29,23 @@ public class Release {
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
-        left = hw.get(Servo.class, Constants.Releases.leftRelease);
-        right = hw.get(Servo.class, Constants.Releases.rightRelease);
+        release = hw.get(Servo.class, Constants.Releases.artifactRelease);
 
-        holdBoth();
+        hold();
 
         activeShot = Shot.NONE;
         shotStartMs = 0;
     }
 
-    public void startLeftShot() {
-        if (left == null) return;
-        activeShot = Shot.LEFT;
-        shotStartMs = System.currentTimeMillis();
-    }
-
-    public void startRightShot() {
-        if (right == null) return;
-        activeShot = Shot.RIGHT;
+    public void startShot() {
+        if (release == null) return;
+        activeShot = Shot.SHOOTING;
         shotStartMs = System.currentTimeMillis();
     }
 
     public void cancel() {
         activeShot = Shot.NONE;
-        holdBoth();
+        hold();
     }
 
     public void update() {
@@ -64,43 +55,29 @@ public class Release {
 
         boolean gateOpenWindow = elapsed <= Constants.Releases.GATE_OPEN_MS;
 
-        if (activeShot == Shot.LEFT) {
+        if (activeShot == Shot.SHOOTING) {
             if (gateOpenWindow) {
-                left.setPosition(Constants.Releases.RELEASE_LEFT);
+                release.setPosition(Constants.Releases.RELEASE);
             } else {
-                left.setPosition(Constants.Releases.HOLD_LEFT);
-            }
-        } else if (activeShot == Shot.RIGHT) {
-            if (gateOpenWindow) {
-                right.setPosition(Constants.Releases.RELEASE_RIGHT);
-            } else {
-                right.setPosition(Constants.Releases.HOLD_RIGHT);
+                release.setPosition(Constants.Releases.HOLD);
             }
         }
 
         if (elapsed >= Constants.Releases.SHOT_TOTAL_MS) {
-            if (activeShot == Shot.LEFT) {
-                left.setPosition(Constants.Releases.HOLD_LEFT);
-            } else if (activeShot == Shot.RIGHT) {
-                right.setPosition(Constants.Releases.HOLD_RIGHT);
+            if (activeShot == Shot.SHOOTING) {
+                release.setPosition(Constants.Releases.HOLD);
             }
             activeShot = Shot.NONE;
         }
     }
 
-    public void holdBoth() {
-        if (left != null) left.setPosition(Constants.Releases.HOLD_LEFT);
-        if (right != null) right.setPosition(Constants.Releases.HOLD_RIGHT);
+    public void hold() {
+        if (release != null) release.setPosition(Constants.Releases.HOLD);
     }
 
-    public boolean isLeftGateOpen() {
-        if (left == null) return false;
-        return left.getPosition() == Constants.Releases.RELEASE_LEFT;
-    }
-
-    public boolean isRightGateOpen() {
-        if (right == null) return false;
-        return right.getPosition() == Constants.Releases.RELEASE_RIGHT;
+    public boolean isGateOpen() {
+        if (release == null) return false;
+        return release.getPosition() == Constants.Releases.RELEASE;
     }
 
     public boolean isShooting() {

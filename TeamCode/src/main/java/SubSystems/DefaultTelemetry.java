@@ -28,6 +28,14 @@ public class DefaultTelemetry {
         telemetry.addData("Sorting", Intake.INSTANCE.getSortingStatus());
         telemetry.addLine();
 
+        // Turret
+        telemetry.addLine("=== Turret ===");
+        telemetry.addData("Turret Deg", "%6.2f", Turret.INSTANCE.getTurretDeg());
+        telemetry.addData("Aim Mode", Turret.INSTANCE.getAimModeName());
+        telemetry.addData("At Min", Turret.INSTANCE.atMinLimit());
+        telemetry.addData("At Max", Turret.INSTANCE.atMaxLimit());
+        telemetry.addLine();
+
         // Flywheel / Release
         telemetry.addLine("=== Flywheel + Release ===");
         telemetry.addData("Flywheel1 RPS", "%5.2f", Flywheel.INSTANCE.getRps1());
@@ -36,8 +44,7 @@ public class DefaultTelemetry {
         telemetry.addData("Target RPS", "%5.2f", Flywheel.INSTANCE.getTargetRps());
         telemetry.addData("Range Mode", Flywheel.INSTANCE.rangeMode() ? "CLOSE" : "FAR");
         telemetry.addData("Shooter Status", Flywheel.INSTANCE.isReady() ? "READY" : "CHARGING");
-        telemetry.addData("Left Gate", Release.INSTANCE.isLeftGateOpen() ? "Open" : "Closed");
-        telemetry.addData("Right Gate", Release.INSTANCE.isRightGateOpen() ? "Open" : "Closed");
+        telemetry.addData("Gate", Release.INSTANCE.isGateOpen() ? "Open" : "Closed");
         telemetry.addLine();
 
         telemetry.update();

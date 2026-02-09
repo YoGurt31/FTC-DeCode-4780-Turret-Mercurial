@@ -23,6 +23,11 @@ public class Drive {
     private DcMotorEx frontLeft, frontRight, backLeft, backRight;
 
     private GoBildaPinpointDriver pinpoint;
+    private boolean resetPinPointOnInit = true;
+
+    public void setResetPinPointOnInit(boolean enabled) {
+        resetPinPointOnInit = enabled;
+    }
 
     @SuppressWarnings("unused")
     private Telemetry telemetry;
@@ -58,14 +63,16 @@ public class Drive {
 
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setOffsets(Constants.PinPoint.X_OFFSET_MM, Constants.PinPoint.Y_OFFSET_MM, DistanceUnit.MM);
-        pinpoint.resetPosAndIMU();
-        pinpoint.setPosition(new Pose2D(
-                DistanceUnit.INCH,
-                Constants.PinPoint.START_X_IN,
-                Constants.PinPoint.START_Y_IN,
-                AngleUnit.DEGREES,
-                Constants.PinPoint.START_HEADING_DEG
-        ));
+        if (resetPinPointOnInit) {
+            pinpoint.resetPosAndIMU();
+            pinpoint.setPosition(new Pose2D(
+                    DistanceUnit.INCH,
+                    Constants.PinPoint.START_X_IN,
+                    Constants.PinPoint.START_Y_IN,
+                    AngleUnit.DEGREES,
+                    Constants.PinPoint.START_HEADING_DEG
+            ));
+        }
     }
 
     public void updateOdometry() {
@@ -81,7 +88,7 @@ public class Drive {
         double turn = turnInput;
 
         boolean activeTargeting = leftTrigger >= 0.25;
-        boolean hasTarget = Vision.INSTANCE.hasFiducial();
+        boolean hasTarget = Vision.INSTANCE.hasArtifact();
 
         if (activeTargeting && hasTarget) {
             double headingError = Vision.INSTANCE.getTX();

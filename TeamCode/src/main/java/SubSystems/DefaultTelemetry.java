@@ -16,7 +16,7 @@ public class DefaultTelemetry {
         telemetry.addData("X Pos", "%5.2f", Drive.INSTANCE.getX());
         telemetry.addData("Y Pos", "%5.2f", Drive.INSTANCE.getY());
         telemetry.addData("Angle", "%5.2f", Drive.INSTANCE.getHeading());
-        telemetry.addData("Tag In View", Vision.INSTANCE.hasTag());
+        telemetry.addData("Tag In View", Vision.INSTANCE.hasTrackedTag());
         telemetry.addData("Tag Area", Vision.INSTANCE.getTA());
         telemetry.addData("Current Pipeline", Vision.INSTANCE.getPipelineName());
         telemetry.addLine();

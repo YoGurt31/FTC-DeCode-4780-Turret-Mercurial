@@ -11,8 +11,8 @@ import SubSystems.Elevator;
 import SubSystems.Flywheel;
 import SubSystems.Intake;
 import SubSystems.Release;
-import SubSystems.Turret;
-import SubSystems.Vision;
+//import SubSystems.Turret;
+//import SubSystems.Vision;
 import Util.Constants;
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
@@ -24,24 +24,24 @@ public final class TeleOp {
             // Hardware Init
             Drive.INSTANCE.setResetPinPointOnInit(false);
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            if (Vision.INSTANCE.getLimelight() != null) {
-                Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
-            }
-            Vision.INSTANCE.setTrackedTag(trackedTagId);
+//            Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+//            if (Vision.INSTANCE.getLimelight() != null) {
+//                Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
+//            }
+//            Vision.INSTANCE.setTrackedTag(trackedTagId);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+//            Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
             // Main Loop
             linsane.schedule(sequence(
                     waitUntil(linsane::inLoop),
                     loop(exec(() -> {
-                        Vision.INSTANCE.update();
+//                        Vision.INSTANCE.update();
                         Drive.INSTANCE.updateOdometry();
-                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), trackedTagId), useVision);
+//                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), trackedTagId), useVision);
 
                         // Intake
                         if (linsane.gamepad1().left_bumper && linsane.gamepad1().right_bumper) {
@@ -57,25 +57,25 @@ public final class TeleOp {
                         double turnCmd;
                         boolean intakeActive = (Intake.INSTANCE.getMode() == Intake.Mode.INTAKE);
 
-                        if (intakeActive) {
-                            if (Vision.INSTANCE.hasArtifact()) {
-                                double tx = Vision.INSTANCE.getTX();
-                                if (Math.abs(tx) <= Constants.Drive.ARTIFACT_AIM_DEADBAND_DEG) {
-                                    turnCmd = 0.0;
-                                } else {
-                                    double assist = tx * Constants.Drive.ROTATE_GAIN;
-                                    if (assist > Constants.Drive.MAX_ROTATE)
-                                        assist = Constants.Drive.MAX_ROTATE;
-                                    if (assist < -Constants.Drive.MAX_ROTATE)
-                                        assist = -Constants.Drive.MAX_ROTATE;
-                                    turnCmd = assist;
-                                }
-                            } else {
-                                turnCmd = linsane.gamepad1().right_stick_x;
-                            }
-                        } else {
+//                        if (intakeActive) {
+//                            if (Vision.INSTANCE.hasArtifact()) {
+//                                double tx = Vision.INSTANCE.getTX();
+//                                if (Math.abs(tx) <= Constants.Drive.ARTIFACT_AIM_DEADBAND_DEG) {
+//                                    turnCmd = 0.0;
+//                                } else {
+//                                    double assist = tx * Constants.Drive.ROTATE_GAIN;
+//                                    if (assist > Constants.Drive.MAX_ROTATE)
+//                                        assist = Constants.Drive.MAX_ROTATE;
+//                                    if (assist < -Constants.Drive.MAX_ROTATE)
+//                                        assist = -Constants.Drive.MAX_ROTATE;
+//                                    turnCmd = assist;
+//                                }
+//                            } else {
+//                                turnCmd = linsane.gamepad1().right_stick_x;
+//                            }
+//                        } else {
                             turnCmd = linsane.gamepad1().right_stick_x;
-                        }
+//                        }
 
                         Drive.INSTANCE.drive(driveCmd, turnCmd, linsane.gamepad1().left_trigger);
 
@@ -117,6 +117,6 @@ public final class TeleOp {
     }
 
     public static final Mercurial.RegisterableProgram DEBUG = buildTeleOp(-1, false, true);
-    public static final Mercurial.RegisterableProgram RED = buildTeleOp(Constants.Vision.RED_TAG_ID, true, false);
-    public static final Mercurial.RegisterableProgram BLUE = buildTeleOp(Constants.Vision.BLUE_TAG_ID, true, false);
+//    public static final Mercurial.RegisterableProgram RED = buildTeleOp(Constants.Vision.RED_TAG_ID, true, false);
+//    public static final Mercurial.RegisterableProgram BLUE = buildTeleOp(Constants.Vision.BLUE_TAG_ID, true, false);
 }

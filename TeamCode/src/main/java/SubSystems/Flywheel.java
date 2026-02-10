@@ -106,11 +106,11 @@ public class Flywheel {
 
     // TODO: CREATE EQUATION FOR VARIABLE RPS
     public double getTargetRps() {
-        if (Vision.INSTANCE.getTA() >= Constants.Vision.TAG_AREA_THRESHOLD) {
-            return Constants.Flywheel.CLOSE_TARGET_RPS;
-        } else {
+//        if (Vision.INSTANCE.getTA() >= Constants.Vision.TAG_AREA_THRESHOLD) {
+//            return Constants.Flywheel.CLOSE_TARGET_RPS;
+//        } else {
             return Constants.Flywheel.FAR_TARGET_RPS;
-        }
+//        }
     }
 
     public boolean rangeMode() {

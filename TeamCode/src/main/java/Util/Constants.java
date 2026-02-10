@@ -103,53 +103,53 @@ public final class Constants {
         public static final long SHOT_TOTAL_MS = 1500;
     }
 
-    public static final class Vision {
-        public static final String LIMELIGHT_NAME = "limelight";
+//    public static final class Vision {
+//        public static final String LIMELIGHT_NAME = "limelight";
+//
+//        public static final int DEFAULT_PIPELINE = 0;
+//        public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
+//
+//        public static final String TURRET_CAM_NAME = "TurretCam";
+//        public static final double TAG_AREA_THRESHOLD = 0.80;
+//
+//        public static final int BLUE_TAG_ID = 20;
+//        public static final int RED_TAG_ID = 24;
+//    }
 
-        public static final int DEFAULT_PIPELINE = 0;
-        public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
-
-        public static final String TURRET_CAM_NAME = "TurretCam";
-        public static final double TAG_AREA_THRESHOLD = 0.80;
-
-        public static final int BLUE_TAG_ID = 20;
-        public static final int RED_TAG_ID = 24;
-    }
-
-    public static final class Field {
-        public static final double GOAL_Y = 60.0;
-        public static final double RED_GOAL_X = 56.0;
-        public static final double BLUE_GOAL_X = -56.0;
-
-        public enum StartPose {
-            RED_CLOSE(56, 60, 180.0, Constants.Vision.RED_TAG_ID),
-            RED_FAR(12, -60, 0.0, Constants.Vision.RED_TAG_ID),
-            BLUE_CLOSE(-56, 60, 180.0, Constants.Vision.BLUE_TAG_ID),
-            BLUE_FAR(-12, -60, 0.0, Constants.Vision.BLUE_TAG_ID);
-
-            public final double startXIn, startYIn, startHeadingDeg;
-            public final int trackedTagId;
-
-            StartPose(double xIn, double yIn, double headingDeg, int tagId) {
-                this.startXIn = xIn;
-                this.startYIn = yIn;
-                this.startHeadingDeg = headingDeg;
-                this.trackedTagId = tagId;
-            }
-
-            public boolean isRed() {
-                return trackedTagId == Constants.Vision.RED_TAG_ID;
-            }
-
-            public boolean isBlue() {
-                return trackedTagId == Constants.Vision.BLUE_TAG_ID;
-            }
-        }
-
-        public static double computeGoalHeadingDeg(double robotX, double robotY, int trackedTagId) {
-            double goalX = (trackedTagId == Constants.Vision.RED_TAG_ID) ? Constants.Field.RED_GOAL_X : Constants.Field.BLUE_GOAL_X;
-            double goalY = Constants.Field.GOAL_Y;
-            return Math.toDegrees(Math.atan2(goalY - robotY, goalX - robotX));
-        }
-    }
+//    public static final class Field {
+//        public static final double GOAL_Y = 60.0;
+//        public static final double RED_GOAL_X = 56.0;
+//        public static final double BLUE_GOAL_X = -56.0;
+//
+//        public enum StartPose {
+//            RED_CLOSE(56, 60, 180.0, Constants.Vision.RED_TAG_ID),
+//            RED_FAR(12, -60, 0.0, Constants.Vision.RED_TAG_ID),
+//            BLUE_CLOSE(-56, 60, 180.0, Constants.Vision.BLUE_TAG_ID),
+//            BLUE_FAR(-12, -60, 0.0, Constants.Vision.BLUE_TAG_ID);
+//
+//            public final double startXIn, startYIn, startHeadingDeg;
+//            public final int trackedTagId;
+//
+//            StartPose(double xIn, double yIn, double headingDeg, int tagId) {
+//                this.startXIn = xIn;
+//                this.startYIn = yIn;
+//                this.startHeadingDeg = headingDeg;
+//                this.trackedTagId = tagId;
+//            }
+//
+//            public boolean isRed() {
+//                return trackedTagId == Constants.Vision.RED_TAG_ID;
+//            }
+//
+//            public boolean isBlue() {
+//                return trackedTagId == Constants.Vision.BLUE_TAG_ID;
+//            }
+//        }
+//
+//        public static double computeGoalHeadingDeg(double robotX, double robotY, int trackedTagId) {
+//            double goalX = (trackedTagId == Constants.Vision.RED_TAG_ID) ? Constants.Field.RED_GOAL_X : Constants.Field.BLUE_GOAL_X;
+//            double goalY = Constants.Field.GOAL_Y;
+//            return Math.toDegrees(Math.atan2(goalY - robotY, goalX - robotX));
+//        }
+//    }
 }

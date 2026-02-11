@@ -83,21 +83,9 @@ public class Drive {
         }
     }
 
-    public void drive(double driveInput, double turnInput, double leftTrigger) {
+    public void drive(double driveInput, double turnInput) {
         double drive = driveInput;
         double turn = turnInput;
-
-//        boolean activeTargeting = leftTrigger >= 0.25;
-//        boolean hasTarget = Vision.INSTANCE.hasArtifact();
-//
-//        if (activeTargeting && hasTarget) {
-//            double headingError = Vision.INSTANCE.getTX();
-//            turn = Range.clip(
-//                    headingError * Constants.Drive.ROTATE_GAIN,
-//                    -Constants.Drive.MAX_ROTATE,
-//                    Constants.Drive.MAX_ROTATE
-//            );
-//        }
 
         if (Math.abs(drive) < 0.05) drive = 0;
         if (Math.abs(turn) < 0.05) turn = 0;

@@ -85,7 +85,7 @@ public class Drive {
 
     public void drive(double driveInput, double turnInput) {
         double drive = driveInput;
-        double turn = turnInput;
+        double turn = -turnInput;
 
         if (Math.abs(drive) < 0.05) drive = 0;
         if (Math.abs(turn) < 0.05) turn = 0;

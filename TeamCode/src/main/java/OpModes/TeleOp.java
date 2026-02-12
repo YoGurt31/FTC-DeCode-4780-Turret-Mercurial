@@ -18,7 +18,7 @@ import Util.Constants;
 
 @SuppressWarnings("unused")
 public final class TeleOp {
-    private static Mercurial.RegisterableProgram buildTeleOp(int trackedTagId, boolean telemetry) {
+    private static Mercurial.RegisterableProgram buildTeleOp(Constants.Field.Alliance alliance, boolean telemetry) {
         return Mercurial.teleop(linsane -> {
 
             // Hardware Init
@@ -28,7 +28,7 @@ public final class TeleOp {
             if (Vision.INSTANCE.getLimelight() != null) {
                 Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
             }
-            Vision.INSTANCE.setTrackedTag(trackedTagId);
+            Vision.INSTANCE.setTrackedTag(alliance == Constants.Field.Alliance.RED ? Constants.Vision.RED_TAG_ID : Constants.Vision.BLUE_TAG_ID);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -41,13 +41,13 @@ public final class TeleOp {
                     loop(exec(() -> {
                         Vision.INSTANCE.update();
                         Drive.INSTANCE.updateOdometry();
-                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), trackedTagId));
+                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
 
                         // Intake
-                        if (linsane.gamepad1().left_bumper && linsane.gamepad1().right_bumper) {
-                            Intake.INSTANCE.setMode(Intake.Mode.EJECT);
-                        } else if (linsane.gamepad1().left_bumper || linsane.gamepad1().right_bumper) {
+                        if (linsane.gamepad1().right_bumper) {
                             Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                        } else if (linsane.gamepad1().left_bumper) {
+                            Intake.INSTANCE.setMode(Intake.Mode.EJECT);
                         } else {
                             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                         }
@@ -82,6 +82,7 @@ public final class TeleOp {
                         // Flywheel
                         if (linsane.gamepad1().right_trigger > 0.05) {
                             Flywheel.INSTANCE.enableAutoRange();
+                            Flywheel.INSTANCE.apply();
                         } else {
                             Flywheel.INSTANCE.stop();
                         }
@@ -116,7 +117,7 @@ public final class TeleOp {
         });
     }
 
-    public static final Mercurial.RegisterableProgram DEBUG = buildTeleOp(Constants.Vision.RED_TAG_ID, true);
-    public static final Mercurial.RegisterableProgram RED = buildTeleOp(Constants.Vision.RED_TAG_ID, false);
-    public static final Mercurial.RegisterableProgram BLUE = buildTeleOp(Constants.Vision.BLUE_TAG_ID, false);
+    public static final Mercurial.RegisterableProgram DEBUG = buildTeleOp(Constants.Field.Alliance.RED, true);
+    public static final Mercurial.RegisterableProgram RED = buildTeleOp(Constants.Field.Alliance.RED, false);
+    public static final Mercurial.RegisterableProgram BLUE = buildTeleOp(Constants.Field.Alliance.BLUE, false);
 }

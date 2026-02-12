@@ -1,5 +1,7 @@
 package SubSystems;
 
+import android.util.Size;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -62,6 +64,8 @@ public class Vision {
         aprilTag = new AprilTagProcessor.Builder().build();
         turretPortal = new VisionPortal.Builder()
                 .setCamera(turretCam)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCameraResolution(new Size(Constants.Vision.RESOLUTION_WIDTH, Constants.Vision.RESOLUTION_HEIGHT))
                 .addProcessor(aprilTag)
                 .build();
     }

@@ -1,4 +1,5 @@
 package Util;
+
 public final class Constants {
 
     public static final class Drive {
@@ -66,7 +67,7 @@ public final class Constants {
         // TODO: TUNE THESE VALUES
         public static final double QuickKp = 0.020;
         public static final double QuickMaxPower = 1.0;
-        public static final double QuickDeadband = 5.0;
+        public static final double QuickDeadband = 2.5;
 
         public static final double PreciseKp = 0.020;
         public static final double PreciseMaxPower = 0.35;
@@ -82,9 +83,13 @@ public final class Constants {
 
         public static final double TICKS_PER_REV = 28.0;
 
-        // TODO: CREATE EQUATION FOR VARIABLE RPS
-        public static final double FAR_TARGET_RPS = 52.5;
-        public static final double CLOSE_TARGET_RPS = 46.5;
+        // TODO: GET VALUES
+        public static final double A = 0.0;
+        public static final double B = 0.0;
+        public static final double C = 0.0;
+
+        public static final double MIN_RPS = 30.0;
+        public static final double MAX_RPS = 100.0;
 
         // TODO: TUNE THESE VALUES
         public static final double F = 18.0;
@@ -97,59 +102,87 @@ public final class Constants {
         public static final String artifactRelease = "aR";
 
         public static final double HOLD = 0.5;
-        public static final double RELEASE = 0.0;
+        public static final double RELEASE = 0.75;
 
-        public static final long GATE_OPEN_MS = 100;
+        public static final long GATE_OPEN_MS = 1500;
         public static final long SHOT_TOTAL_MS = 1500;
     }
 
-//    public static final class Vision {
-//        public static final String LIMELIGHT_NAME = "limelight";
-//
-//        public static final int DEFAULT_PIPELINE = 0;
-//        public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
-//
-//        public static final String TURRET_CAM_NAME = "TurretCam";
-//        public static final double TAG_AREA_THRESHOLD = 0.80;
-//
-//        public static final int BLUE_TAG_ID = 20;
-//        public static final int RED_TAG_ID = 24;
-//    }
+    public static final class Vision {
+        public static final String LIMELIGHT_NAME = "limelight";
+        public static final int DEFAULT_PIPELINE = 0;
+        public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
 
-//    public static final class Field {
-//        public static final double GOAL_Y = 60.0;
-//        public static final double RED_GOAL_X = 56.0;
-//        public static final double BLUE_GOAL_X = -56.0;
-//
-//        public enum StartPose {
-//            RED_CLOSE(56, 60, 180.0, Constants.Vision.RED_TAG_ID),
-//            RED_FAR(12, -60, 0.0, Constants.Vision.RED_TAG_ID),
-//            BLUE_CLOSE(-56, 60, 180.0, Constants.Vision.BLUE_TAG_ID),
-//            BLUE_FAR(-12, -60, 0.0, Constants.Vision.BLUE_TAG_ID);
-//
-//            public final double startXIn, startYIn, startHeadingDeg;
-//            public final int trackedTagId;
-//
-//            StartPose(double xIn, double yIn, double headingDeg, int tagId) {
-//                this.startXIn = xIn;
-//                this.startYIn = yIn;
-//                this.startHeadingDeg = headingDeg;
-//                this.trackedTagId = tagId;
-//            }
-//
-//            public boolean isRed() {
-//                return trackedTagId == Constants.Vision.RED_TAG_ID;
-//            }
-//
-//            public boolean isBlue() {
-//                return trackedTagId == Constants.Vision.BLUE_TAG_ID;
-//            }
-//        }
-//
-//        public static double computeGoalHeadingDeg(double robotX, double robotY, int trackedTagId) {
-//            double goalX = (trackedTagId == Constants.Vision.RED_TAG_ID) ? Constants.Field.RED_GOAL_X : Constants.Field.BLUE_GOAL_X;
-//            double goalY = Constants.Field.GOAL_Y;
-//            return Math.toDegrees(Math.atan2(goalY - robotY, goalX - robotX));
-//        }
-//    }
+        public static final String TURRET_CAM_NAME = "TurretCam";
+        public static final int RESOLUTION_WIDTH = 640;
+        public static final int RESOLUTION_HEIGHT = 360;
+
+        public static final int BLUE_TAG_ID = 20;
+        public static final int RED_TAG_ID = 24;
+    }
+
+    public static final class Field {
+        public static final double GOAL_Y = 60.0;
+        public static final double RED_GOAL_X = 60.0;
+        public static final double BLUE_GOAL_X = -60.0;
+
+        public static final double RED_CLOSE_X = 56.0;
+        public static final double RED_CLOSE_Y = 60.0;
+        public static final double RED_CLOSE_HEADING_DEG = 270.0;
+        public static final double RED_FAR_X = 20.0;
+        public static final double RED_FAR_Y = -58.0;
+        public static final double RED_FAR_HEADING_DEG = 90.0;
+        public static final double BLUE_CLOSE_X = -56.0;
+        public static final double BLUE_CLOSE_Y = 60.0;
+        public static final double BLUE_CLOSE_HEADING_DEG = 270.0;
+        public static final double BLUE_FAR_X = -20.0;
+        public static final double BLUE_FAR_Y = -58.0;
+        public static final double BLUE_FAR_HEADING_DEG = 90.0;
+
+        public enum StartPose {
+            RED_CLOSE(RED_CLOSE_X, RED_CLOSE_Y, RED_CLOSE_HEADING_DEG, Constants.Vision.RED_TAG_ID),
+            RED_FAR(RED_FAR_X, RED_FAR_Y, RED_FAR_HEADING_DEG, Constants.Vision.RED_TAG_ID),
+            BLUE_CLOSE(BLUE_CLOSE_X, BLUE_CLOSE_Y, BLUE_CLOSE_HEADING_DEG, Constants.Vision.BLUE_TAG_ID),
+            BLUE_FAR(BLUE_FAR_X, BLUE_FAR_Y, BLUE_FAR_HEADING_DEG, Constants.Vision.BLUE_TAG_ID);
+
+            public final double startXIn, startYIn, startHeadingDeg;
+            public final int trackedTagId;
+
+            StartPose(double xIn, double yIn, double headingDeg, int tagId) {
+                this.startXIn = xIn;
+                this.startYIn = yIn;
+                this.startHeadingDeg = headingDeg;
+                this.trackedTagId = tagId;
+            }
+
+            public boolean isRed() {
+                return trackedTagId == Constants.Vision.RED_TAG_ID;
+            }
+
+            public boolean isBlue() {
+                return trackedTagId == Constants.Vision.BLUE_TAG_ID;
+            }
+        }
+
+        private static double wrapDeg(double deg) {
+            while (deg > 180.0) deg -= 360.0;
+            while (deg <= -180.0) deg += 360.0;
+            return deg;
+        }
+
+        public static double computeGoalHeadingDeg(double robotX, double robotY, Alliance alliance) {
+            double goalX = (alliance == Alliance.RED) ? Constants.Field.RED_GOAL_X : Constants.Field.BLUE_GOAL_X;
+            double goalY = Constants.Field.GOAL_Y;
+
+            double dx = goalX - robotX;
+            double dy = goalY - robotY;
+
+            double headingX0 = Math.toDegrees(Math.atan2(dy, dx));
+            double headingY0 = headingX0 - 90.0;
+
+            return wrapDeg(headingY0);
+        }
+
+        public enum Alliance { RED , BLUE}
+    }
 }

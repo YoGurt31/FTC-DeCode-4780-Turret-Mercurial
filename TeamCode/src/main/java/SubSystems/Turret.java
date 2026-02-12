@@ -1,6 +1,8 @@
 package SubSystems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -32,6 +34,8 @@ public class Turret {
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
         turretRotation = hw.get(DcMotorEx.class, Constants.Turret.turretRotation);
+        turretRotation.setDirection(DcMotorSimple.Direction.REVERSE);
+        turretRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         turretRotation.setPower(0.0);
         turretAimTimer.reset();

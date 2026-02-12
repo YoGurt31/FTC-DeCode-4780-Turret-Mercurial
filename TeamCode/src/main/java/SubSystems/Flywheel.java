@@ -21,7 +21,6 @@ public class Flywheel {
 
     private boolean enabled = false;
     private boolean autoRange = true;
-    private double manualTargetRps = Constants.Flywheel.FAR_TARGET_RPS;
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
@@ -50,12 +49,6 @@ public class Flywheel {
         return rps * Constants.Flywheel.TICKS_PER_REV;
     }
 
-    public void setTargetRps(double rps) {
-        manualTargetRps = rps;
-        autoRange = false;
-        enabled = true;
-    }
-
     public void enableAutoRange() {
         autoRange = true;
         enabled = true;
@@ -71,7 +64,8 @@ public class Flywheel {
         if (!enabled) return;
         if (fly1 == null || fly2 == null) return;
 
-        double desiredRps = autoRange ? getTargetRps() : manualTargetRps;
+        double desiredRps = 80;
+//        double desiredRps = getTargetRps();
         double tps = rpsToTicksPerSecond(desiredRps);
 
         fly1.setVelocity(tps);
@@ -84,10 +78,6 @@ public class Flywheel {
 
     public boolean isAutoRange() {
         return autoRange;
-    }
-
-    public double getManualTargetRps() {
-        return manualTargetRps;
     }
 
     public double getRps1() {
@@ -106,19 +96,35 @@ public class Flywheel {
 
     // TODO: CREATE EQUATION FOR VARIABLE RPS
     public double getTargetRps() {
-//        if (Vision.INSTANCE.getTA() >= Constants.Vision.TAG_AREA_THRESHOLD) {
-//            return Constants.Flywheel.CLOSE_TARGET_RPS;
-//        } else {
-            return Constants.Flywheel.FAR_TARGET_RPS;
-//        }
-    }
+        // 1) Compute Distance
+        double robotX = Drive.INSTANCE.getX();
+        double robotY = Drive.INSTANCE.getY();
 
-    public boolean rangeMode() {
-        return getTargetRps() < Constants.Flywheel.FAR_TARGET_RPS;
+        int tagId = Vision.INSTANCE.getTrackedTag();
+        double goalX = (tagId == Constants.Vision.RED_TAG_ID)
+                ? Constants.Field.RED_GOAL_X
+                : Constants.Field.BLUE_GOAL_X;
+        double goalY = Constants.Field.GOAL_Y;
+
+        double distanceViaPinPoint = Math.hypot(goalX - robotX, goalY - robotY);
+
+        // 2) Camera Range Fusion
+        double distance = distanceViaPinPoint;
+        if (Vision.INSTANCE.hasTrackedTag()) {
+            double distanceViaTurretCam = Vision.INSTANCE.getTrackedRange();
+            distance = 0.6 * distanceViaTurretCam + 0.4 * distanceViaPinPoint;
+        }
+
+        // 3) Sqrt Model
+        double rps = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
+
+        // 4) Safety Clamp
+        rps = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, rps));
+        return rps;
     }
 
     public boolean isReady() {
-        double desired = autoRange ? getTargetRps() : manualTargetRps;
+        double desired = getTargetRps();
         return Math.abs(getAverageRps() - desired) < 0.5;
     }
 }

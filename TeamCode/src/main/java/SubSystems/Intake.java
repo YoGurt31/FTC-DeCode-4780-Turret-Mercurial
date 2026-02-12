@@ -2,6 +2,7 @@ package SubSystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -31,6 +32,7 @@ public class Intake {
         this.telemetry = telem;
 
         roller = hw.get(DcMotorEx.class, Constants.Intake.rollerIntake);
+        roller.setDirection(DcMotorSimple.Direction.REVERSE);
 
         roller.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         roller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

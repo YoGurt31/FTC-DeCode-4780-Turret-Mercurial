@@ -54,7 +54,6 @@ public class DefaultTelemetry {
         telemetry.addData("Flywheel2 RPS", "%5.2f", Flywheel.INSTANCE.getRps2());
         telemetry.addData("Avg RPS", "%5.2f", Flywheel.INSTANCE.getAverageRps());
         telemetry.addData("Target RPS", "%5.2f", Flywheel.INSTANCE.getTargetRps());
-        telemetry.addData("Range Mode", Flywheel.INSTANCE.rangeMode() ? "CLOSE" : "FAR");
         telemetry.addData("Shooter Status", Flywheel.INSTANCE.isReady() ? "READY" : "CHARGING");
         telemetry.addData("Gate", Release.INSTANCE.isGateOpen() ? "Open" : "Closed");
         telemetry.addLine();

@@ -12,14 +12,14 @@ public final class Constants {
 
         public static final double ROTATE_GAIN = 0.0350;
         public static final double MAX_ROTATE = 0.80;
-        public static final double ARTIFACT_AIM_DEADBAND_DEG = 3.0;
+        public static final double ARTIFACT_AIM_DEADBAND_DEG = 2.5;
     }
 
     public static final class PinPoint {
         public static final String PinPoint = "pinpoint";
 
-        public static final boolean X_REVERSED = true;
-        public static final boolean Y_REVERSED = false;
+        public static final boolean X_REVERSED = false;
+        public static final boolean Y_REVERSED = true;
 
         public static final double X_OFFSET_MM = -176;
         public static final double Y_OFFSET_MM = -66;
@@ -114,30 +114,30 @@ public final class Constants {
         public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
 
         public static final String TURRET_CAM_NAME = "TurretCam";
-        public static final int RESOLUTION_WIDTH = 640;
-        public static final int RESOLUTION_HEIGHT = 360;
+        public static final int RESOLUTION_WIDTH = 1280;
+        public static final int RESOLUTION_HEIGHT = 720;
 
         public static final int BLUE_TAG_ID = 20;
         public static final int RED_TAG_ID = 24;
     }
 
     public static final class Field {
-        public static final double GOAL_Y = 60.0;
-        public static final double RED_GOAL_X = 60.0;
-        public static final double BLUE_GOAL_X = -60.0;
+        public static final double GOAL_X = 60.0;
+        public static final double RED_GOAL_Y = -60.0;
+        public static final double BLUE_GOAL_Y = 60.0;
 
-        public static final double RED_CLOSE_X = 56.0;
-        public static final double RED_CLOSE_Y = 60.0;
-        public static final double RED_CLOSE_HEADING_DEG = 270.0;
-        public static final double RED_FAR_X = 20.0;
-        public static final double RED_FAR_Y = -58.0;
-        public static final double RED_FAR_HEADING_DEG = 90.0;
-        public static final double BLUE_CLOSE_X = -56.0;
-        public static final double BLUE_CLOSE_Y = 60.0;
-        public static final double BLUE_CLOSE_HEADING_DEG = 270.0;
-        public static final double BLUE_FAR_X = -20.0;
-        public static final double BLUE_FAR_Y = -58.0;
-        public static final double BLUE_FAR_HEADING_DEG = 90.0;
+        public static final double RED_CLOSE_X = 60.0;
+        public static final double BLUE_CLOSE_X = 60.0;
+        public static final double RED_CLOSE_Y = -56.0;
+        public static final double BLUE_CLOSE_Y = 56.0;
+        public static final double RED_CLOSE_HEADING_DEG = 180.0;
+        public static final double BLUE_CLOSE_HEADING_DEG = 180.0;
+        public static final double RED_FAR_X = -58.0;
+        public static final double BLUE_FAR_X = -58.0;
+        public static final double RED_FAR_Y = -20.0;
+        public static final double BLUE_FAR_Y = 20.0;
+        public static final double RED_FAR_HEADING_DEG = 0.0;
+        public static final double BLUE_FAR_HEADING_DEG = 0.0;
 
         public enum StartPose {
             RED_CLOSE(RED_CLOSE_X, RED_CLOSE_Y, RED_CLOSE_HEADING_DEG, Constants.Vision.RED_TAG_ID),
@@ -171,16 +171,13 @@ public final class Constants {
         }
 
         public static double computeGoalHeadingDeg(double robotX, double robotY, Alliance alliance) {
-            double goalX = (alliance == Alliance.RED) ? Constants.Field.RED_GOAL_X : Constants.Field.BLUE_GOAL_X;
-            double goalY = Constants.Field.GOAL_Y;
+            double goalX = GOAL_X;
+            double goalY = (alliance == Alliance.BLUE) ? BLUE_GOAL_Y : RED_GOAL_Y;
 
             double dx = goalX - robotX;
             double dy = goalY - robotY;
 
-            double headingX0 = Math.toDegrees(Math.atan2(dy, dx));
-            double headingY0 = headingX0 - 90.0;
-
-            return wrapDeg(headingY0);
+            return wrapDeg(Math.toDegrees(Math.atan2(dy, dx)));
         }
 
         public enum Alliance { RED , BLUE}

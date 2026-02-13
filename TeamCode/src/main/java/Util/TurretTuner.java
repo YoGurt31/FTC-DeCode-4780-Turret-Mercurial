@@ -20,7 +20,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-import SubSystems.Drive;
 import SubSystems.Turret;
 
 /**
@@ -124,9 +123,22 @@ public class TurretTuner extends LinearOpMode {
         telemetry.addLine("LB/RB adjust Kp -/+");
         telemetry.addLine("Dpad Left/Right adjust MaxPower -/+");
         telemetry.addLine("Drive: LS Y forward/back, RS X turn (LT = slow mode)");
+        telemetry.addLine("PinPoint seeded (updates after START)");
         telemetry.update();
 
         waitForStart();
+
+        Pose2D startPose = new Pose2D(
+                DistanceUnit.INCH,
+                Constants.Field.RED_FAR_X,
+                Constants.Field.RED_FAR_Y,
+                AngleUnit.DEGREES,
+                Constants.Field.RED_FAR_HEADING_DEG
+        );
+
+        pinpoint.setPosition(startPose);
+
+        try { pinpoint.update(); } catch (Exception ignored) {}
 
         while (opModeIsActive()) {
             boolean y = gamepad1.y;
@@ -138,10 +150,6 @@ public class TurretTuner extends LinearOpMode {
             boolean dr = gamepad1.dpad_right;
             boolean lb = gamepad1.left_bumper;
             boolean rb = gamepad1.right_bumper;
-
-            if (gamepad1.right_trigger > 0.2) {
-                turret.setPower(1.0);
-            }
 
             // Toggle tuning mode
             if (y && !prevY) {
@@ -200,6 +208,7 @@ public class TurretTuner extends LinearOpMode {
                 pinpoint.update();
             } catch (Exception ignored) {
             }
+            Pose2D p = pinpoint.getPosition();
 
             // --- Turret command using the same helper methods as Turret.java ---
             double cmd = 0.0;
@@ -207,9 +216,9 @@ public class TurretTuner extends LinearOpMode {
             double yawDeg = 0.0;
 
             if (mode == Mode.QUICK) {
-                double robotX = pinpoint.getPosition().getX(DistanceUnit.INCH);
-                double robotY = pinpoint.getPosition().getY(DistanceUnit.INCH);
-                double robotHeadingDeg = pinpoint.getPosition().getHeading(AngleUnit.DEGREES);
+                double robotX = p.getX(DistanceUnit.INCH);
+                double robotY = p.getY(DistanceUnit.INCH);
+                double robotHeadingDeg = p.getHeading(AngleUnit.DEGREES);
 
                 double goalHeadingDeg = Constants.Field.computeGoalHeadingDeg(robotX, robotY, alliance);
                 double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
@@ -270,12 +279,21 @@ public class TurretTuner extends LinearOpMode {
             telemetry.addData("Yaw", "%5.2f", yawDeg);
             telemetry.addData("PreciseKp", "%6.4f", preciseKp);
             telemetry.addData("PreciseMax", "%5.2f", preciseMax);
-            telemetry.addData("TurretDeg", "%6.2f", Turret.INSTANCE.getTurretDeg());
-            Pose2D p = pinpoint.getPosition();
+
             telemetry.addData("PinPoint X", "%6.2f", p.getX(DistanceUnit.INCH));
             telemetry.addData("PinPoint Y", "%6.2f", p.getY(DistanceUnit.INCH));
             telemetry.addData("Heading", "%6.2f", p.getHeading(AngleUnit.DEGREES));
 
+            double goalHeading = Constants.Field.computeGoalHeadingDeg(
+                    p.getX(DistanceUnit.INCH),
+                    p.getY(DistanceUnit.INCH),
+                    alliance
+            );
+            double desiredTurret = wrapDeg(goalHeading - p.getHeading(AngleUnit.DEGREES));
+
+            telemetry.addData("GoalHeading", "%6.2f", goalHeading);
+            telemetry.addData("DesiredTurretDeg", "%6.2f", desiredTurret);
+            telemetry.addData("TurretDeg", "%6.2f", Turret.INSTANCE.getTurretDeg());
 
             telemetry.addData("GoalHeading RED",
                     "%6.2f", Constants.Field.computeGoalHeadingDeg(p.getX(DistanceUnit.INCH), p.getY(DistanceUnit.INCH), Constants.Field.Alliance.RED));
@@ -301,7 +319,7 @@ public class TurretTuner extends LinearOpMode {
         portal = new VisionPortal.Builder()
                 .setCamera(cam)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setCameraResolution(new Size(640, 360))
+                .setCameraResolution(new Size(1280, 720))
                 .addProcessor(aprilTag)
                 .build();
     }

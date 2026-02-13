@@ -101,10 +101,10 @@ public class Flywheel {
         double robotY = Drive.INSTANCE.getY();
 
         int tagId = Vision.INSTANCE.getTrackedTag();
-        double goalX = (tagId == Constants.Vision.RED_TAG_ID)
-                ? Constants.Field.RED_GOAL_X
-                : Constants.Field.BLUE_GOAL_X;
-        double goalY = Constants.Field.GOAL_Y;
+        double goalX = Constants.Field.GOAL_X;
+        double goalY = (tagId == Constants.Vision.RED_TAG_ID)
+                ? Constants.Field.RED_GOAL_Y
+                : Constants.Field.BLUE_GOAL_Y;
 
         double distanceViaPinPoint = Math.hypot(goalX - robotX, goalY - robotY);
 

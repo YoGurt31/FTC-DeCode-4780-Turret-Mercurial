@@ -28,6 +28,7 @@ public final class TeleOp {
             if (Vision.INSTANCE.getLimelight() != null) {
                 Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
             }
+            Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.setTrackedTag(alliance == Constants.Field.Alliance.RED ? Constants.Vision.RED_TAG_ID : Constants.Vision.BLUE_TAG_ID);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -101,7 +102,11 @@ public final class TeleOp {
 
             // Release
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().a),
-                    exec(Release.INSTANCE::startShot)
+                    exec(() -> {
+                        if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) {
+                            Release.INSTANCE.toggle();
+                        }
+                    })
             );
 
             // Elevator

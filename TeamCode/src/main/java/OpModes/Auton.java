@@ -28,6 +28,7 @@ public final class Auton {
         if (Vision.INSTANCE.getLimelight() != null) {
             Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
+        Constants.Field.setAlliance(Constants.Field.Alliance.RED);
         Vision.INSTANCE.setTrackedTag(Constants.Vision.RED_TAG_ID);
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -60,7 +61,7 @@ public final class Auton {
                     Drive.INSTANCE.stop();
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.cancel();
+                    Release.INSTANCE.close();
                 })
         ));
 
@@ -78,6 +79,7 @@ public final class Auton {
         if (Vision.INSTANCE.getLimelight() != null) {
             Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
+        Constants.Field.setAlliance(Constants.Field.Alliance.RED);
         Vision.INSTANCE.setTrackedTag(Constants.Vision.RED_TAG_ID);
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -110,7 +112,7 @@ public final class Auton {
                     Drive.INSTANCE.stop();
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.cancel();
+                    Release.INSTANCE.close();
                 })
         ));
 
@@ -128,6 +130,7 @@ public final class Auton {
         if (Vision.INSTANCE.getLimelight() != null) {
             Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
+        Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
         Vision.INSTANCE.setTrackedTag(Constants.Vision.BLUE_TAG_ID);
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -160,7 +163,7 @@ public final class Auton {
                     Drive.INSTANCE.stop();
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.cancel();
+                    Release.INSTANCE.close();
                 })
         ));
 
@@ -178,6 +181,7 @@ public final class Auton {
         if (Vision.INSTANCE.getLimelight() != null) {
             Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         }
+        Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
         Vision.INSTANCE.setTrackedTag(Constants.Vision.BLUE_TAG_ID);
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -210,7 +214,7 @@ public final class Auton {
                     Drive.INSTANCE.stop();
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.cancel();
+                    Release.INSTANCE.close();
                 })
         ));
 

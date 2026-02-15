@@ -10,6 +10,7 @@ public final class Constants {
 
         public static final double MAX_WHEEL_RPM = 435;
 
+        // TODO: TUNE THESE VALUES
         public static final double ROTATE_GAIN = 0.0350;
         public static final double MAX_ROTATE = 0.80;
         public static final double ARTIFACT_AIM_DEADBAND_DEG = 2.5;
@@ -62,15 +63,15 @@ public final class Constants {
 
         public static final double TurretMinDeg = -180.0;
         public static final double TurretMaxDeg = 180.0;
-        public static final double LimitGuard = 0.5;
+        public static final double LimitGuard = 0.25;
 
         // TODO: TUNE THESE VALUES
         public static final double QuickKp = 0.020;
         public static final double QuickMaxPower = 1.0;
-        public static final double QuickDeadband = 2.5;
-
         public static final double PreciseKp = 0.020;
         public static final double PreciseMaxPower = 0.35;
+
+        public static final double QuickDeadband = 2.5;
         public static final double PreciseDeadband = 1.0;
 
         public static final double SwitchDeadband = 15.0;
@@ -92,8 +93,8 @@ public final class Constants {
         public static final double MAX_RPS = 100.0;
 
         // TODO: TUNE THESE VALUES
-        public static final double F = 18.0;
-        public static final double P = 2.25 * F;
+        public static final double F = 0.0;
+        public static final double P = 0.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
     }
@@ -103,9 +104,6 @@ public final class Constants {
 
         public static final double HOLD = 0.5;
         public static final double RELEASE = 0.75;
-
-        public static final long GATE_OPEN_MS = 1500;
-        public static final long SHOT_TOTAL_MS = 1500;
     }
 
     public static final class Vision {
@@ -180,6 +178,58 @@ public final class Constants {
             return wrapDeg(Math.toDegrees(Math.atan2(dy, dx)));
         }
 
-        public enum Alliance { RED , BLUE}
+        public static boolean inShootZone(double x, double y) {
+            int buffer = 6;
+
+            // Triangle 1: (-72, 24), (-48, 0), (-72, -24)
+            boolean zone1 = inTriangle(
+                    x, y,
+                    -72 - buffer,24 + buffer,
+                    -48 + buffer,0,
+                    -72 - buffer,-24 - buffer
+            );
+
+            // Triangle 2: (72, 72), (0, 0), (72, -72)
+            boolean zone2 = inTriangle(
+                    x, y,
+                    72 + buffer,72 + buffer,
+                    0 - buffer,0,
+                    72 + buffer,-72 - buffer
+            );
+
+            return zone1 || zone2;
+        }
+
+        private static boolean inTriangle(
+                double px, double py,
+                double x1, double y1,
+                double x2, double y2,
+                double x3, double y3
+        ) {
+            double d1 = sign(px, py, x1, y1, x2, y2);
+            double d2 = sign(px, py, x2, y2, x3, y3);
+            double d3 = sign(px, py, x3, y3, x1, y1);
+
+            boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+            boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+            return !(hasNeg && hasPos);
+        }
+
+        private static double sign(double px, double py, double x1, double y1, double x2, double y2) {
+            return (px - x2) * (y1 - y2) - (x1 - x2) * (py - y2);
+        }
+
+        public enum Alliance { RED , BLUE }
+
+        private static Alliance currentAlliance;
+
+        public static void setAlliance(Alliance alliance) {
+            currentAlliance = alliance;
+        }
+
+        public static Alliance getAlliance() {
+            return currentAlliance;
+        }
     }
 }

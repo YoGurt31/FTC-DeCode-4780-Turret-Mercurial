@@ -102,17 +102,14 @@ public class Flywheel {
 
         int tagId = Vision.INSTANCE.getTrackedTag();
         double goalX = Constants.Field.GOAL_X;
-        double goalY = (tagId == Constants.Vision.RED_TAG_ID)
-                ? Constants.Field.RED_GOAL_Y
-                : Constants.Field.BLUE_GOAL_Y;
-
+        double goalY = (tagId == Constants.Vision.RED_TAG_ID) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y;
         double distanceViaPinPoint = Math.hypot(goalX - robotX, goalY - robotY);
 
         // 2) Camera Range Fusion
         double distance = distanceViaPinPoint;
         if (Vision.INSTANCE.hasTrackedTag()) {
             double distanceViaTurretCam = Vision.INSTANCE.getTrackedRange();
-            distance = 0.6 * distanceViaTurretCam + 0.4 * distanceViaPinPoint;
+            distance = 0.75 * distanceViaTurretCam + 0.25 * distanceViaPinPoint;
         }
 
         // 3) Sqrt Model

@@ -2,6 +2,8 @@ package SubSystems;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import Util.Constants;
+
 public class DefaultTelemetry {
     public static final DefaultTelemetry INSTANCE = new DefaultTelemetry();
 
@@ -12,21 +14,23 @@ public class DefaultTelemetry {
         if (telemetry == null) return;
 
         // Drive
-        telemetry.addLine("=== Drive ===");
+        telemetry.addLine("=== Localization ===");
         telemetry.addData("X Pos", "%5.2f", Drive.INSTANCE.getX());
         telemetry.addData("Y Pos", "%5.2f", Drive.INSTANCE.getY());
         telemetry.addData("Angle", "%5.2f", Drive.INSTANCE.getHeading());
+        telemetry.addData("In Shooting Zone?", Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()));
+        telemetry.addData("Distance To Goal", "%5.2f", Math.hypot(Constants.Field.GOAL_X - Drive.INSTANCE.getX(), ((Constants.Field.getAlliance() == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y) - Drive.INSTANCE.getY()));
         telemetry.addLine();
 
         // Vision
         telemetry.addLine("=== Vision ===");
-        telemetry.addLine("Limelight (Artifacts):");
+        telemetry.addLine("--- Limelight (Artifacts) ---");
         telemetry.addData("Pipeline", Vision.INSTANCE.getPipelineName());
         telemetry.addData("Has Artifact", Vision.INSTANCE.hasArtifact());
         telemetry.addData("TX", "%5.2f", Vision.INSTANCE.getTX());
         telemetry.addData("TY", "%5.2f", Vision.INSTANCE.getTY());
         telemetry.addData("TA", "%5.2f", Vision.INSTANCE.getTA());
-        telemetry.addLine("TurretCam (AprilTag):");
+        telemetry.addLine("--- TurretCam (AprilTag) ---");
         telemetry.addData("Tracked Tag ID", Vision.INSTANCE.getTrackedTag());
         telemetry.addData("Has Tracked Tag", Vision.INSTANCE.hasTrackedTag());
         telemetry.addData("Yaw (Deg)", "%5.2f", Vision.INSTANCE.getTrackedYawDeg());
@@ -42,7 +46,9 @@ public class DefaultTelemetry {
 
         // Turret
         telemetry.addLine("=== Turret ===");
-        telemetry.addData("Turret Deg", "%6.2f", Turret.INSTANCE.getTurretDeg());
+        telemetry.addData("Current Deg", "%6.2f", Turret.INSTANCE.getTurretDeg());
+        telemetry.addData("Target Deg", "%6.2f", Turret.INSTANCE.getTargetDeg());
+        telemetry.addData("Turret Error", "%6.2f", Turret.INSTANCE.getErrorDeg());
         telemetry.addData("Aim Mode", Turret.INSTANCE.getAimModeName());
         telemetry.addData("At Min", Turret.INSTANCE.atMinLimit());
         telemetry.addData("At Max", Turret.INSTANCE.atMaxLimit());

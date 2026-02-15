@@ -31,6 +31,9 @@ public class Turret {
     private TurretAimMode aimMode = TurretAimMode.Quick;
     private double lastTargetSeenTimeS = 0.0;
 
+    private double turretTargetDeg = 0.0;
+    private double turretErrDeg = 0.0;
+
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
         turretRotation = hw.get(DcMotorEx.class, Constants.Turret.turretRotation);
@@ -41,18 +44,14 @@ public class Turret {
         turretAimTimer.reset();
         aimMode = TurretAimMode.Quick;
         lastTargetSeenTimeS = 0.0;
+        turretTargetDeg = 0.0;
+        turretErrDeg = 0.0;
         turretZeroOffsetTicks = turretRotation.getCurrentPosition();
     }
 
     public void zeroTurret() {
         if (turretRotation == null) return;
         turretZeroOffsetTicks = turretRotation.getCurrentPosition();
-    }
-
-    public double getTurretDeg() {
-        if (turretRotation == null) return 0.0;
-        double ticks = turretRotation.getCurrentPosition() - turretZeroOffsetTicks;
-        return ticks * Constants.Turret.TurretDegPerTick;
     }
 
     private static double clamp(double v, double lo, double hi) {
@@ -81,6 +80,20 @@ public class Turret {
         if (requestedPower < 0 && atMinLimit()) return 0.0;
         if (requestedPower > 0 && atMaxLimit()) return 0.0;
         return requestedPower;
+    }
+
+    public double getTurretDeg() {
+        if (turretRotation == null) return 0.0;
+        double ticks = turretRotation.getCurrentPosition() - turretZeroOffsetTicks;
+        return ticks * Constants.Turret.TurretDegPerTick;
+    }
+
+    public double getTargetDeg() {
+        return turretTargetDeg;
+    }
+
+    public double getErrorDeg() {
+        return turretErrDeg;
     }
 
     public double turretErrDeg(double desiredDeg, double currentDeg) {
@@ -128,6 +141,8 @@ public class Turret {
         double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
         double currentTurretDeg = getTurretDeg();
         double errDeg = turretErrDeg(desiredTurretDeg, currentTurretDeg);
+        turretTargetDeg = desiredTurretDeg;
+        turretErrDeg = errDeg;
 
         if (aimMode == TurretAimMode.Quick) {
             if (Vision.INSTANCE.hasTrackedTag() && Math.abs(errDeg) <= Constants.Turret.SwitchDeadband) {
@@ -156,6 +171,46 @@ public class Turret {
             return false;
         }
         double cmd = Range.clip(errDeg * Constants.Turret.QuickKp, -Constants.Turret.QuickMaxPower, Constants.Turret.QuickMaxPower);
+        cmd = applyTurretLimitsToPower(cmd);
+        setTurretPower(cmd);
+        return false;
+    }
+
+    public boolean autoAimTurretTunable(double robotHeadingDeg, double goalHeadingDeg, double quickKp, double quickMaxPower, double preciseKp, double preciseMaxPower, boolean forcePrecise) {
+        if (turretRotation == null) return false;
+
+        double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
+        double currentTurretDeg = getTurretDeg();
+        double errDeg = turretErrDeg(desiredTurretDeg, currentTurretDeg);
+
+        turretTargetDeg = desiredTurretDeg;
+        turretErrDeg = errDeg;
+
+        if (forcePrecise) {
+            if (!Vision.INSTANCE.hasTrackedTag()) {
+                stopTurret();
+                return false;
+            }
+
+            double yaw = Vision.INSTANCE.getTrackedYawDeg();
+
+            if (Math.abs(yaw) <= Constants.Turret.PreciseDeadband) {
+                stopTurret();
+                return true;
+            }
+
+            double cmd = Range.clip(yaw * preciseKp, -preciseMaxPower, preciseMaxPower);
+            cmd = applyTurretLimitsToPower(cmd);
+            setTurretPower(cmd);
+            return false;
+        }
+
+        if (Math.abs(errDeg) <= Constants.Turret.QuickDeadband) {
+            stopTurret();
+            return true;
+        }
+
+        double cmd = Range.clip(errDeg * quickKp, -quickMaxPower, quickMaxPower);
         cmd = applyTurretLimitsToPower(cmd);
         setTurretPower(cmd);
         return false;

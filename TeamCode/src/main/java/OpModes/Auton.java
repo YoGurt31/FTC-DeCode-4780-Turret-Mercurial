@@ -5,6 +5,9 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
+import dev.frozenmilk.dairy.mercurial.continuations.Closure;
+import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
+
 import SubSystems.DefaultTelemetry;
 import SubSystems.Drive;
 import SubSystems.Elevator;
@@ -14,211 +17,147 @@ import SubSystems.Release;
 import SubSystems.Turret;
 import SubSystems.Vision;
 import Util.Constants;
-import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
 @SuppressWarnings("unused")
 public final class Auton {
-    // XXX: Red Far
-    public static final Mercurial.RegisterableProgram RedFar = Mercurial.autonomous(linsane -> {
+    private static Mercurial.RegisterableProgram buildAuto(String name, Constants.Field.Alliance alliance, int trackedTagId, Closure auton) {
+        return Mercurial.autonomous(name, linsane -> {
 
-        // Hardware Init
-        Drive.INSTANCE.setResetPinPointOnInit(false);
-        Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
-        }
-        Constants.Field.setAlliance(Constants.Field.Alliance.RED);
-        Vision.INSTANCE.setTrackedTag(Constants.Vision.RED_TAG_ID);
-        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.zeroTurret();
+            Drive.INSTANCE.setResetPinPointOnInit(true);
+            Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
-        // Background Update Loop
-        linsane.schedule(loop(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> {
-                    Vision.INSTANCE.update();
-                    Drive.INSTANCE.updateOdometry();
-                    Intake.INSTANCE.apply();
-                    Flywheel.INSTANCE.apply();
-                    Elevator.INSTANCE.updateRise();
-                    Release.INSTANCE.update();
-                    DefaultTelemetry.INSTANCE.update(linsane.telemetry()); // TODO: DEBUGGING ONLY - DISABLE FOR COMP
-                })
-        )));
+            Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            if (Vision.INSTANCE.getLimelight() != null) {
+                Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
+            }
 
-        // Autonomous Sequence
-        linsane.schedule(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> { /* CODE LINES HERE */ }),
+            Constants.Field.setAlliance(alliance);
+            Vision.INSTANCE.setTrackedTag(trackedTagId);
 
-                // End Auton
-                exec(() -> {
-                    Drive.INSTANCE.stop();
-                    Intake.INSTANCE.stop();
-                    Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.close();
-                })
-        ));
+            Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Turret.INSTANCE.zeroTurret();
 
-        // Shut Off
-        linsane.dropToScheduler();
-    });
+            linsane.schedule(loop(sequence(
+                    waitUntil(linsane::inLoop),
+                    exec(() -> {
+                        Vision.INSTANCE.update();
+                        Drive.INSTANCE.updateOdometry();
+                        Intake.INSTANCE.apply();
+                        Flywheel.INSTANCE.apply();
+                        Elevator.INSTANCE.updateRise();
+                        Release.INSTANCE.update();
+                        DefaultTelemetry.INSTANCE.update(linsane.telemetry()); // TODO: DEBUGGING ONLY - DISABLE FOR COMP
+                    })
+            )));
 
-    // XXX: Red Close
-    public static final Mercurial.RegisterableProgram RedClose = Mercurial.autonomous(linsane -> {
+            linsane.schedule(sequence(
+                    waitUntil(linsane::inLoop),
+                    auton,
+                    exec(() -> {
+                        Drive.INSTANCE.stop();
+                        Intake.INSTANCE.stop();
+                        Flywheel.INSTANCE.stop();
+                        Release.INSTANCE.close();
+                    })
+            ));
 
-        // Hardware Init
-        Drive.INSTANCE.setResetPinPointOnInit(false);
-        Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
-        }
-        Constants.Field.setAlliance(Constants.Field.Alliance.RED);
-        Vision.INSTANCE.setTrackedTag(Constants.Vision.RED_TAG_ID);
-        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.zeroTurret();
+            linsane.dropToScheduler();
+        });
+    }
 
-        // Background Update Loop
-        linsane.schedule(loop(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> {
-                    Vision.INSTANCE.update();
-                    Drive.INSTANCE.updateOdometry();
-                    Intake.INSTANCE.apply();
-                    Flywheel.INSTANCE.apply();
-                    Elevator.INSTANCE.updateRise();
-                    Release.INSTANCE.update();
-                    DefaultTelemetry.INSTANCE.update(linsane.telemetry()); // TODO: DEBUGGING ONLY - DISABLE FOR COMP
-                })
-        )));
 
-        // Autonomous Sequence
-        linsane.schedule(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> { /* CODE LINES HERE */ }),
+    // XXX: Solo Autons
+    public static final Mercurial.RegisterableProgram SoloRedFar = buildAuto(
+            "Solo - Red Far",
+            Constants.Field.Alliance.RED,
+            Constants.Vision.RED_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-                // End Auton
-                exec(() -> {
-                    Drive.INSTANCE.stop();
-                    Intake.INSTANCE.stop();
-                    Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.close();
-                })
-        ));
+    public static final Mercurial.RegisterableProgram SoloBlueFar = buildAuto(
+            "Solo - Blue Far",
+            Constants.Field.Alliance.BLUE,
+            Constants.Vision.BLUE_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-        // Shut Off
-        linsane.dropToScheduler();
-    });
+    public static final Mercurial.RegisterableProgram SoloRedClose = buildAuto(
+            "Solo - Red Close",
+            Constants.Field.Alliance.RED,
+            Constants.Vision.RED_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-    // XXX: Blue Far
-    public static final Mercurial.RegisterableProgram BlueFar = Mercurial.autonomous(linsane -> {
+    public static final Mercurial.RegisterableProgram SoloBlueClose = buildAuto(
+            "Solo - Blue Close",
+            Constants.Field.Alliance.BLUE,
+            Constants.Vision.BLUE_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-        // Hardware Init
-        Drive.INSTANCE.setResetPinPointOnInit(false);
-        Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
-        }
-        Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
-        Vision.INSTANCE.setTrackedTag(Constants.Vision.BLUE_TAG_ID);
-        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.zeroTurret();
 
-        // Background Update Loop
-        linsane.schedule(loop(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> {
-                    Vision.INSTANCE.update();
-                    Drive.INSTANCE.updateOdometry();
-                    Intake.INSTANCE.apply();
-                    Flywheel.INSTANCE.apply();
-                    Elevator.INSTANCE.updateRise();
-                    Release.INSTANCE.update();
-                    DefaultTelemetry.INSTANCE.update(linsane.telemetry()); // TODO: DEBUGGING ONLY - DISABLE FOR COMP
-                })
-        )));
+    // XXX: CoOp Autons
+    public static final Mercurial.RegisterableProgram CoOpRedFar = buildAuto(
+            "CoOp - Red Far",
+            Constants.Field.Alliance.RED,
+            Constants.Vision.RED_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-        // Autonomous Sequence
-        linsane.schedule(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> { /* CODE LINES HERE */ }),
+    public static final Mercurial.RegisterableProgram CoOpBlueFar = buildAuto(
+            "CoOp - Blue Far",
+            Constants.Field.Alliance.BLUE,
+            Constants.Vision.BLUE_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-                // End Auton
-                exec(() -> {
-                    Drive.INSTANCE.stop();
-                    Intake.INSTANCE.stop();
-                    Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.close();
-                })
-        ));
+    public static final Mercurial.RegisterableProgram CoOpRedClose = buildAuto(
+            "CoOp - Red Close",
+            Constants.Field.Alliance.RED,
+            Constants.Vision.RED_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 
-        // Shut Off
-        linsane.dropToScheduler();
-    });
-
-    // XXX: Blue Close
-    public static final Mercurial.RegisterableProgram BlueClose = Mercurial.autonomous(linsane -> {
-
-        // Hardware Init
-        Drive.INSTANCE.setResetPinPointOnInit(false);
-        Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        if (Vision.INSTANCE.getLimelight() != null) {
-            Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
-        }
-        Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
-        Vision.INSTANCE.setTrackedTag(Constants.Vision.BLUE_TAG_ID);
-        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Turret.INSTANCE.zeroTurret();
-
-        // Background Update Loop
-        linsane.schedule(loop(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> {
-                    Vision.INSTANCE.update();
-                    Drive.INSTANCE.updateOdometry();
-                    Intake.INSTANCE.apply();
-                    Flywheel.INSTANCE.apply();
-                    Elevator.INSTANCE.updateRise();
-                    Release.INSTANCE.update();
-                    DefaultTelemetry.INSTANCE.update(linsane.telemetry()); // TODO: DEBUGGING ONLY - DISABLE FOR COMP
-                })
-        )));
-
-        // Autonomous Sequence
-        linsane.schedule(sequence(
-                waitUntil(linsane::inLoop),
-                exec(() -> { /* CODE LINES HERE */ }),
-
-                // End Auton
-                exec(() -> {
-                    Drive.INSTANCE.stop();
-                    Intake.INSTANCE.stop();
-                    Flywheel.INSTANCE.stop();
-                    Release.INSTANCE.close();
-                })
-        ));
-
-        // Shut Off
-        linsane.dropToScheduler();
-    });
+    public static final Mercurial.RegisterableProgram CoOpBlueClose = buildAuto(
+            "CoOp - Blue Close",
+            Constants.Field.Alliance.BLUE,
+            Constants.Vision.BLUE_TAG_ID,
+            sequence(
+                    exec(() -> {
+                        /* CODE LINES HERE */
+                    })
+            )
+    );
 }

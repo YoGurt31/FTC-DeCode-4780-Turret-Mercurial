@@ -20,11 +20,12 @@ import Util.Constants;
 
 @SuppressWarnings("unused")
 public final class Auton {
-    private static Mercurial.RegisterableProgram buildAuto(String name, Constants.Field.Alliance alliance, int trackedTagId, Closure auton) {
+    private static Mercurial.RegisterableProgram buildAuto(String name, Constants.Field.StartPose startPose, Constants.Field.Alliance alliance, int trackedTagId, Closure auton) {
         return Mercurial.autonomous(name, linsane -> {
 
             Drive.INSTANCE.setResetPinPointOnInit(true);
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Drive.INSTANCE.setPose(startPose.startXIn, startPose.startYIn, startPose.startHeadingDeg);
 
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             if (Vision.INSTANCE.getLimelight() != null) {
@@ -73,6 +74,7 @@ public final class Auton {
     // XXX: Solo Autons
     public static final Mercurial.RegisterableProgram SoloRedFar = buildAuto(
             "Solo - Red Far",
+            Constants.Field.StartPose.RED_FAR,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
             sequence(
@@ -84,6 +86,7 @@ public final class Auton {
 
     public static final Mercurial.RegisterableProgram SoloBlueFar = buildAuto(
             "Solo - Blue Far",
+            Constants.Field.StartPose.BLUE_FAR,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
             sequence(
@@ -95,6 +98,7 @@ public final class Auton {
 
     public static final Mercurial.RegisterableProgram SoloRedClose = buildAuto(
             "Solo - Red Close",
+            Constants.Field.StartPose.RED_CLOSE,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
             sequence(
@@ -106,6 +110,7 @@ public final class Auton {
 
     public static final Mercurial.RegisterableProgram SoloBlueClose = buildAuto(
             "Solo - Blue Close",
+            Constants.Field.StartPose.BLUE_CLOSE,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
             sequence(
@@ -119,6 +124,7 @@ public final class Auton {
     // XXX: CoOp Autons
     public static final Mercurial.RegisterableProgram CoOpRedFar = buildAuto(
             "CoOp - Red Far",
+            Constants.Field.StartPose.RED_FAR,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
             sequence(
@@ -130,6 +136,7 @@ public final class Auton {
 
     public static final Mercurial.RegisterableProgram CoOpBlueFar = buildAuto(
             "CoOp - Blue Far",
+            Constants.Field.StartPose.BLUE_FAR,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
             sequence(
@@ -141,6 +148,7 @@ public final class Auton {
 
     public static final Mercurial.RegisterableProgram CoOpRedClose = buildAuto(
             "CoOp - Red Close",
+            Constants.Field.StartPose.RED_CLOSE,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
             sequence(
@@ -152,6 +160,7 @@ public final class Auton {
 
     public static final Mercurial.RegisterableProgram CoOpBlueClose = buildAuto(
             "CoOp - Blue Close",
+            Constants.Field.StartPose.BLUE_CLOSE,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
             sequence(

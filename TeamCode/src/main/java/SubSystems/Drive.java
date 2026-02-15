@@ -29,6 +29,11 @@ public class Drive {
         resetPinPointOnInit = enabled;
     }
 
+    public void setPose(double xIn, double yIn, double headingDeg) {
+        if (pinpoint == null) return;
+        try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, xIn, yIn, AngleUnit.DEGREES, headingDeg)); } catch (Exception ignored) { }
+    }
+
     @SuppressWarnings("unused")
     private Telemetry telemetry;
 

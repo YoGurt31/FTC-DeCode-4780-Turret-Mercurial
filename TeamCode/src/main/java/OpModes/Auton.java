@@ -121,9 +121,9 @@ public final class Auton {
     );
 
 
-    // XXX: CoOp Autons
-    public static final Mercurial.RegisterableProgram CoOpRedFar = buildAuto(
-            "CoOp - Red Far",
+    // XXX: Ramp Autons
+    public static final Mercurial.RegisterableProgram RampRedFar = buildAuto(
+            "Ramp - Red Far",
             Constants.Field.StartPose.RED_FAR,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
@@ -134,8 +134,8 @@ public final class Auton {
             )
     );
 
-    public static final Mercurial.RegisterableProgram CoOpBlueFar = buildAuto(
-            "CoOp - Blue Far",
+    public static final Mercurial.RegisterableProgram RampBlueFar = buildAuto(
+            "Ramp - Blue Far",
             Constants.Field.StartPose.BLUE_FAR,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
@@ -146,8 +146,8 @@ public final class Auton {
             )
     );
 
-    public static final Mercurial.RegisterableProgram CoOpRedClose = buildAuto(
-            "CoOp - Red Close",
+    public static final Mercurial.RegisterableProgram RampRedClose = buildAuto(
+            "Ramp - Red Close",
             Constants.Field.StartPose.RED_CLOSE,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
@@ -158,8 +158,8 @@ public final class Auton {
             )
     );
 
-    public static final Mercurial.RegisterableProgram CoOpBlueClose = buildAuto(
-            "CoOp - Blue Close",
+    public static final Mercurial.RegisterableProgram RampBlueClose = buildAuto(
+            "Ramp - Blue Close",
             Constants.Field.StartPose.BLUE_CLOSE,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,

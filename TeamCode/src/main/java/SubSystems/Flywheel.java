@@ -64,6 +64,7 @@ public class Flywheel {
         if (!enabled) return;
         if (fly1 == null || fly2 == null) return;
 
+        // TODO: UPDATE RPS
         double desiredRps = 80;
 //        double desiredRps = getTargetRps();
         double tps = rpsToTicksPerSecond(desiredRps);
@@ -94,7 +95,6 @@ public class Flywheel {
         return (getRps1() + getRps2()) / 2.0;
     }
 
-    // TODO: CREATE EQUATION FOR VARIABLE RPS
     public double getTargetRps() {
         // 1) Compute Distance
         double robotX = Drive.INSTANCE.getX();
@@ -123,5 +123,13 @@ public class Flywheel {
     public boolean isReady() {
         double desired = getTargetRps();
         return Math.abs(getAverageRps() - desired) < 0.5;
+    }
+
+    public void toggle() {
+        if (enabled) {
+            stop();
+        } else {
+            enableAutoRange();
+        }
     }
 }

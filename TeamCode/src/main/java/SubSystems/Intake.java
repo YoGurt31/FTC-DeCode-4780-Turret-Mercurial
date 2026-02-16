@@ -46,6 +46,16 @@ public class Intake {
         this.mode = newMode == null ? Mode.IDLE : newMode;
     }
 
+    public void toggle() {
+        if (roller == null) return;
+
+        if (mode == Mode.INTAKE) {
+            setMode(Mode.IDLE);
+        } else {
+            setMode(Mode.INTAKE);
+        }
+    }
+
     public Mode getMode() {
         return mode;
     }

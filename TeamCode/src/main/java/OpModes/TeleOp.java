@@ -4,6 +4,7 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.exec;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
+
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
 import SubSystems.DefaultTelemetry;
@@ -36,6 +37,9 @@ public final class TeleOp {
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
+            final boolean[] lbHeldPrev = { false };
+            final Intake.Mode[] intakeModeBeforeLb = { Intake.Mode.IDLE };
+
             // Main Loop
             linsane.schedule(sequence(
                     waitUntil(linsane::inLoop),
@@ -44,14 +48,18 @@ public final class TeleOp {
                         Drive.INSTANCE.updateOdometry();
                         Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
 
-                        // Intake
-                        if (linsane.gamepad1().right_bumper) {
-                            Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
-                        } else if (linsane.gamepad1().left_bumper) {
+                        boolean lbHeld = linsane.gamepad1().left_bumper;
+                        if (lbHeld) {
+                            if (!lbHeldPrev[0]) {
+                                intakeModeBeforeLb[0] = Intake.INSTANCE.getMode();
+                            }
                             Intake.INSTANCE.setMode(Intake.Mode.EJECT);
                         } else {
-                            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                            if (lbHeldPrev[0]) {
+                                Intake.INSTANCE.setMode(intakeModeBeforeLb[0]);
+                            }
                         }
+                        lbHeldPrev[0] = lbHeld;
 
                         // Drive
                         double driveCmd = -linsane.gamepad1().left_stick_y;
@@ -80,14 +88,6 @@ public final class TeleOp {
 
                         Drive.INSTANCE.drive(driveCmd, turnCmd);
 
-                        // Flywheel
-                        if (linsane.gamepad1().right_trigger > 0.05) {
-                            Flywheel.INSTANCE.enableAutoRange();
-                            Flywheel.INSTANCE.apply();
-                        } else {
-                            Flywheel.INSTANCE.stop();
-                        }
-
                         Intake.INSTANCE.apply();
                         Flywheel.INSTANCE.apply();
                         Elevator.INSTANCE.updateRise();
@@ -99,6 +99,16 @@ public final class TeleOp {
                         }
                     }))
             ));
+
+            // Intake
+            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().right_bumper),
+                    exec(Intake.INSTANCE::toggle)
+            );
+
+            // Flywheel
+            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().right_trigger > 0.25),
+                    exec(Flywheel.INSTANCE::toggle)
+            );
 
             // Release
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().a),

@@ -181,31 +181,48 @@ public final class Constants {
         public static boolean inShootZone(double x, double y) {
             int buffer = 6;
 
+            // Allowed Zones
             // Triangle 1: (-72, 24), (-48, 0), (-72, -24)
             boolean zone1 = inTriangle(
                     x, y,
-                    -72 - buffer,24 + buffer,
-                    -48 + buffer,0,
-                    -72 - buffer,-24 - buffer
+                    -72 - buffer,  24 + buffer,
+                    -48 + buffer,   0,
+                    -72 - buffer, -24 - buffer
             );
 
             // Triangle 2: (72, 72), (0, 0), (72, -72)
             boolean zone2 = inTriangle(
                     x, y,
-                    72 + buffer,72 + buffer,
-                    0 - buffer,0,
-                    72 + buffer,-72 - buffer
+                     72 + buffer,  72 + buffer,
+                      0 - buffer,   0,
+                     72 + buffer, -72 - buffer
             );
 
-            return zone1 || zone2;
+            boolean inAllowed = zone1 || zone2;
+
+            // Negated Zones
+            // Triangle A: (24, 72), (72, 72), (72, 24)
+            boolean zoneA = inTriangle(
+                    x, y,
+                     24 - buffer,  72 + buffer,
+                     72 + buffer,  72 + buffer,
+                     72 + buffer,  24 - buffer
+            );
+
+            // Triangle B: (24, -72), (72, -72), (72, -24)
+            boolean zoneB = inTriangle(
+                    x, y,
+                     24 - buffer, -72 - buffer,
+                     72 + buffer, -72 - buffer,
+                     72 + buffer, -24 + buffer
+            );
+
+            boolean inNoShoot = zoneA || zoneB;
+
+            return inAllowed && !inNoShoot;
         }
 
-        private static boolean inTriangle(
-                double px, double py,
-                double x1, double y1,
-                double x2, double y2,
-                double x3, double y3
-        ) {
+        private static boolean inTriangle(double px, double py, double x1, double y1, double x2, double y2, double x3, double y3) {
             double d1 = sign(px, py, x1, y1, x2, y2);
             double d2 = sign(px, py, x2, y2, x3, y3);
             double d3 = sign(px, py, x3, y3, x1, y1);

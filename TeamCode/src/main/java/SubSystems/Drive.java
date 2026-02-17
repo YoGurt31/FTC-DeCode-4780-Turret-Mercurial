@@ -1,16 +1,19 @@
 package SubSystems;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import Util.Constants;
 
@@ -23,8 +26,18 @@ public class Drive {
     private DcMotorEx frontLeft, frontRight, backLeft, backRight;
 
     private GoBildaPinpointDriver pinpoint;
-    private boolean resetPinPointOnInit = true;
 
+    private IMU imu;
+
+    private boolean antiTipEnabled = true;
+
+    // TODO: TUNE THESE VALUES
+    private static final double TIP_DEADBAND_DEG = 1.5;
+    private static final double TIP_KP = 0.03;
+    private static final double TIP_MAX = 0.25;
+
+
+    private boolean resetPinPointOnInit = true;
     public void setResetPinPointOnInit(boolean enabled) {
         resetPinPointOnInit = enabled;
     }
@@ -34,11 +47,37 @@ public class Drive {
         try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, xIn, yIn, AngleUnit.DEGREES, headingDeg)); } catch (Exception ignored) { }
     }
 
+    public void setAntiTipEnabled(boolean enabled) {
+        antiTipEnabled = enabled;
+    }
+
+    public boolean isAntiTipEnabled() {
+        return antiTipEnabled;
+    }
+
+    private double antiTipCorrection(double pitchDeg) {
+        if (!antiTipEnabled) return 0.0;
+        if (Math.abs(pitchDeg) <= TIP_DEADBAND_DEG) return 0.0;
+
+        double cmd = pitchDeg * TIP_KP;
+        return Range.clip(cmd, -TIP_MAX, TIP_MAX);
+    }
+
+
     @SuppressWarnings("unused")
     private Telemetry telemetry;
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
+
+        try {
+            imu = hw.get(IMU.class, "imu");
+            RevHubOrientationOnRobot orientation = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+            imu.initialize(new IMU.Parameters(orientation));
+            imu.resetYaw();
+        } catch (Exception ignored) {
+            imu = null;
+        }
 
         frontLeft = hw.get(DcMotorEx.class, Constants.Drive.frontLeft);
         frontRight = hw.get(DcMotorEx.class, Constants.Drive.frontRight);
@@ -92,6 +131,9 @@ public class Drive {
         double drive = driveInput;
         double turn = -turnInput;
 
+        double pitchDeg = getPitchDeg();
+        drive = Range.clip(drive + antiTipCorrection(pitchDeg), -1.0, 1.0);
+
         if (Math.abs(drive) < 0.05) drive = 0;
         if (Math.abs(turn) < 0.05) turn = 0;
 
@@ -138,5 +180,15 @@ public class Drive {
     public double getHeading() {
         if (pinpoint == null) return 0.0;
         return pinpoint.getPosition().getHeading(AngleUnit.DEGREES);
+    }
+
+    public double getPitchDeg() {
+        if (imu == null) return 0.0;
+        try {
+            YawPitchRollAngles ypr = imu.getRobotYawPitchRollAngles();
+            return ypr.getPitch(AngleUnit.DEGREES);
+        } catch (Exception ignored) {
+            return 0.0;
+        }
     }
 }

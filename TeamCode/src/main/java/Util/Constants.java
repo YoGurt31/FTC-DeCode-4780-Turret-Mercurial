@@ -19,8 +19,8 @@ public final class Constants {
     public static final class PinPoint {
         public static final String PinPoint = "pinpoint";
 
-        public static final boolean X_REVERSED = false;
-        public static final boolean Y_REVERSED = true;
+        public static final boolean X_REVERSED = true;
+        public static final boolean Y_REVERSED = false;
 
         public static final double X_OFFSET_MM = -176;
         public static final double Y_OFFSET_MM = -66;
@@ -66,12 +66,17 @@ public final class Constants {
         public static final double LimitGuard = 0.25;
 
         // TODO: TUNE THESE VALUES
-        public static final double QuickKp = 0.020;
+        public static final double QuickKp = 0.0625;
         public static final double QuickMaxPower = 1.0;
+
+        public static final double QuickMinPower = 0.05;
+        public static final double QuickSlewPerSec = 7.5;
+        public static final double QuickKfTurnRate = 0.0;
+
         public static final double PreciseKp = 0.020;
         public static final double PreciseMaxPower = 0.35;
 
-        public static final double QuickDeadband = 2.5;
+        public static final double QuickDeadband = 5.0;
         public static final double PreciseDeadband = 1.0;
 
         public static final double SwitchDeadband = 15.0;

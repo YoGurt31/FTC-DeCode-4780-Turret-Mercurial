@@ -34,6 +34,7 @@ public final class MultiTuner {
 
     public static final Mercurial.RegisterableProgram TUNER = Mercurial.teleop(linsane -> {
 
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -74,6 +75,9 @@ public final class MultiTuner {
 
         final double[] quickKp = { Constants.Turret.QuickKp };
         final double[] quickMax = { Constants.Turret.QuickMaxPower };
+        final double[] quickMin = { Constants.Turret.QuickMinPower };
+        final double[] quickSlew = { Constants.Turret.QuickSlewPerSec };
+        final double[] quickKf = { Constants.Turret.QuickKfTurnRate};
         final double[] preciseKp = { Constants.Turret.PreciseKp };
         final double[] preciseMax = { Constants.Turret.PreciseMaxPower };
 
@@ -210,15 +214,19 @@ public final class MultiTuner {
                                 Vision.INSTANCE.setTrackedTag(tagId);
                             }
 
-                            if (rising(linsane.gamepad1().left_bumper, prevLB)) turretSel[0] = (turretSel[0] + 3) % 4;
-                            if (rising(linsane.gamepad1().right_bumper, prevRB)) turretSel[0] = (turretSel[0] + 1) % 4;
+                            // 7 params total
+                            if (rising(linsane.gamepad1().left_bumper, prevLB)) turretSel[0] = (turretSel[0] + 6) % 7;
+                            if (rising(linsane.gamepad1().right_bumper, prevRB)) turretSel[0] = (turretSel[0] + 1) % 7;
 
                             if (doAdjust) {
                                 switch (turretSel[0]) {
                                     case 0: quickKp[0] = Math.max(0.0, quickKp[0] + dir * step); break;
                                     case 1: quickMax[0] = Range.clip(quickMax[0] + dir * step, 0.0, 1.0); break;
-                                    case 2: preciseKp[0] = Math.max(0.0, preciseKp[0] + dir * step); break;
-                                    case 3: preciseMax[0] = Range.clip(preciseMax[0] + dir * step, 0.0, 1.0); break;
+                                    case 2: quickMin[0] = Range.clip(quickMin[0] + dir * step, 0.0, 1.0); break;
+                                    case 3: quickSlew[0] = Math.max(0.0, quickSlew[0] + dir * step); break;
+                                    case 4: quickKf[0] = Math.max(0.0, quickKf[0] + dir * step); break;
+                                    case 5: preciseKp[0] = Math.max(0.0, preciseKp[0] + dir * step); break;
+                                    case 6: preciseMax[0] = Range.clip(preciseMax[0] + dir * step, 0.0, 1.0); break;
                                 }
                             }
 
@@ -226,7 +234,7 @@ public final class MultiTuner {
                             double robotY = Drive.INSTANCE.getY();
                             double robotHeading = Drive.INSTANCE.getHeading();
                             double goalHeading = Constants.Field.computeGoalHeadingDeg(robotX, robotY, alliance[0]);
-                            boolean atTarget = Turret.INSTANCE.autoAimTurretTunable(robotHeading, goalHeading, quickKp[0], quickMax[0], preciseKp[0], preciseMax[0], turretPrecise[0]);
+                            boolean atTarget = Turret.INSTANCE.autoAimTurretTunable(robotHeading, goalHeading, quickKp[0], quickMax[0], quickMin[0], quickSlew[0], quickKf[0], preciseKp[0], preciseMax[0], turretPrecise[0]);
 
                             double turretDeg = Turret.INSTANCE.getTurretDeg();
                             double desiredTurretDeg = Turret.INSTANCE.getTargetDeg();
@@ -242,10 +250,21 @@ public final class MultiTuner {
                             linsane.telemetry().addData("Mode", turretPrecise[0] ? "PRECISE (Cam)" : "QUICK (PinPoint)");
                             linsane.telemetry().addData("AtTarget", atTarget);
                             linsane.telemetry().addData("Step", step);
-                            String sel = new String[]{"QuickKp","QuickMax","PreciseKp","PreciseMax"}[turretSel[0]];
+                            String sel = new String[]{
+                                    "QuickKp",
+                                    "QuickMax",
+                                    "QuickMinPower",
+                                    "QuickSlewPerSec",
+                                    "QuickKffTurnRate",
+                                    "PreciseKp",
+                                    "PreciseMax"
+                            }[turretSel[0]];
                             linsane.telemetry().addData("Selected", sel);
                             linsane.telemetry().addData("QuickKp", "%6.4f", quickKp[0]);
                             linsane.telemetry().addData("QuickMax", "%5.2f", quickMax[0]);
+                            linsane.telemetry().addData("QuickMin", "%5.2f", quickMin[0]);
+                            linsane.telemetry().addData("QuickSlew", "%6.3f", quickSlew[0]);
+                            linsane.telemetry().addData("QuickKff", "%6.4f", quickKf[0]);
                             linsane.telemetry().addData("PreciseKp", "%6.4f", preciseKp[0]);
                             linsane.telemetry().addData("PreciseMax", "%5.2f", preciseMax[0]);
                             linsane.telemetry().addData("Robot (X,Y,H)", "(%5.1f,%5.1f,%5.1f)", robotX, robotY, robotHeading);
@@ -259,6 +278,9 @@ public final class MultiTuner {
                             linsane.telemetry().addLine("Copy into Constants.Turret & Send to Gurt:");
                             linsane.telemetry().addData("QuickKp", "%6.4f", quickKp[0]);
                             linsane.telemetry().addData("QuickMax", "%5.2f", quickMax[0]);
+                            linsane.telemetry().addData("QuickMinPower", "%5.2f", quickMin[0]);
+                            linsane.telemetry().addData("QuickSlewPerSec", "%6.3f", quickSlew[0]);
+                            linsane.telemetry().addData("QuickKffTurnRate", "%6.4f", quickKf[0]);
                             linsane.telemetry().addData("PreciseKp", "%6.4f", preciseKp[0]);
                             linsane.telemetry().addData("PreciseMax", "%5.2f", preciseMax[0]);
                             break;

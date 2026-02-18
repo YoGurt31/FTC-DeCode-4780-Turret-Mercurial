@@ -34,6 +34,10 @@ public class Turret {
     private double turretTargetDeg = 0.0;
     private double turretErrDeg = 0.0;
 
+    private double lastQuickCmd = 0.0;
+    private double lastRobotHeadingDeg = 0.0;
+    private double lastRobotHeadingTimeS = 0.0;
+
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
         turretRotation = hw.get(DcMotorEx.class, Constants.Turret.turretRotation);
@@ -47,6 +51,10 @@ public class Turret {
         turretTargetDeg = 0.0;
         turretErrDeg = 0.0;
         turretZeroOffsetTicks = turretRotation.getCurrentPosition();
+
+        lastQuickCmd = 0.0;
+        lastRobotHeadingDeg = 0.0;
+        lastRobotHeadingTimeS = 0.0;
     }
 
     public void zeroTurret() {
@@ -62,6 +70,58 @@ public class Turret {
         while (deg > 180.0) deg -= 360.0;
         while (deg <= -180.0) deg += 360.0;
         return deg;
+    }
+
+    private double computeRobotHeadingRateDegPerSec(double robotHeadingDeg, double nowS) {
+        if (lastRobotHeadingTimeS <= 0.0) {
+            lastRobotHeadingTimeS = nowS;
+            lastRobotHeadingDeg = robotHeadingDeg;
+            return 0.0;
+        }
+
+        double dt = nowS - lastRobotHeadingTimeS;
+        if (dt <= 1e-6) return 0.0;
+
+        double dHeading = wrapDeg(robotHeadingDeg - lastRobotHeadingDeg);
+        lastRobotHeadingDeg = robotHeadingDeg;
+        lastRobotHeadingTimeS = nowS;
+
+        return dHeading / dt;
+    }
+
+    private double shapeQuickCmd(double requestedCmd, double maxPower, double nowS) {
+        double cmd = Range.clip(requestedCmd, -maxPower, maxPower);
+        if (Math.abs(cmd) < Constants.Turret.QuickMinPower) cmd = 0.0;
+        if (Constants.Turret.QuickSlewPerSec > 0.0) {
+            double dt = (lastRobotHeadingTimeS > 0.0) ? (nowS - lastRobotHeadingTimeS) : 0.0;
+            if (dt <= 1e-6) dt = 0.02;
+            double maxDelta = Constants.Turret.QuickSlewPerSec * dt;
+            double delta = cmd - lastQuickCmd;
+            if (delta > maxDelta) cmd = lastQuickCmd + maxDelta;
+            else if (delta < -maxDelta) cmd = lastQuickCmd - maxDelta;
+        }
+        lastQuickCmd = cmd;
+        return cmd;
+    }
+
+    private double shapeQuickCmd(double requestedCmd, double maxPower, double nowS, double minPower, double slewPerSec) {
+        double cmd = Range.clip(requestedCmd, -maxPower, maxPower);
+
+        if (Math.abs(cmd) < minPower) cmd = 0.0;
+
+        if (slewPerSec > 0.0) {
+            double dt = (lastRobotHeadingTimeS > 0.0) ? (nowS - lastRobotHeadingTimeS) : 0.0;
+            if (dt <= 1e-6) dt = 0.02;
+
+            double maxDelta = slewPerSec * dt;
+            double delta = cmd - lastQuickCmd;
+
+            if (delta > maxDelta) cmd = lastQuickCmd + maxDelta;
+            else if (delta < -maxDelta) cmd = lastQuickCmd - maxDelta;
+        }
+
+        lastQuickCmd = cmd;
+        return cmd;
     }
 
     public String getAimModeName() {
@@ -168,15 +228,23 @@ public class Turret {
 
         if (Math.abs(errDeg) <= Constants.Turret.QuickDeadband) {
             stopTurret();
+            lastQuickCmd = 0.0;
             return false;
         }
-        double cmd = Range.clip(errDeg * Constants.Turret.QuickKp, -Constants.Turret.QuickMaxPower, Constants.Turret.QuickMaxPower);
+
+        double robotHeadingRate = computeRobotHeadingRateDegPerSec(robotHeadingDeg, nowS);
+        double kF = -Constants.Turret.QuickKfTurnRate * robotHeadingRate;
+
+        double requested = (errDeg * Constants.Turret.QuickKp) + kF;
+        double cmd = shapeQuickCmd(requested, Constants.Turret.QuickMaxPower, nowS);
         cmd = applyTurretLimitsToPower(cmd);
-        setTurretPower(cmd);
+
+        if (Math.abs(cmd) < 1e-6) stopTurret();
+        else setTurretPower(cmd);
         return false;
     }
 
-    public boolean autoAimTurretTunable(double robotHeadingDeg, double goalHeadingDeg, double quickKp, double quickMaxPower, double preciseKp, double preciseMaxPower, boolean forcePrecise) {
+    public boolean autoAimTurretTunable(double robotHeadingDeg, double goalHeadingDeg, double quickKp, double quickMaxPower, double quickMinPower, double quickSlewPerSec, double quickKfTurnRate, double preciseKp, double preciseMaxPower, boolean forcePrecise) {
         if (turretRotation == null) return false;
 
         double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
@@ -189,6 +257,7 @@ public class Turret {
         if (forcePrecise) {
             if (!Vision.INSTANCE.hasTrackedTag()) {
                 stopTurret();
+                lastQuickCmd = 0.0;
                 return false;
             }
 
@@ -196,6 +265,7 @@ public class Turret {
 
             if (Math.abs(yaw) <= Constants.Turret.PreciseDeadband) {
                 stopTurret();
+                lastQuickCmd = 0.0;
                 return true;
             }
 
@@ -207,12 +277,20 @@ public class Turret {
 
         if (Math.abs(errDeg) <= Constants.Turret.QuickDeadband) {
             stopTurret();
-            return true;
+            lastQuickCmd = 0.0;
+            return false;
         }
 
-        double cmd = Range.clip(errDeg * quickKp, -quickMaxPower, quickMaxPower);
+        double nowS = turretAimTimer.seconds();
+        double robotHeadingRate = computeRobotHeadingRateDegPerSec(robotHeadingDeg, nowS);
+        double kF = -quickKfTurnRate * robotHeadingRate;
+
+        double requested = (errDeg * quickKp) + kF;
+        double cmd = shapeQuickCmd(requested, quickMaxPower, nowS, quickMinPower, quickSlewPerSec);
         cmd = applyTurretLimitsToPower(cmd);
-        setTurretPower(cmd);
+
+        if (Math.abs(cmd) < 1e-6) stopTurret();
+        else setTurretPower(cmd);
         return false;
     }
 }

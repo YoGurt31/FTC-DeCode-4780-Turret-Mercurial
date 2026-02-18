@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import SubSystems.Drive;
 import SubSystems.Flywheel;
+import SubSystems.Intake;
 import SubSystems.Turret;
 import SubSystems.Vision;
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
@@ -48,6 +49,7 @@ public final class MultiTuner {
         fly2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
         final Mode[] mode = { Mode.FLYWHEEL };
 
@@ -100,6 +102,14 @@ public final class MultiTuner {
                     if (rising(linsane.gamepad1().dpad_right, prevDR)) stepIdx[0] = Math.min(steps.length - 1, stepIdx[0] + 1);
                     double step = steps[stepIdx[0]];
 
+                    if (linsane.gamepad1().right_trigger > 0.05) {
+                        Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                    } else if (linsane.gamepad1().left_trigger > 0.05) {
+                        Intake.INSTANCE.setMode(Intake.Mode.EJECT);
+                    } else {
+                        Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    }
+
                     double driveCmd = -linsane.gamepad1().left_stick_y;
                     double manualTurn = linsane.gamepad1().right_stick_x;
 
@@ -115,6 +125,7 @@ public final class MultiTuner {
                         }
                     }
                     Drive.INSTANCE.drive(driveCmd, turnCmd);
+                    Intake.INSTANCE.apply();
 
                     long now = System.currentTimeMillis();
                     boolean doAdjust = false;

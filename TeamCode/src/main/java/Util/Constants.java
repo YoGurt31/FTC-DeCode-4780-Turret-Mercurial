@@ -92,9 +92,8 @@ public final class Constants {
         public static final double MIN_RPS = 30.0;
         public static final double MAX_RPS = 100.0;
 
-        // TODO: TUNE THESE VALUES
-        public static final double F = 0.0;
-        public static final double P = 0.0;
+        public static final double F = 12.5;
+        public static final double P = 30.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
     }

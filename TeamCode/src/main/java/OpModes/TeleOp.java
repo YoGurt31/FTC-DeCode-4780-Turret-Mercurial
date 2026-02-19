@@ -49,8 +49,8 @@ public final class TeleOp {
                         Drive.INSTANCE.updateOdometry();
 
                         // Turret - Change Comment Order If autoAimTurret Works
-                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
-//                        Turret.INSTANCE.lockTurret();
+//                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+                        Turret.INSTANCE.lockTurret();
 
                         // Intake
                         if (linsane.gamepad1().left_bumper) {
@@ -68,12 +68,12 @@ public final class TeleOp {
                             Flywheel.INSTANCE.setVelocityRps(Constants.Flywheel.MIN_RPS);
                         }
 
-                        // Release
-                        if ((Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) && (Flywheel.INSTANCE.isReady())) {
-                            Release.INSTANCE.open();
-                        } else {
-                            Release.INSTANCE.close();
-                        }
+//                        // Release
+//                        if ((Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) && (Flywheel.INSTANCE.isReady())) {
+//                            Release.INSTANCE.open();
+//                        } else {
+//                            Release.INSTANCE.close();
+//                        }
 
                         // Drive
                         double driveCmd = -linsane.gamepad1().left_stick_y;
@@ -110,6 +110,11 @@ public final class TeleOp {
                         }
                     }))
             ));
+
+            // Release
+            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().b),
+                    exec(Release.INSTANCE::toggle)
+            );
 
             // Elevator
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share),

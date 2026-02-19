@@ -49,8 +49,8 @@ public final class TeleOp {
                         Drive.INSTANCE.updateOdometry();
 
                         // Turret - Change Comment Order If autoAimTurret Works
-//                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
-                        Turret.INSTANCE.lockTurret();
+                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+//                        Turret.INSTANCE.lockTurret();
 
                         // Intake
                         if (linsane.gamepad1().left_bumper) {
@@ -65,7 +65,7 @@ public final class TeleOp {
                         if (linsane.gamepad1().right_trigger > 0.05) {
                             Flywheel.INSTANCE.setVelocityRps(farShot[0] ? farRps : closeRps);
                         } else {
-                            Flywheel.INSTANCE.stop();
+                            Flywheel.INSTANCE.setVelocityRps(Constants.Flywheel.MIN_RPS);
                         }
 
                         // Release
@@ -78,9 +78,8 @@ public final class TeleOp {
                         // Drive
                         double driveCmd = -linsane.gamepad1().left_stick_y;
                         double turnCmd;
-                        boolean intakeActive = (Intake.INSTANCE.getMode() == Intake.Mode.INTAKE);
 
-                        if (intakeActive) {
+                        if (Intake.INSTANCE.getMode() == Intake.Mode.INTAKE) {
                             if (Vision.INSTANCE.hasArtifact()) {
                                 double tx = Vision.INSTANCE.getTX();
                                 if (Math.abs(tx) <= Constants.Drive.ARTIFACT_AIM_DEADBAND_DEG) {

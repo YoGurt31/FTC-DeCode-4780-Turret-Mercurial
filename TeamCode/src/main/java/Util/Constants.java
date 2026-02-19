@@ -124,9 +124,9 @@ public final class Constants {
     }
 
     public static final class Field {
-        public static final double GOAL_X = 60.0;
-        public static final double RED_GOAL_Y = -60.0;
-        public static final double BLUE_GOAL_Y = 60.0;
+        public static final double GOAL_X = 66.0;
+        public static final double RED_GOAL_Y = -66.0;
+        public static final double BLUE_GOAL_Y = 66.0;
 
         public static final double RED_CLOSE_X = 60.0;
         public static final double BLUE_CLOSE_X = 60.0;

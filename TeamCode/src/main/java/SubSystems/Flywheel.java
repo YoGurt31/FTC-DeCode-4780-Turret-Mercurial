@@ -21,6 +21,7 @@ public class Flywheel {
 
     private boolean enabled = false;
     private boolean autoRange = true;
+    private double manualTargetRps = 0.0;
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
@@ -54,8 +55,15 @@ public class Flywheel {
         enabled = true;
     }
 
+    public void setVelocityRps(double rps) {
+        enabled = true;
+        autoRange = false;
+        manualTargetRps = rps;
+    }
+
     public void stop() {
         enabled = false;
+        manualTargetRps = 0.0;
         if (fly1 != null) fly1.setPower(0);
         if (fly2 != null) fly2.setPower(0);
     }
@@ -64,9 +72,8 @@ public class Flywheel {
         if (!enabled) return;
         if (fly1 == null || fly2 == null) return;
 
-        // TODO: UPDATE RPS
-        double desiredRps = 67;
-//        double desiredRps = getTargetRps();
+        double desiredRps = autoRange ? getTargetRps() : manualTargetRps;
+        desiredRps = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, desiredRps));
         double tps = rpsToTicksPerSecond(desiredRps);
 
         fly1.setVelocity(tps);
@@ -95,6 +102,7 @@ public class Flywheel {
         return (getRps1() + getRps2()) / 2.0;
     }
 
+    // TODO: GET THIS DONE
     public double getTargetRps() {
         // 1) Compute Distance
         double robotX = Drive.INSTANCE.getX();

@@ -37,6 +37,10 @@ public final class TeleOp {
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
+            final boolean[] farShot = { false };
+            final double closeRps = 67.0;
+            final double farRps = 76.0;
+
             // Main Loop
             linsane.schedule(sequence(
                     waitUntil(linsane::inLoop),
@@ -59,7 +63,7 @@ public final class TeleOp {
 
                         // Flywheel
                         if (linsane.gamepad1().right_trigger > 0.05) {
-                            Flywheel.INSTANCE.enableAutoRange();
+                            Flywheel.INSTANCE.setVelocityRps(farShot[0] ? farRps : closeRps);
                         } else {
                             Flywheel.INSTANCE.stop();
                         }
@@ -114,6 +118,11 @@ public final class TeleOp {
             );
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().dpad_up),
                     exec(Elevator.INSTANCE::startRise)
+            );
+
+            // RPS Switch
+            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().x),
+                    exec(() -> farShot[0] = !farShot[0])
             );
 
             // Shut Off

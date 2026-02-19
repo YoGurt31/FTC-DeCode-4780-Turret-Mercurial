@@ -38,6 +38,10 @@ public class Turret {
     private double lastRobotHeadingDeg = 0.0;
     private double lastRobotHeadingTimeS = 0.0;
 
+    private static final double FORWARD_LOCK_DEADBAND_DEG = 0.5;
+    private static final double FORWARD_LOCK_KP = 0.03;
+    private static final double FORWARD_LOCK_MAX_POWER = 0.80;
+
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
         turretRotation = hw.get(DcMotorEx.class, Constants.Turret.turretRotation);
@@ -190,6 +194,28 @@ public class Turret {
     public void stopTurret() {
         if (turretRotation == null) return;
         turretRotation.setPower(0.0);
+    }
+
+    public boolean lockTurret() {
+        if (turretRotation == null) return false;
+
+        double errDeg = -getTurretDeg();
+        turretTargetDeg = 0.0;
+        turretErrDeg = errDeg;
+        lastQuickCmd = 0.0;
+
+        if (Math.abs(errDeg) <= FORWARD_LOCK_DEADBAND_DEG) {
+            stopTurret();
+            return true;
+        }
+
+        double cmd = Range.clip(errDeg * FORWARD_LOCK_KP, -FORWARD_LOCK_MAX_POWER, FORWARD_LOCK_MAX_POWER);
+        cmd = applyTurretLimitsToPower(cmd);
+
+        if (Math.abs(cmd) < 1e-6) stopTurret();
+        else setTurretPower(cmd);
+
+        return false;
     }
 
     public boolean autoAimTurret(double robotHeadingDeg, double goalHeadingDeg) {

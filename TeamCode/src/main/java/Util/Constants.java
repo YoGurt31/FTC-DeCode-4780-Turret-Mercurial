@@ -94,7 +94,7 @@ public final class Constants {
         public static final double B = 0.0;
         public static final double C = 0.0;
 
-        public static final double MIN_RPS = 30.0;
+        public static final double MIN_RPS = 50.0;
         public static final double MAX_RPS = 100.0;
 
         public static final double F = 12.5;

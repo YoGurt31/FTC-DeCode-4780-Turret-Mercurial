@@ -65,7 +65,7 @@ public class Flywheel {
         if (fly1 == null || fly2 == null) return;
 
         // TODO: UPDATE RPS
-        double desiredRps = 80;
+        double desiredRps = 67;
 //        double desiredRps = getTargetRps();
         double tps = rpsToTicksPerSecond(desiredRps);
 
@@ -122,14 +122,6 @@ public class Flywheel {
 
     public boolean isReady() {
         double desired = getTargetRps();
-        return Math.abs(getAverageRps() - desired) < 0.5;
-    }
-
-    public void toggle() {
-        if (enabled) {
-            stop();
-        } else {
-            enableAutoRange();
-        }
+        return Math.abs(getAverageRps() - desired) < 1;
     }
 }

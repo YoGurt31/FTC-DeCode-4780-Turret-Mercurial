@@ -120,12 +120,14 @@ public class Flywheel {
             distance = 0.75 * distanceViaTurretCam + 0.25 * distanceViaPinPoint;
         }
 
-        // 3) Sqrt Model
-        double rps = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
+        // 3-1) Linear Model
+        double linearRPS = (Constants.Flywheel.M * distance) + Constants.Flywheel.R;
+
+        // 3-2) Sqrt Model
+        double sqrtRPS = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
 
         // 4) Safety Clamp
-        rps = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, rps));
-        return rps;
+        return Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, linearRPS));
     }
 
     public boolean isReady() {

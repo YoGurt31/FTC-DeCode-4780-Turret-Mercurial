@@ -93,6 +93,8 @@ public final class Constants {
         public static final double A = 0.0;
         public static final double B = 0.0;
         public static final double C = 0.0;
+        public static final double M = 0.0;
+        public static final double R = 0.0;
 
         public static final double MIN_RPS = 50.0;
         public static final double MAX_RPS = 100.0;

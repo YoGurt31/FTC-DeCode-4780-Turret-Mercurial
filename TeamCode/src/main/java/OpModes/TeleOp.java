@@ -48,7 +48,7 @@ public final class TeleOp {
                         Vision.INSTANCE.update();
                         Drive.INSTANCE.updateOdometry();
 
-                        // Turret - Change Comment Order If autoAimTurret Works
+                        // Turret - Change Comment Order If autoAimTurret Works TODO: FIX
 //                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
                         Turret.INSTANCE.lockTurret();
 
@@ -65,15 +65,21 @@ public final class TeleOp {
                         if (linsane.gamepad1().right_trigger > 0.05) {
                             Flywheel.INSTANCE.setVelocityRps(farShot[0] ? farRps : closeRps);
                         } else {
-                            Flywheel.INSTANCE.setVelocityRps(Constants.Flywheel.MIN_RPS);
+                            Flywheel.INSTANCE.stop();
                         }
 
-//                        // Release
+                        // Release TODO: Fix Release
 //                        if ((Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) && (Flywheel.INSTANCE.isReady())) {
 //                            Release.INSTANCE.open();
 //                        } else {
 //                            Release.INSTANCE.close();
 //                        }
+
+                        if (linsane.gamepad1().b) {
+                            Release.INSTANCE.open();
+                        } else {
+                            Release.INSTANCE.close();
+                        }
 
                         // Drive
                         double driveCmd = -linsane.gamepad1().left_stick_y;
@@ -113,11 +119,6 @@ public final class TeleOp {
                     }))
             ));
 
-            // Release
-            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().b),
-                    exec(Release.INSTANCE::toggle)
-            );
-
             // Elevator
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share),
                     exec(Elevator.INSTANCE::applyPreset)
@@ -126,7 +127,7 @@ public final class TeleOp {
                     exec(Elevator.INSTANCE::startRise)
             );
 
-            // RPS Switch
+            // RPS Switch TODO: Remove
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().x),
                     exec(() -> farShot[0] = !farShot[0])
             );

@@ -102,7 +102,7 @@ public class Flywheel {
         return (getRps1() + getRps2()) / 2.0;
     }
 
-    // TODO: GET THIS DONE
+    // TODO: FINALIZE DynamicRPS EQUATION
     public double getTargetRps() {
         // 1) Compute Distance
         double robotX = Drive.INSTANCE.getX();

@@ -48,7 +48,7 @@ public final class TeleOp {
                         Vision.INSTANCE.update();
                         Drive.INSTANCE.updateOdometry();
 
-                        // Turret - Change Comment Order If autoAimTurret Works TODO: FIX
+                        // Turret - Change Comment Order If autoAimTurret Works FIXME
 //                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
                         Turret.INSTANCE.lockTurret();
 
@@ -68,7 +68,7 @@ public final class TeleOp {
                             Flywheel.INSTANCE.stop();
                         }
 
-                        // Release TODO: Fix Release
+                        // Release FIXME
 //                        if ((Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) && (Flywheel.INSTANCE.isReady())) {
 //                            Release.INSTANCE.open();
 //                        } else {
@@ -127,7 +127,7 @@ public final class TeleOp {
                     exec(Elevator.INSTANCE::startRise)
             );
 
-            // RPS Switch TODO: Remove
+            // RPS Switch FIXME
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().x),
                     exec(() -> farShot[0] = !farShot[0])
             );

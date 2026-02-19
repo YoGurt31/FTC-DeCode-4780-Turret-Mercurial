@@ -64,9 +64,8 @@ public class Vision {
     // TurretCam (AprilTag)
     private void initTurretCam(HardwareMap hw) {
         WebcamName turretCam = hw.get(WebcamName.class, Constants.Vision.TURRET_CAM_NAME);
-        // TODO: SET INTRINSICS
         aprilTag = new AprilTagProcessor.Builder()
-                .setLensIntrinsics(518.26, 518.26, (float)((Constants.Vision.RESOLUTION_WIDTH - 1) / 2), (float)((Constants.Vision.RESOLUTION_HEIGHT - 1) / 2))
+                .setLensIntrinsics(Constants.Vision.INTRINSIC_FX, Constants.Vision.INTRINSIC_FY, (float)((Constants.Vision.RESOLUTION_WIDTH - 1) / 2), (float)((Constants.Vision.RESOLUTION_HEIGHT - 1) / 2))
                 .build();
         turretPortal = new VisionPortal.Builder()
                 .setCamera(turretCam)

@@ -123,6 +123,8 @@ public final class Constants {
 
         // TODO: GET VALUES
         public static final String TURRET_CAM_NAME = "TurretCam";
+        public static final double INTRINSIC_FX = 518.26;
+        public static final double INTRINSIC_FY = 518.26;
         public static final int RESOLUTION_WIDTH = 1280;
         public static final int RESOLUTION_HEIGHT = 720;
         public static final int TURRET_EXPOSURE_MS = 0;

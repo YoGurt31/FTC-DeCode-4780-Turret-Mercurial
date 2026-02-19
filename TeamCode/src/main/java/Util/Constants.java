@@ -14,6 +14,10 @@ public final class Constants {
         public static final double ROTATE_GAIN = 0.0350;
         public static final double MAX_ROTATE = 0.80;
         public static final double ARTIFACT_AIM_DEADBAND_DEG = 2.5;
+
+        public static final double TIP_DEADBAND_DEG = 1.5;
+        public static final double TIP_KP = 0.035;
+        public static final double TIP_MAX = 0.25;
     }
 
     public static final class PinPoint {
@@ -117,9 +121,12 @@ public final class Constants {
         public static final int DEFAULT_PIPELINE = 0;
         public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
 
+        // TODO: GET VALUES
         public static final String TURRET_CAM_NAME = "TurretCam";
         public static final int RESOLUTION_WIDTH = 1280;
         public static final int RESOLUTION_HEIGHT = 720;
+        public static final int TURRET_EXPOSURE_MS = 0;
+        public static final int TURRET_GAIN = 0;
 
         public static final int BLUE_TAG_ID = 20;
         public static final int RED_TAG_ID = 24;

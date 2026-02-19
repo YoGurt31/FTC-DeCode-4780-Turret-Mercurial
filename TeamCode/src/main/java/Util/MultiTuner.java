@@ -20,7 +20,7 @@ import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 @SuppressWarnings("unused")
 public final class MultiTuner {
 
-    private enum Mode { FLYWHEEL, TURRET, TRACKING }
+    private enum Mode { FLYWHEEL, TURRET, TRACKING, ANTITIP }
 
     private static boolean rising(boolean now, boolean[] prev) {
         boolean r = now && !prev[0];
@@ -73,6 +73,11 @@ public final class MultiTuner {
         final double[] trackMaxRotate = { Constants.Drive.MAX_ROTATE };
         final int[] trackSel = { 0 };
 
+        final double[] tipKp = { Constants.Drive.TIP_KP };
+        final double[] tipDeadband = { Constants.Drive.TIP_DEADBAND_DEG };
+        final double[] tipMax = { Constants.Drive.TIP_MAX };
+        final int[] tipSel = { 0 };
+
         final double[] quickKp = { Constants.Turret.QuickKp };
         final double[] quickMax = { Constants.Turret.QuickMaxPower };
         final double[] quickMin = { Constants.Turret.QuickMinPower };
@@ -84,7 +89,7 @@ public final class MultiTuner {
         final int[] turretSel = { 0 };
         final boolean[] turretPrecise = { false };
 
-        final boolean[] prevX = { false }, prevA = { false }, prevB = { false };
+        final boolean[] prevModeX = { false }, prevModeY = { false }, prevModeA = { false }, prevModeB = { false };
         final boolean[] prevDL = { false }, prevDR = { false }, prevLB = { false }, prevRB = { false };
         final boolean[] prevY = { false }, prevLS = { false };
 
@@ -98,9 +103,10 @@ public final class MultiTuner {
                     Vision.INSTANCE.update();
                     Drive.INSTANCE.updateOdometry();
 
-                    if (rising(linsane.gamepad1().x, prevX)) mode[0] = Mode.FLYWHEEL;
-                    if (rising(linsane.gamepad1().a, prevA)) mode[0] = Mode.TURRET;
-                    if (rising(linsane.gamepad1().b, prevB)) mode[0] = Mode.TRACKING;
+                    if (rising(linsane.gamepad1().x, prevModeX)) mode[0] = Mode.FLYWHEEL;
+                    if (rising(linsane.gamepad1().a, prevModeA)) mode[0] = Mode.TURRET;
+                    if (rising(linsane.gamepad1().b, prevModeB)) mode[0] = Mode.TRACKING;
+                    if (rising(linsane.gamepad1().y, prevModeY)) mode[0] = Mode.ANTITIP;
 
                     if (rising(linsane.gamepad1().dpad_left, prevDL)) stepIdx[0] = Math.max(0, stepIdx[0] - 1);
                     if (rising(linsane.gamepad1().dpad_right, prevDR)) stepIdx[0] = Math.min(steps.length - 1, stepIdx[0] + 1);
@@ -128,7 +134,33 @@ public final class MultiTuner {
                             turnCmd = manualTurn;
                         }
                     }
-                    Drive.INSTANCE.drive(driveCmd, turnCmd);
+
+                    if (mode[0] == Mode.ANTITIP) {
+                        double pitchDeg = Drive.INSTANCE.getPitchDeg();
+                        double corr = 0.0;
+                        if (Math.abs(pitchDeg) > tipDeadband[0]) {
+                            corr = Range.clip(pitchDeg * tipKp[0], -tipMax[0], tipMax[0]);
+                        }
+                        double drive = Range.clip(driveCmd + corr, -1.0, 1.0);
+                        double turn = -turnCmd;
+
+                        if (Math.abs(drive) < 0.05) drive = 0.0;
+                        if (Math.abs(turn) < 0.05) turn = 0.0;
+
+                        double left = drive + turn;
+                        double right = drive - turn;
+                        double max = Math.max(Math.abs(left), Math.abs(right));
+                        if (max > 1.0) {
+                            left /= max;
+                            right /= max;
+                        }
+
+                        Drive.INSTANCE.setLeftPower(left);
+                        Drive.INSTANCE.setRightPower(right);
+                    } else {
+                        Drive.INSTANCE.drive(driveCmd, turnCmd);
+                    }
+
                     Intake.INSTANCE.apply();
 
                     long now = System.currentTimeMillis();
@@ -308,6 +340,42 @@ public final class MultiTuner {
                             linsane.telemetry().addLine("Copy into Constants.Drive & Send to Gurt:");
                             linsane.telemetry().addData("ROTATE_GAIN", "%6.4f", trackGain[0]);
                             linsane.telemetry().addData("MAX_ROTATE", "%5.2f", trackMaxRotate[0]);
+                            break;
+                        }
+
+                        case ANTITIP: {
+                            if (rising(linsane.gamepad1().left_bumper, prevLB)) tipSel[0] = (tipSel[0] + 2) % 3;
+                            if (rising(linsane.gamepad1().right_bumper, prevRB)) tipSel[0] = (tipSel[0] + 1) % 3;
+
+                            if (doAdjust) {
+                                switch (tipSel[0]) {
+                                    case 0: tipKp[0] = Math.max(0.0, tipKp[0] + dir * step); break;
+                                    case 1: tipDeadband[0] = Math.max(0.0, tipDeadband[0] + dir * step); break;
+                                    case 2: tipMax[0] = Range.clip(tipMax[0] + dir * step, 0.0, 1.0); break;
+                                }
+                            }
+
+                            double pitchDeg = Drive.INSTANCE.getPitchDeg();
+                            double corr = 0.0;
+                            if (Math.abs(pitchDeg) > tipDeadband[0]) {
+                                corr = Range.clip(pitchDeg * tipKp[0], -tipMax[0], tipMax[0]);
+                            }
+
+                            linsane.telemetry().addLine("=== Anti-Tip Tuner (Y) ===");
+                            linsane.telemetry().addLine("LB/RB cycle param | Dpad L/R step | Dpad U/D adjust");
+                            linsane.telemetry().addData("Step", step);
+                            String sel = new String[]{"TIP_KP","TIP_DEADBAND_DEG","TIP_MAX"}[tipSel[0]];
+                            linsane.telemetry().addData("Selected", sel);
+                            linsane.telemetry().addData("PitchDeg", "%6.2f", pitchDeg);
+                            linsane.telemetry().addData("Correction", "%6.3f", corr);
+                            linsane.telemetry().addData("TIP_KP", "%6.4f", tipKp[0]);
+                            linsane.telemetry().addData("TIP_DEADBAND_DEG", "%6.3f", tipDeadband[0]);
+                            linsane.telemetry().addData("TIP_MAX", "%5.2f", tipMax[0]);
+                            linsane.telemetry().addLine();
+                            linsane.telemetry().addLine("Copy into Constants.Drive & Send to Gurt:");
+                            linsane.telemetry().addData("TIP_KP", "%6.4f", tipKp[0]);
+                            linsane.telemetry().addData("TIP_DEADBAND_DEG", "%6.3f", tipDeadband[0]);
+                            linsane.telemetry().addData("TIP_MAX", "%5.2f", tipMax[0]);
                             break;
                         }
                     }

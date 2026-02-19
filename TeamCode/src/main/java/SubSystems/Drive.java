@@ -31,12 +31,6 @@ public class Drive {
 
     private boolean antiTipEnabled = true;
 
-    // TODO: TUNE THESE VALUES
-    private static final double TIP_DEADBAND_DEG = 1.5;
-    private static final double TIP_KP = 0.03;
-    private static final double TIP_MAX = 0.25;
-
-
     private boolean resetPinPointOnInit = true;
     public void setResetPinPointOnInit(boolean enabled) {
         resetPinPointOnInit = enabled;
@@ -57,10 +51,10 @@ public class Drive {
 
     private double antiTipCorrection(double pitchDeg) {
         if (!antiTipEnabled) return 0.0;
-        if (Math.abs(pitchDeg) <= TIP_DEADBAND_DEG) return 0.0;
+        if (Math.abs(pitchDeg) <= Constants.Drive.TIP_DEADBAND_DEG) return 0.0;
 
-        double cmd = pitchDeg * TIP_KP;
-        return Range.clip(cmd, -TIP_MAX, TIP_MAX);
+        double cmd = pitchDeg * Constants.Drive.TIP_KP;
+        return Range.clip(cmd, -Constants.Drive.TIP_MAX, Constants.Drive.TIP_MAX);
     }
 
 
@@ -131,8 +125,7 @@ public class Drive {
         double drive = driveInput;
         double turn = -turnInput;
 
-        double pitchDeg = getPitchDeg();
-        drive = Range.clip(drive + antiTipCorrection(pitchDeg), -1.0, 1.0);
+        drive = Range.clip(drive + antiTipCorrection(getPitchDeg()), -1.0, 1.0);
 
         if (Math.abs(drive) < 0.05) drive = 0;
         if (Math.abs(turn) < 0.05) turn = 0;

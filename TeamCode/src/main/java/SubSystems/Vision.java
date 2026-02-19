@@ -8,6 +8,8 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -16,6 +18,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import Util.Constants;
 
@@ -71,6 +74,35 @@ public class Vision {
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .addProcessor(aprilTag)
                 .build();
+        setTurretCamManualExposure(Constants.Vision.TURRET_EXPOSURE_MS, Constants.Vision.TURRET_GAIN);
+    }
+
+    private void setTurretCamManualExposure(int exposureMs, int gain) {
+        if (turretPortal == null) return;
+
+        if (turretPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            long start = System.currentTimeMillis();
+            while (turretPortal.getCameraState() != VisionPortal.CameraState.STREAMING
+                    && (System.currentTimeMillis() - start) < 1000) {
+                try { Thread.sleep(20); } catch (InterruptedException ignored) {}
+            }
+        }
+
+        if (turretPortal.getCameraState() != VisionPortal.CameraState.STREAMING) return;
+
+        ExposureControl exposure = turretPortal.getCameraControl(ExposureControl.class);
+        if (exposure != null) {
+            if (exposure.getMode() != ExposureControl.Mode.Manual) {
+                exposure.setMode(ExposureControl.Mode.Manual);
+                try { Thread.sleep(50); } catch (InterruptedException ignored) {}
+            }
+            exposure.setExposure(exposureMs, TimeUnit.MILLISECONDS);
+        }
+
+        GainControl gainCtrl = turretPortal.getCameraControl(GainControl.class);
+        if (gainCtrl != null) {
+            gainCtrl.setGain(gain);
+        }
     }
 
     public void update() {

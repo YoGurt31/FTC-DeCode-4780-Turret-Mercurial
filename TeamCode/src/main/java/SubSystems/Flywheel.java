@@ -129,7 +129,7 @@ public class Flywheel {
     }
 
     public boolean isReady() {
-        double desired = getTargetRps();
+        double desired = autoRange ? getTargetRps() : manualTargetRps;
         return Math.abs(getAverageRps() - desired) < 1;
     }
 }

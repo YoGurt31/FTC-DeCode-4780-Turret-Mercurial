@@ -105,6 +105,8 @@ public final class TeleOp {
                         Elevator.INSTANCE.updateRise();
 
                         // Telemetry
+                        linsane.telemetry().addData("Flywheel Range", farShot[0] ? "FAR" : "CLOSE");
+                        linsane.telemetry().addData("Target RPS", farShot[0] ? farRps : closeRps);
                         if (telemetry) {
                             DefaultTelemetry.INSTANCE.update(linsane.telemetry());
                         }

@@ -5,6 +5,7 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
+import SubSystems.Turret;
 import dev.frozenmilk.dairy.mercurial.continuations.Closure;
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
@@ -14,7 +15,7 @@ import SubSystems.Elevator;
 import SubSystems.Flywheel;
 import SubSystems.Intake;
 import SubSystems.Release;
-import SubSystems.Turret;
+//import SubSystems.Turret;
 import SubSystems.Vision;
 import Util.Constants;
 
@@ -23,7 +24,7 @@ public final class Auton {
     private static Mercurial.RegisterableProgram buildAuto(String name, Constants.Field.StartPose startPose, Constants.Field.Alliance alliance, int trackedTagId, Closure auton) {
         return Mercurial.autonomous(name, linsane -> {
 
-            Drive.INSTANCE.setResetPinPointOnInit(true);
+            Drive.INSTANCE.setResetPinPointOnInit(false);
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Drive.INSTANCE.setPose(startPose.startXIn, startPose.startYIn, startPose.startHeadingDeg);
 

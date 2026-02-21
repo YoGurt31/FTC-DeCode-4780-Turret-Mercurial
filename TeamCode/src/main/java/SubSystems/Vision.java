@@ -10,9 +10,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -65,7 +69,8 @@ public class Vision {
     private void initTurretCam(HardwareMap hw) {
         WebcamName turretCam = hw.get(WebcamName.class, Constants.Vision.TURRET_CAM_NAME);
         aprilTag = new AprilTagProcessor.Builder()
-                .setLensIntrinsics(Constants.Vision.INTRINSIC_FX, Constants.Vision.INTRINSIC_FY, (float)((Constants.Vision.RESOLUTION_WIDTH - 1) / 2), (float)((Constants.Vision.RESOLUTION_HEIGHT - 1) / 2))
+                .setLensIntrinsics(Constants.Vision.INTRINSIC_FX, Constants.Vision.INTRINSIC_FY, Constants.Vision.INTRINSIC_CX, Constants.Vision.INTRINSIC_CY)
+                .setCameraPose(new Position(DistanceUnit.INCH, 0, 0, 14, 0), new YawPitchRollAngles(AngleUnit.DEGREES, 0, 15.0, 180.0,0))
                 .build();
         turretPortal = new VisionPortal.Builder()
                 .setCamera(turretCam)
@@ -73,35 +78,6 @@ public class Vision {
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .addProcessor(aprilTag)
                 .build();
-        setTurretCamManualExposure(Constants.Vision.TURRET_EXPOSURE_MS, Constants.Vision.TURRET_GAIN);
-    }
-
-    private void setTurretCamManualExposure(int exposureMs, int gain) {
-        if (turretPortal == null) return;
-
-        if (turretPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            long start = System.currentTimeMillis();
-            while (turretPortal.getCameraState() != VisionPortal.CameraState.STREAMING
-                    && (System.currentTimeMillis() - start) < 1000) {
-                try { Thread.sleep(20); } catch (InterruptedException ignored) {}
-            }
-        }
-
-        if (turretPortal.getCameraState() != VisionPortal.CameraState.STREAMING) return;
-
-        ExposureControl exposure = turretPortal.getCameraControl(ExposureControl.class);
-        if (exposure != null) {
-            if (exposure.getMode() != ExposureControl.Mode.Manual) {
-                exposure.setMode(ExposureControl.Mode.Manual);
-                try { Thread.sleep(50); } catch (InterruptedException ignored) {}
-            }
-            exposure.setExposure(exposureMs, TimeUnit.MILLISECONDS);
-        }
-
-        GainControl gainCtrl = turretPortal.getCameraControl(GainControl.class);
-        if (gainCtrl != null) {
-            gainCtrl.setGain(gain);
-        }
     }
 
     public void update() {
@@ -210,8 +186,23 @@ public class Vision {
         return trackedDetection != null;
     }
 
+    public double getTrackedCenterX() {
+        return trackedDetection == null ? 0.0 : trackedDetection.center.x;
+    }
+
+    public double getTrackedCenterError() {
+        if (trackedDetection == null) return 0.0;
+        return trackedDetection.center.x - (Constants.Vision.RESOLUTION_WIDTH / 2.0);
+    }
+
     public double getTrackedYawDeg() {
-        return trackedDetection == null ? 0.0 : trackedDetection.ftcPose.yaw;
+        if (trackedDetection == null) return 0.0;
+
+        double tagCx = trackedDetection.center.x;
+        double imgCx = (Constants.Vision.RESOLUTION_WIDTH / 2.0);
+        double errPx = tagCx - imgCx;
+
+        return errPx * Constants.Vision.TURRET_DEG_PER_PIXEL;
     }
 
     public double getTrackedRange() {

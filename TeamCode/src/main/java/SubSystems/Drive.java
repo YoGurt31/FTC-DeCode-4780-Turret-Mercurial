@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -28,6 +29,8 @@ public class Drive {
     private GoBildaPinpointDriver pinpoint;
 
     private IMU imu;
+
+    private Iterable<VoltageSensor> voltageSensor;
 
     private boolean antiTipEnabled = true;
 
@@ -63,6 +66,8 @@ public class Drive {
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
+
+        voltageSensor = hw.voltageSensor;
 
         try {
             imu = hw.get(IMU.class, "imu");
@@ -183,5 +188,17 @@ public class Drive {
         } catch (Exception ignored) {
             return 0.0;
         }
+    }
+
+    public double getBatteryVoltage() {
+        double result = Double.POSITIVE_INFINITY;
+        if (voltageSensor == null) return 0.0;
+        for (VoltageSensor sensor : voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) {
+                result = Math.min(result, voltage);
+            }
+        }
+        return (result == Double.POSITIVE_INFINITY) ? 0.0 : result;
     }
 }

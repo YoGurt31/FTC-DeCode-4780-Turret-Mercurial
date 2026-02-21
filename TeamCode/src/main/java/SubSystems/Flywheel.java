@@ -1,3 +1,4 @@
+
 package SubSystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -23,6 +24,12 @@ public class Flywheel {
     private boolean autoRange = true;
     private double manualTargetRps = 0.0;
 
+    private double lastF = Double.NaN;
+    private double lastVoltage = Double.NaN;
+
+    private static final double VOLTAGE = 0.05; // volts
+    private static final double F = 1e-4;
+
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
@@ -40,14 +47,28 @@ public class Flywheel {
         fly1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         fly2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        fly1.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F);
-        fly2.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F);
+        updatePIDF();
 
         stop();
     }
 
     private static double rpsToTicksPerSecond(double rps) {
         return rps * Constants.Flywheel.TICKS_PER_REV;
+    }
+
+    private void updatePIDF() {
+        if (fly1 == null || fly2 == null) return;
+        if (Drive.INSTANCE.getBatteryVoltage() <= 1e-6) return;
+
+        boolean voltageChanged = Double.isNaN(lastVoltage) || Math.abs(Drive.INSTANCE.getBatteryVoltage() - lastVoltage) >= VOLTAGE;
+        boolean fChanged = Double.isNaN(lastF) || Math.abs(Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage()) - lastF) >= F;
+
+        if (voltageChanged || fChanged) {
+            fly1.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage()));
+            fly2.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage()));
+            lastVoltage = Drive.INSTANCE.getBatteryVoltage();
+            lastF = Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage());
+        }
     }
 
     public void enableAutoRange() {
@@ -64,6 +85,8 @@ public class Flywheel {
     public void stop() {
         enabled = false;
         manualTargetRps = 0.0;
+        lastF = Double.NaN;
+        lastVoltage = Double.NaN;
         if (fly1 != null) fly1.setPower(0);
         if (fly2 != null) fly2.setPower(0);
     }
@@ -71,6 +94,8 @@ public class Flywheel {
     public void apply() {
         if (!enabled) return;
         if (fly1 == null || fly2 == null) return;
+
+        updatePIDF();
 
         double desiredRps = autoRange ? getTargetRps() : manualTargetRps;
         desiredRps = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, desiredRps));
@@ -132,6 +157,6 @@ public class Flywheel {
 
     public boolean isReady() {
         double desired = autoRange ? getTargetRps() : manualTargetRps;
-        return Math.abs(getAverageRps() - desired) < 1;
+        return Math.abs(getAverageRps() - desired) < 2.5;
     }
 }

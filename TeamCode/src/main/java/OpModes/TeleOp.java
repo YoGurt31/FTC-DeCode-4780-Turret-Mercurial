@@ -25,21 +25,17 @@ public final class TeleOp {
             // Hardware Init
             Drive.INSTANCE.setResetPinPointOnInit(false);
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             if (Vision.INSTANCE.getLimelight() != null) {
                 Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
             }
-            Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.setTrackedTag(alliance == Constants.Field.Alliance.RED ? Constants.Vision.RED_TAG_ID : Constants.Vision.BLUE_TAG_ID);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-
-            final boolean[] farShot = { false };
-            final double closeRps = 67.0;
-            final double farRps = 76.0;
 
             // Main Loop
             linsane.schedule(sequence(
@@ -48,9 +44,9 @@ public final class TeleOp {
                         Vision.INSTANCE.update();
                         Drive.INSTANCE.updateOdometry();
 
-                        // Turret - Change Comment Order If autoAimTurret Works FIXME
-//                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
-                        Turret.INSTANCE.lockTurret();
+                        // Turret
+                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+//                        Turret.INSTANCE.lockTurret();
 
                         // Intake
                         if (linsane.gamepad1().left_bumper) {
@@ -63,19 +59,14 @@ public final class TeleOp {
 
                         // Flywheel
                         if (linsane.gamepad1().right_trigger > 0.05) {
-                            Flywheel.INSTANCE.setVelocityRps(farShot[0] ? farRps : closeRps);
+//                            Flywheel.INSTANCE.enableAutoRange();
+                            Flywheel.INSTANCE.setVelocityRps(67);
                         } else {
                             Flywheel.INSTANCE.stop();
                         }
 
-                        // Release FIXME
-//                        if ((Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) && (Flywheel.INSTANCE.isReady())) {
-//                            Release.INSTANCE.open();
-//                        } else {
-//                            Release.INSTANCE.close();
-//                        }
-
-                        if (linsane.gamepad1().b) {
+                        // Release
+                        if (linsane.gamepad1().right_trigger > 0.05) {
                             Release.INSTANCE.open();
                         } else {
                             Release.INSTANCE.close();
@@ -110,9 +101,6 @@ public final class TeleOp {
                         Release.INSTANCE.update();
                         Elevator.INSTANCE.updateRise();
 
-                        // Telemetry FIXME
-                        linsane.telemetry().addData("Flywheel Range", farShot[0] ? "FAR" : "CLOSE");
-                        linsane.telemetry().addData("Target RPS", farShot[0] ? farRps : closeRps);
                         if (telemetry) {
                             DefaultTelemetry.INSTANCE.update(linsane.telemetry());
                         }
@@ -127,17 +115,12 @@ public final class TeleOp {
                     exec(Elevator.INSTANCE::startRise)
             );
 
-            // RPS Switch FIXME
-            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().x),
-                    exec(() -> farShot[0] = !farShot[0])
-            );
-
             // Shut Off
             linsane.dropToScheduler();
         });
     }
 
-    public static final Mercurial.RegisterableProgram DEBUG = buildTeleOp(Constants.Field.Alliance.RED, true);
+    public static final Mercurial.RegisterableProgram DEBUG = buildTeleOp(Constants.Field.Alliance.BLUE, true);
     public static final Mercurial.RegisterableProgram RED = buildTeleOp(Constants.Field.Alliance.RED, false);
     public static final Mercurial.RegisterableProgram BLUE = buildTeleOp(Constants.Field.Alliance.BLUE, false);
 }

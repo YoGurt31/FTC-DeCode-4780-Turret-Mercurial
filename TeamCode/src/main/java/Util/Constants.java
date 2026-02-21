@@ -1,5 +1,7 @@
 package Util;
 
+import com.qualcomm.robotcore.hardware.VoltageSensor;
+
 public final class Constants {
 
     public static final class Drive {
@@ -10,14 +12,13 @@ public final class Constants {
 
         public static final double MAX_WHEEL_RPM = 435;
 
-        // TODO: TUNE THESE VALUES
-        public static final double ROTATE_GAIN = 0.0350;
+        public static final double ROTATE_GAIN = 0.0225;
         public static final double MAX_ROTATE = 0.80;
-        public static final double ARTIFACT_AIM_DEADBAND_DEG = 2.5;
+        public static final double ARTIFACT_AIM_DEADBAND_DEG = 5;
 
-        public static final double TIP_DEADBAND_DEG = 1.5;
-        public static final double TIP_KP = 0.035;
-        public static final double TIP_MAX = 0.25;
+        public static final double TIP_DEADBAND_DEG = 5.0;
+        public static final double TIP_KP = 0.055;
+        public static final double TIP_MAX = 0.50;
     }
 
     public static final class PinPoint {
@@ -69,21 +70,17 @@ public final class Constants {
         public static final double TurretMaxDeg = 180.0;
         public static final double LimitGuard = 0.25;
 
-        // TODO: TUNE THESE VALUES
-        public static final double QuickKp = 0.0625;
+        // TODO: ADD PreciseKi (MAYBE)
+        public static final double QuickKp = 0.0150;
         public static final double QuickMaxPower = 1.0;
 
-        public static final double QuickMinPower = 0.05;
-        public static final double QuickSlewPerSec = 7.5;
-        public static final double QuickKfTurnRate = 0.0;
-
-        public static final double PreciseKp = 0.020;
-        public static final double PreciseMaxPower = 0.35;
+        public static final double PreciseKp = 0.0125;
+        public static final double PreciseMaxPower = 0.20;
 
         public static final double QuickDeadband = 5.0;
         public static final double PreciseDeadband = 1.0;
 
-        public static final double SwitchDeadband = 15.0;
+        public static final double SwitchDeadband = 30.0;
         public static final double LostTargetTimeout = 0.20;
     }
 
@@ -103,8 +100,8 @@ public final class Constants {
         public static final double MIN_RPS = 50.0;
         public static final double MAX_RPS = 100.0;
 
-        public static final double F = 12.5;
-        public static final double P = 30.0;
+        public static double F(double voltage) { if (voltage <= 1e-6) return 12.5; return 12.5 * (13.5 / voltage);}
+        public static final double P = 35.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
     }
@@ -121,14 +118,14 @@ public final class Constants {
         public static final int DEFAULT_PIPELINE = 0;
         public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
 
-        // TODO: GET VALUES
         public static final String TURRET_CAM_NAME = "TurretCam";
-        public static final double INTRINSIC_FX = 518.26;
-        public static final double INTRINSIC_FY = 518.26;
+        public static final double INTRINSIC_FX = 650.00;
+        public static final double INTRINSIC_FY = 650.00;
+        public static final double INTRINSIC_CX = 575.00;
+        public static final double INTRINSIC_CY = -230.00;
         public static final int RESOLUTION_WIDTH = 1280;
         public static final int RESOLUTION_HEIGHT = 720;
-        public static final int TURRET_EXPOSURE_MS = 0;
-        public static final int TURRET_GAIN = 0;
+        public static final double TURRET_DEG_PER_PIXEL = 60.0 / RESOLUTION_WIDTH;
 
         public static final int BLUE_TAG_ID = 20;
         public static final int RED_TAG_ID = 24;
@@ -191,65 +188,6 @@ public final class Constants {
             double dy = goalY - robotY;
 
             return wrapDeg(Math.toDegrees(Math.atan2(dy, dx)));
-        }
-
-        public static boolean inShootZone(double x, double y) {
-            int buffer = 6;
-
-            // Allowed Zones
-            // Triangle 1: (-72, 24), (-48, 0), (-72, -24)
-            boolean zone1 = inTriangle(
-                    x, y,
-                    -72 - buffer,  24 + buffer,
-                    -48 + buffer,   0,
-                    -72 - buffer, -24 - buffer
-            );
-
-            // Triangle 2: (72, 72), (0, 0), (72, -72)
-            boolean zone2 = inTriangle(
-                    x, y,
-                     72 + buffer,  72 + buffer,
-                      0 - buffer,   0,
-                     72 + buffer, -72 - buffer
-            );
-
-            boolean inAllowed = zone1 || zone2;
-
-            // Negated Zones
-            // Triangle A: (24, 72), (72, 72), (72, 24)
-            boolean zoneA = inTriangle(
-                    x, y,
-                     24 - buffer,  72 + buffer,
-                     72 + buffer,  72 + buffer,
-                     72 + buffer,  24 - buffer
-            );
-
-            // Triangle B: (24, -72), (72, -72), (72, -24)
-            boolean zoneB = inTriangle(
-                    x, y,
-                     24 - buffer, -72 - buffer,
-                     72 + buffer, -72 - buffer,
-                     72 + buffer, -24 + buffer
-            );
-
-            boolean inNoShoot = zoneA || zoneB;
-
-            return inAllowed && !inNoShoot;
-        }
-
-        private static boolean inTriangle(double px, double py, double x1, double y1, double x2, double y2, double x3, double y3) {
-            double d1 = sign(px, py, x1, y1, x2, y2);
-            double d2 = sign(px, py, x2, y2, x3, y3);
-            double d3 = sign(px, py, x3, y3, x1, y1);
-
-            boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-            boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-
-            return !(hasNeg && hasPos);
-        }
-
-        private static double sign(double px, double py, double x1, double y1, double x2, double y2) {
-            return (px - x2) * (y1 - y2) - (x1 - x2) * (py - y2);
         }
 
         public enum Alliance { RED , BLUE }

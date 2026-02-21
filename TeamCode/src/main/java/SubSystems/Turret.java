@@ -33,6 +33,8 @@ public class Turret {
 
     private double turretTargetDeg = 0.0;
     private double turretErrDeg = 0.0;
+    private double lastPreciseErrDeg = 0.0;
+    private double lastPreciseTimeS = 0.0;
 
     private static final double FORWARD_LOCK_DEADBAND_DEG = 0.5;
     private static final double FORWARD_LOCK_KP = 0.03;
@@ -48,8 +50,11 @@ public class Turret {
         turretAimTimer.reset();
         aimMode = TurretAimMode.Quick;
         lastTargetSeenTimeS = 0.0;
+
         turretTargetDeg = 0.0;
         turretErrDeg = 0.0;
+        lastPreciseErrDeg = 0.0;
+        lastPreciseTimeS = 0.0;
         turretZeroOffsetTicks = turretRotation.getCurrentPosition();
     }
 
@@ -181,13 +186,38 @@ public class Turret {
         }
 
         if (aimMode == TurretAimMode.Precise && Vision.INSTANCE.hasTrackedTag()) {
-            if (Math.abs(Vision.INSTANCE.getTrackedTagCX()) <= Constants.Turret.PreciseDeadband) {
+
+            double tagErrDeg = Vision.INSTANCE.getTrackedTagCX();  // error in degrees (pixel->deg)
+            double now = nowS;
+
+            double dt = (lastPreciseTimeS > 0.0) ? (now - lastPreciseTimeS) : 0.0;
+            if (dt <= 1e-6) dt = 0.02;
+
+            double errRate = (tagErrDeg - lastPreciseErrDeg) / dt;
+
+            lastPreciseErrDeg = tagErrDeg;
+            lastPreciseTimeS = now;
+
+            boolean inPos = Math.abs(tagErrDeg) <= Constants.Turret.PreciseDeadband;
+            boolean slow = Math.abs(errRate) <= Constants.Turret.PreciseRateDeadband;
+
+            if (inPos && slow) {
                 stopTurret();
                 return true;
             }
-            double cmd = Range.clip(Vision.INSTANCE.getTrackedTagCX() * Constants.Turret.PreciseKp, -Constants.Turret.PreciseMaxPower, Constants.Turret.PreciseMaxPower);
+
+            double requested = (tagErrDeg * Constants.Turret.PreciseKp) - (errRate * Constants.Turret.PreciseKd);
+            double cmd = Range.clip(requested, -Constants.Turret.PreciseMaxPower, Constants.Turret.PreciseMaxPower);
+
+            if (!inPos && Math.abs(cmd) < Constants.Turret.PreciseMinPower) {
+                cmd = Math.copySign(Constants.Turret.PreciseMinPower, cmd);
+            }
+
             cmd = applyTurretLimitsToPower(cmd);
-            setTurretPower(cmd);
+
+            if (Math.abs(cmd) < 1e-6) stopTurret();
+            else setTurretPower(cmd);
+
             return false;
         }
 
@@ -205,8 +235,11 @@ public class Turret {
         return false;
     }
 
-    public boolean autoAimTurretTunable(double robotHeadingDeg, double goalHeadingDeg, double quickKp, double quickMaxPower, double preciseKp, double preciseMaxPower, boolean forcePrecise) {
+    public boolean autoAimTurretTunable(double robotHeadingDeg, double goalHeadingDeg, double quickKp, double quickMaxPower, double preciseKp, double preciseMaxPower, double preciseKd, double preciseMinPower, double preciseRateDeadband, boolean forcePrecise) {
         if (turretRotation == null) return false;
+
+        double nowS = turretAimTimer.seconds();
+        if (Vision.INSTANCE.hasTrackedTag()) lastTargetSeenTimeS = nowS;
 
         double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
         double currentTurretDeg = getTurretDeg();
@@ -215,28 +248,70 @@ public class Turret {
         turretTargetDeg = desiredTurretDeg;
         turretErrDeg = errDeg;
 
-        if (forcePrecise) {
+        if (!forcePrecise) {
+            if (aimMode == TurretAimMode.Quick) {
+                if (Vision.INSTANCE.hasTrackedTag() && Math.abs(errDeg) <= Constants.Turret.SwitchDeadband) {
+                    aimMode = TurretAimMode.Precise;
+                    lastPreciseErrDeg = 0.0;
+                    lastPreciseTimeS = 0.0;
+                }
+            } else {
+                boolean targetRecentlyLost = (!Vision.INSTANCE.hasTrackedTag()) &&
+                        ((nowS - lastTargetSeenTimeS) > Constants.Turret.LostTargetTimeout);
+                if (targetRecentlyLost) {
+                    aimMode = TurretAimMode.Quick;
+                    lastPreciseErrDeg = 0.0;
+                    lastPreciseTimeS = 0.0;
+                }
+            }
+        }
+
+        boolean doPrecise = forcePrecise || (aimMode == TurretAimMode.Precise);
+
+        if (doPrecise) {
             if (!Vision.INSTANCE.hasTrackedTag()) {
                 stopTurret();
+                lastPreciseErrDeg = 0.0;
+                lastPreciseTimeS = 0.0;
                 return false;
             }
 
-            double tagCenter = Vision.INSTANCE.getTrackedTagCX();
+            double tagErrDeg = Vision.INSTANCE.getTrackedTagCX();
 
-            if (Math.abs(tagCenter) <= Constants.Turret.PreciseDeadband) {
+            double dt = (lastPreciseTimeS > 0.0) ? (nowS - lastPreciseTimeS) : 0.0;
+            if (dt <= 1e-6) dt = 0.02;
+
+            double errRate = (tagErrDeg - lastPreciseErrDeg) / dt;
+
+            lastPreciseErrDeg = tagErrDeg;
+            lastPreciseTimeS = nowS;
+
+            boolean inPos = Math.abs(tagErrDeg) <= Constants.Turret.PreciseDeadband;
+            boolean slow = Math.abs(errRate) <= preciseRateDeadband;
+
+            if (inPos && slow) {
                 stopTurret();
                 return true;
             }
 
-            double cmd = Range.clip(tagCenter * preciseKp, -preciseMaxPower, preciseMaxPower);
+            double requested = (tagErrDeg * preciseKp) - (errRate * preciseKd);
+            double cmd = Range.clip(requested, -preciseMaxPower, preciseMaxPower);
+
+            if (!inPos && Math.abs(cmd) < preciseMinPower) {
+                cmd = Math.copySign(preciseMinPower, cmd);
+            }
+
             cmd = applyTurretLimitsToPower(cmd);
-            setTurretPower(cmd);
+
+            if (Math.abs(cmd) < 1e-6) stopTurret();
+            else setTurretPower(cmd);
+
             return false;
         }
 
         if (Math.abs(errDeg) <= Constants.Turret.QuickDeadband) {
             stopTurret();
-            return false;
+            return true;
         }
 
         double cmd = Range.clip(errDeg * quickKp, -quickMaxPower, quickMaxPower);

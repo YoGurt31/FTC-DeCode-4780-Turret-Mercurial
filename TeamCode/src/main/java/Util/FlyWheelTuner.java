@@ -36,7 +36,7 @@ public final class FlyWheelTuner {
         Vision.INSTANCE.setTrackedTag(alliance[0] == Constants.Field.Alliance.RED ? Constants.Vision.RED_TAG_ID : Constants.Vision.BLUE_TAG_ID);
 
         Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-
+        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
         final long[] lastAdjustMs = { 0 };
@@ -92,6 +92,14 @@ public final class FlyWheelTuner {
                         );
                     }
 
+                    if (linsane.gamepad1().left_bumper) {
+                        Intake.INSTANCE.setMode(Intake.Mode.EJECT);
+                    } else if (linsane.gamepad1().right_bumper) {
+                        Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                    } else {
+                        Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    }
+
                     if (linsane.gamepad1().right_trigger > 0.05) {
                         Flywheel.INSTANCE.setVelocityRps(flyTargetRps[0]);
                     } else {
@@ -102,6 +110,7 @@ public final class FlyWheelTuner {
                     double turnCmd = linsane.gamepad1().right_stick_x;
 
                     Drive.INSTANCE.drive(driveCmd, turnCmd);
+                    Intake.INSTANCE.apply();
                     Flywheel.INSTANCE.apply();
 
                     linsane.telemetry().addLine("=== Flywheel RPS Tuner + Turret Auto-Aim ===");

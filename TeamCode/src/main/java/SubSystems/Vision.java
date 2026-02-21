@@ -8,8 +8,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -22,7 +20,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import Util.Constants;
 
@@ -195,7 +192,7 @@ public class Vision {
         return trackedDetection.center.x - (Constants.Vision.RESOLUTION_WIDTH / 2.0);
     }
 
-    public double getTrackedYawDeg() {
+    public double getTrackedTagCX() {
         if (trackedDetection == null) return 0.0;
 
         double tagCx = trackedDetection.center.x;

@@ -199,6 +199,7 @@ public class Drive {
                 result = Math.min(result, voltage);
             }
         }
-        return (result == Double.POSITIVE_INFINITY) ? 0.0 : result;
+        if (!Double.isFinite(result)) return 12.0;
+        return result;
     }
 }

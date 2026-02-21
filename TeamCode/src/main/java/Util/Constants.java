@@ -70,17 +70,17 @@ public final class Constants {
         public static final double TurretMaxDeg = 180.0;
         public static final double LimitGuard = 0.25;
 
-        // TODO: ADD PreciseKi (MAYBE)
+        // TODO: ADD PreciseKd (MAYBE)
         public static final double QuickKp = 0.0150;
         public static final double QuickMaxPower = 1.0;
 
         public static final double PreciseKp = 0.0125;
         public static final double PreciseMaxPower = 0.20;
 
-        public static final double QuickDeadband = 5.0;
-        public static final double PreciseDeadband = 1.0;
+        public static final double QuickDeadband = 2.5;
+        public static final double PreciseDeadband = 0.5;
 
-        public static final double SwitchDeadband = 30.0;
+        public static final double SwitchDeadband = 25.0;
         public static final double LostTargetTimeout = 0.20;
     }
 

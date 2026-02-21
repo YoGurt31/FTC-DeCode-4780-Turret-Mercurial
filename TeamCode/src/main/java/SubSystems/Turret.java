@@ -181,11 +181,11 @@ public class Turret {
         }
 
         if (aimMode == TurretAimMode.Precise && Vision.INSTANCE.hasTrackedTag()) {
-            if (Math.abs(Vision.INSTANCE.getTrackedYawDeg()) <= Constants.Turret.PreciseDeadband) {
+            if (Math.abs(Vision.INSTANCE.getTrackedTagCX()) <= Constants.Turret.PreciseDeadband) {
                 stopTurret();
                 return true;
             }
-            double cmd = Range.clip(Vision.INSTANCE.getTrackedYawDeg() * Constants.Turret.PreciseKp, -Constants.Turret.PreciseMaxPower, Constants.Turret.PreciseMaxPower);
+            double cmd = Range.clip(Vision.INSTANCE.getTrackedTagCX() * Constants.Turret.PreciseKp, -Constants.Turret.PreciseMaxPower, Constants.Turret.PreciseMaxPower);
             cmd = applyTurretLimitsToPower(cmd);
             setTurretPower(cmd);
             return false;
@@ -221,14 +221,14 @@ public class Turret {
                 return false;
             }
 
-            double yaw = Vision.INSTANCE.getTrackedYawDeg();
+            double tagCenter = Vision.INSTANCE.getTrackedTagCX();
 
-            if (Math.abs(yaw) <= Constants.Turret.PreciseDeadband) {
+            if (Math.abs(tagCenter) <= Constants.Turret.PreciseDeadband) {
                 stopTurret();
                 return true;
             }
 
-            double cmd = Range.clip(yaw * preciseKp, -preciseMaxPower, preciseMaxPower);
+            double cmd = Range.clip(tagCenter * preciseKp, -preciseMaxPower, preciseMaxPower);
             cmd = applyTurretLimitsToPower(cmd);
             setTurretPower(cmd);
             return false;

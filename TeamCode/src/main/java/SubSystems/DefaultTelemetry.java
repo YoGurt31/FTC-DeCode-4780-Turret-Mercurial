@@ -32,7 +32,7 @@ public class DefaultTelemetry {
         telemetry.addLine("--- TurretCam (AprilTag) ---");
         telemetry.addData("Tracked Tag ID", Vision.INSTANCE.getTrackedTag());
         telemetry.addData("Has Tracked Tag", Vision.INSTANCE.hasTrackedTag());
-        telemetry.addData("Yaw (Deg)", "%5.2f", Vision.INSTANCE.getTrackedYawDeg());
+        telemetry.addData("Yaw (Deg)", "%5.2f", Vision.INSTANCE.getTrackedTagCX());
         telemetry.addData("Range", "%5.2f", Vision.INSTANCE.getTrackedRange());
         telemetry.addLine();
 

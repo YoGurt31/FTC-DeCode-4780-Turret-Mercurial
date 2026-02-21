@@ -130,7 +130,7 @@ public final class TurretTuner {
                             double errDeg = Turret.INSTANCE.getErrorDeg();
 
                             boolean usingTag = turretPrecise[0] && Vision.INSTANCE.hasTrackedTag();
-                            double yawDeg = usingTag ? Vision.INSTANCE.getTrackedYawDeg() : 0.0;
+                            double yawDeg = usingTag ? Vision.INSTANCE.getTrackedTagCX() : 0.0;
 
                             double centerX = Double.NaN;
                             double errPx = Double.NaN;

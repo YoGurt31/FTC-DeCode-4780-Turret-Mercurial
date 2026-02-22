@@ -42,14 +42,17 @@ public final class TurretTuner {
         final long repeatMs = 120;
 
         final double[] quickKp = { Constants.Turret.QuickKp };
+        final double[] quickKd = { Constants.Turret.QuickKd };
+        final double[] quickMin = { Constants.Turret.QuickMinPower };
         final double[] quickMax = { Constants.Turret.QuickMaxPower };
+        final double[] quickDeadband = { Constants.Turret.QuickDeadband };
 
         final double[] preciseKp = { Constants.Turret.PreciseKp };
-        final double[] preciseMax = { Constants.Turret.PreciseMaxPower };
-
         final double[] preciseKd = { Constants.Turret.PreciseKd };
         final double[] preciseMin = { Constants.Turret.PreciseMinPower };
+        final double[] preciseMax = { Constants.Turret.PreciseMaxPower };
         final double[] preciseRateDb = { Constants.Turret.PreciseRateDeadband };
+        final double[] preciseDeadband = { Constants.Turret.PreciseDeadband };
 
         final int[] turretSel = { 0 };
         final boolean[] turretPrecise = { false };
@@ -106,19 +109,23 @@ public final class TurretTuner {
                         Vision.INSTANCE.setTrackedTag(tagId);
                     }
 
-                    if (rising(linsane.gamepad1().left_bumper, prevLB)) turretSel[0] = (turretSel[0] + 6) % 7;
-                    if (rising(linsane.gamepad1().right_bumper, prevRB)) turretSel[0] = (turretSel[0] + 1) % 7;
+                    if (rising(linsane.gamepad1().left_bumper, prevLB)) turretSel[0] = (turretSel[0] + 10) % 11;
+                    if (rising(linsane.gamepad1().right_bumper, prevRB)) turretSel[0] = (turretSel[0] + 1) % 11;
 
                     if (doAdjust) {
                         switch (turretSel[0]) {
                             case 0: quickKp[0] = Math.max(0.0, quickKp[0] + dir * step); break;
-                            case 1: quickMax[0] = Range.clip(quickMax[0] + dir * step, 0.0, 1.0); break;
+                            case 1: quickKd[0] = Math.max(0.0, quickKd[0] + dir * step); break;
+                            case 2: quickMin[0] = Range.clip(quickMin[0] + dir * step, 0.0, 1.0); break;
+                            case 3: quickMax[0] = Range.clip(quickMax[0] + dir * step, 0.0, 1.0); break;
+                            case 4: quickDeadband[0] = Math.max(0.0, quickDeadband[0] + dir * step); break;
 
-                            case 2: preciseKp[0] = Math.max(0.0, preciseKp[0] + dir * step); break;
-                            case 3: preciseMax[0] = Range.clip(preciseMax[0] + dir * step, 0.0, 1.0); break;
-                            case 4: preciseKd[0] = Math.max(0.0, preciseKd[0] + dir * step); break;
-                            case 5: preciseMin[0] = Range.clip(preciseMin[0] + dir * step, 0.0, 1.0); break;
-                            case 6: preciseRateDb[0] = Math.max(0.0, preciseRateDb[0] + dir * step); break;
+                            case 5: preciseKp[0] = Math.max(0.0, preciseKp[0] + dir * step); break;
+                            case 6: preciseKd[0] = Math.max(0.0, preciseKd[0] + dir * step); break;
+                            case 7: preciseMin[0] = Range.clip(preciseMin[0] + dir * step, 0.0, 1.0); break;
+                            case 8: preciseMax[0] = Range.clip(preciseMax[0] + dir * step, 0.0, 1.0); break;
+                            case 9: preciseRateDb[0] = Math.max(0.0, preciseRateDb[0] + dir * step); break;
+                            case 10: preciseDeadband[0] = Math.max(0.0, preciseDeadband[0] + dir * step); break;
                         }
                     }
 
@@ -127,13 +134,7 @@ public final class TurretTuner {
                     double robotHeading = Drive.INSTANCE.getHeading();
                     double goalHeading = Constants.Field.computeGoalHeadingDeg(robotX, robotY, alliance[0]);
 
-                    boolean atTarget = Turret.INSTANCE.autoAimTurretTunable(
-                            robotHeading, goalHeading,
-                            quickKp[0], quickMax[0],
-                            preciseKp[0], preciseMax[0],
-                            preciseKd[0], preciseMin[0], preciseRateDb[0],
-                            turretPrecise[0]
-                    );
+                    boolean atTarget = Turret.INSTANCE.autoAimTurretTunable(robotHeading, goalHeading, quickKp[0], quickKd[0], quickMin[0], quickMax[0], preciseKp[0], preciseKd[0], preciseMin[0], preciseRateDb[0], preciseMax[0], turretPrecise[0]);
 
                     double turretDeg = Turret.INSTANCE.getTurretDeg();
                     double desiredTurretDeg = Turret.INSTANCE.getTargetDeg();
@@ -163,22 +164,31 @@ public final class TurretTuner {
 
                     String sel = new String[]{
                             "QuickKp",
-                            "QuickMax",
+                            "QuickKd",
+                            "QuickMinPower",
+                            "QuickMaxPower",
+                            "QuickDeadband",
                             "PreciseKp",
-                            "PreciseMax",
                             "PreciseKd",
                             "PreciseMinPower",
-                            "PreciseRateDeadband"
+                            "PreciseMaxPower",
+                            "PreciseRateDeadband",
+                            "PreciseDeadband"
                     }[turretSel[0]];
 
                     linsane.telemetry().addData("Selected", sel);
                     linsane.telemetry().addData("QuickKp", "%6.4f", quickKp[0]);
-                    linsane.telemetry().addData("QuickMax", "%5.2f", quickMax[0]);
+                    linsane.telemetry().addData("QuickKd", "%6.4f", quickKd[0]);
+                    linsane.telemetry().addData("QuickMin", "%5.3f", quickMin[0]);
+                    linsane.telemetry().addData("QuickMax", "%5.3f", quickMax[0]);
+                    linsane.telemetry().addData("QuickDeadband", "%5.3f", quickDeadband[0]);
+
                     linsane.telemetry().addData("PreciseKp", "%6.4f", preciseKp[0]);
-                    linsane.telemetry().addData("PreciseMax", "%5.2f", preciseMax[0]);
                     linsane.telemetry().addData("PreciseKd", "%6.4f", preciseKd[0]);
-                    linsane.telemetry().addData("PreciseMin", "%5.2f", preciseMin[0]);
-                    linsane.telemetry().addData("PreciseRateDb", "%6.3f", preciseRateDb[0]);
+                    linsane.telemetry().addData("PreciseMin", "%5.3f", preciseMin[0]);
+                    linsane.telemetry().addData("PreciseMax", "%5.3f", preciseMax[0]);
+                    linsane.telemetry().addData("PreciseRateDb", "%5.3f", preciseRateDb[0]);
+                    linsane.telemetry().addData("PreciseDeadband", "%5.3f", preciseDeadband[0]);
 
                     linsane.telemetry().addData("Robot (X,Y,H)", "(%5.1f,%5.1f,%5.1f)", robotX, robotY, robotHeading);
                     linsane.telemetry().addData("GoalHeading", "%6.2f", goalHeading);

@@ -74,19 +74,21 @@ public final class Constants {
         public static final double LimitGuard = 0.25;
 
         // TODO: TUNE KD
-        public static final double QuickKp = 0.0150;
+        public static final double QuickKp = 0.0;
+        public static final double QuickKd = 0.0;
+        public static final double QuickMinPower = 0.0;
         public static final double QuickMaxPower = 1.0;
 
-        public static final double PreciseKp = 0.0125;
-        public static final double PreciseKd = 0.0000;
-        public static final double PreciseRateDeadband = 7.5;
-        public static final double PreciseMinPower = 0.05;
+        public static final double PreciseKp = 0.0;
+        public static final double PreciseKd = 0.0;
+        public static final double PreciseRateDeadband = 0.0;
+        public static final double PreciseMinPower = 0.0;
         public static final double PreciseMaxPower = 0.20;
 
-        public static final double QuickDeadband = 2.5;
+        public static final double QuickDeadband = 1.0;
         public static final double PreciseDeadband = 0.75;
 
-        public static final double SwitchDeadband = 25.0;
+        public static final double SwitchDeadband = 5.0;
         public static final double LostTargetTimeout = 0.20;
     }
 
@@ -103,15 +105,11 @@ public final class Constants {
         public static final double M = 0.0;
         public static final double R = 0.0;
 
-        public static final double MIN_RPS = 50.0;
+        public static final double MIN_RPS = 55.0;
         public static final double MAX_RPS = 100.0;
 
-        public static double F(double voltage) {
-            if (voltage <= 1e-6) return 12.5;
-            return 12.5 * (13.5 / voltage);
-        }
-
-        public static final double P = 35.0;
+        public static double F(double voltage) { if (voltage <= 1e-6) return 12.5; return 12.5 * (13.5 / voltage); }
+        public static final double P = 55.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
     }

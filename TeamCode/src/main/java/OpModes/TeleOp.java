@@ -58,18 +58,13 @@ public final class TeleOp {
                         }
                         Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
 
-                        // Flywheel
+                        // Flywheel + Release
                         if (linsane.gamepad1().right_trigger > 0.05) {
                             // Flywheel.INSTANCE.enableAutoRange();
                             Flywheel.INSTANCE.setVelocityRps(67);
-                        } else {
-                            Flywheel.INSTANCE.stop();
-                        }
-
-                        // Release
-                        if (linsane.gamepad1().right_trigger > 0.05) {
                             Release.INSTANCE.open();
                         } else {
+                            Flywheel.INSTANCE.stop();
                             Release.INSTANCE.close();
                         }
 

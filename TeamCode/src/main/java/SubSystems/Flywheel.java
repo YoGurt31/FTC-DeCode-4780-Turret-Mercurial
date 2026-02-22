@@ -142,7 +142,7 @@ public class Flywheel {
         double distance = distanceViaPinPoint;
         if (Vision.INSTANCE.hasTrackedTag()) {
             double distanceViaTurretCam = Vision.INSTANCE.getTrackedRange();
-            distance = 0.75 * distanceViaTurretCam + 0.25 * distanceViaPinPoint;
+            distance = 0.5 * distanceViaTurretCam + 0.5 * distanceViaPinPoint;
         }
 
         // 3-1) Linear Model

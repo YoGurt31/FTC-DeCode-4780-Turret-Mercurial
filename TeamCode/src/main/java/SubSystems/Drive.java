@@ -130,7 +130,8 @@ public class Drive {
         double drive = driveInput;
         double turn = -turnInput;
 
-        drive = Range.clip(drive + antiTipCorrection(getPitchDeg()), -1.0, 1.0);
+        // drive = Range.clip(drive + antiTipCorrection(getPitchDeg()), -1.0, 1.0);
+        drive = Range.clip(drive, -1.0, 1.0);
 
         if (Math.abs(drive) < 0.05) drive = 0;
         if (Math.abs(turn) < 0.05) turn = 0;

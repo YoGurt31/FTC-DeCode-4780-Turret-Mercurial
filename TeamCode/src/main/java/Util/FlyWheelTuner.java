@@ -99,6 +99,7 @@ public final class FlyWheelTuner {
                     } else {
                         Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     }
+                    Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
 
                     if (linsane.gamepad1().right_trigger > 0.05) {
                         Flywheel.INSTANCE.setVelocityRps(flyTargetRps[0]);

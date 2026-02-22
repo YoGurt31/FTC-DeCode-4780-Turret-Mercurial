@@ -1,5 +1,6 @@
 package Util;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 public final class Constants {
@@ -9,6 +10,9 @@ public final class Constants {
         public static final String frontRight = "fR";
         public static final String backLeft = "bL";
         public static final String backRight = "bR";
+
+        public static final DcMotorSimple.Direction LEFT_DIR  = DcMotorSimple.Direction.REVERSE;
+        public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
 
         public static final double MAX_WHEEL_RPM = 435;
 
@@ -27,6 +31,7 @@ public final class Constants {
         public static final boolean X_REVERSED = true;
         public static final boolean Y_REVERSED = false;
 
+        // TODO: GET VALUES
         public static final double X_OFFSET_MM = -176;
         public static final double Y_OFFSET_MM = -66;
 

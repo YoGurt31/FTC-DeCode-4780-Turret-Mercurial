@@ -83,10 +83,10 @@ public class Drive {
         backLeft = hw.get(DcMotorEx.class, Constants.Drive.backLeft);
         backRight = hw.get(DcMotorEx.class, Constants.Drive.backRight);
 
-        frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setDirection(Constants.Drive.LEFT_DIR);
+        backLeft.setDirection(Constants.Drive.LEFT_DIR);
+        frontRight.setDirection(Constants.Drive.RIGHT_DIR);
+        backRight.setDirection(Constants.Drive.RIGHT_DIR);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -128,7 +128,7 @@ public class Drive {
 
     public void drive(double driveInput, double turnInput) {
         double drive = driveInput;
-        double turn = -turnInput;
+        double turn = turnInput;
 
         // drive = Range.clip(drive + antiTipCorrection(getPitchDeg()), -1.0, 1.0);
         drive = Range.clip(drive, -1.0, 1.0);

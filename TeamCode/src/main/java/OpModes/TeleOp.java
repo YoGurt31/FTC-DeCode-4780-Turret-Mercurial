@@ -46,7 +46,7 @@ public final class TeleOp {
 
                         // Turret
                         Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
-//                        Turret.INSTANCE.lockTurret();
+                        // Turret.INSTANCE.lockTurret();
 
                         // Intake
                         if (linsane.gamepad1().left_bumper) {
@@ -56,10 +56,11 @@ public final class TeleOp {
                         } else {
                             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                         }
+                        Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
 
                         // Flywheel
                         if (linsane.gamepad1().right_trigger > 0.05) {
-//                            Flywheel.INSTANCE.enableAutoRange();
+                            // Flywheel.INSTANCE.enableAutoRange();
                             Flywheel.INSTANCE.setVelocityRps(67);
                         } else {
                             Flywheel.INSTANCE.stop();

@@ -54,6 +54,9 @@ public final class Constants {
 
         public static final double INTAKE_POWER = 1.0;
         public static final double OUTTAKE_POWER = -1.0;
+
+        public static final double TRANSFER_SCALE_CLOSE = 1.0;
+        public static final double TRANSFER_SCALE_FAR = 0.8;
     }
 
     public static final class Turret {
@@ -103,7 +106,11 @@ public final class Constants {
         public static final double MIN_RPS = 50.0;
         public static final double MAX_RPS = 100.0;
 
-        public static double F(double voltage) { if (voltage <= 1e-6) return 12.5; return 12.5 * (13.5 / voltage);}
+        public static double F(double voltage) {
+            if (voltage <= 1e-6) return 12.5;
+            return 12.5 * (13.5 / voltage);
+        }
+
         public static final double P = 35.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
@@ -193,7 +200,108 @@ public final class Constants {
             return wrapDeg(Math.toDegrees(Math.atan2(dy, dx)));
         }
 
-        public enum Alliance { RED , BLUE }
+        public static boolean inShootZone(double x, double y) {
+            int buffer = 12;
+
+            // Allowed Zones
+            // Triangle 1: (-72, 24), (-48, 0), (-72, -24)
+            boolean farZone = inTriangle(
+                    x, y,
+                    -72 - buffer, 24 + buffer,
+                    -48 + buffer, 0,
+                    -72 - buffer, -24 - buffer
+            );
+
+            // Triangle 2: (72, 72), (0, 0), (72, -72)
+            boolean closeZone = inTriangle(
+                    x, y,
+                    72 + buffer, 72 + buffer,
+                    0 - buffer, 0,
+                    72 + buffer, -72 - buffer
+            );
+
+            boolean inAllowed = farZone || closeZone;
+
+            // Negated Zones
+            // Triangle A: (24, 72), (72, 72), (72, 24)
+            boolean zoneBlue = inTriangle(
+                    x, y,
+                    24 - buffer, 72 + buffer,
+                    72 + buffer, 72 + buffer,
+                    72 + buffer, 24 - buffer
+            );
+
+            // Triangle B: (24, -72), (72, -72), (72, -24)
+            boolean zoneRed = inTriangle(
+                    x, y,
+                    24 - buffer, -72 - buffer,
+                    72 + buffer, -72 - buffer,
+                    72 + buffer, -24 + buffer
+            );
+
+            boolean inNoShoot = zoneBlue || zoneRed;
+
+            return inAllowed && !inNoShoot;
+        }
+
+        public static boolean inFarZone(double x, double y) {
+            int buffer = 12;
+
+            boolean farZone = inTriangle(
+                    x, y,
+                    -72 - buffer,  24 + buffer,
+                    -48 + buffer,   0,
+                    -72 - buffer, -24 - buffer
+            );
+
+            boolean inAllowed = farZone;
+
+            boolean zoneBlue = inTriangle(
+                    x, y,
+                    24 - buffer, 72 + buffer,
+                    72 + buffer, 72 + buffer,
+                    72 + buffer, 24 - buffer
+            );
+
+            boolean zoneRed = inTriangle(
+                    x, y,
+                    24 - buffer, -72 - buffer,
+                    72 + buffer, -72 - buffer,
+                    72 + buffer, -24 + buffer
+            );
+
+            boolean inNoShoot = zoneBlue || zoneRed;
+
+            return inAllowed && !inNoShoot;
+        }
+
+        public static boolean inCloseZone(double x, double y) {
+            int buffer = 12;
+
+            return inTriangle(
+                    x, y,
+                    72 + buffer,  72 + buffer,
+                    0 - buffer,   0,
+                    72 + buffer, -72 - buffer
+            );
+        }
+
+        private static boolean inTriangle(double px, double py, double x1, double y1, double x2, double y2, double x3, double y3) {
+            double d1 = sign(px, py, x1, y1, x2, y2);
+            double d2 = sign(px, py, x2, y2, x3, y3);
+            double d3 = sign(px, py, x3, y3, x1, y1);
+
+            boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+            boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+            return !(hasNeg && hasPos);
+        }
+
+        private static double sign(double px, double py, double x1, double y1, double x2, double y2) {
+            return (px - x2) * (y1 - y2) - (x1 - x2) * (py - y2);
+        }
+
+        public enum Alliance {RED, BLUE}
 
         private static Alliance currentAlliance;
 

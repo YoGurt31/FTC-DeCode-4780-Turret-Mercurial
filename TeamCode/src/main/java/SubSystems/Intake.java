@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -28,6 +29,8 @@ public class Intake {
 
     private Mode mode = Mode.IDLE;
 
+    private double Scale = 1.0;
+
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
@@ -40,6 +43,10 @@ public class Intake {
 
         setMode(Mode.IDLE);
         apply();
+    }
+
+    public void setScale(double s) {
+        Scale = Range.clip(s, 0.0, 1.0);
     }
 
     public void setMode(Mode newMode) {
@@ -55,7 +62,7 @@ public class Intake {
 
         switch (mode) {
             case INTAKE:
-                roller.setPower(Constants.Intake.INTAKE_POWER);
+                roller.setPower(Constants.Intake.INTAKE_POWER * Scale);
                 break;
 
             case EJECT:

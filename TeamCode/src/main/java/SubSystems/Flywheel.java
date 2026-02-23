@@ -33,8 +33,8 @@ public class Flywheel {
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
-        fly1 = hw.get(DcMotorEx.class, Constants.Flywheel.Flywheel1);
-        fly2 = hw.get(DcMotorEx.class, Constants.Flywheel.Flywheel2);
+        fly1 = hw.get(DcMotorEx.class, Constants.Flywheel.FLYWHEEL_1);
+        fly2 = hw.get(DcMotorEx.class, Constants.Flywheel.FLYWHEEL_2);
 
         fly1.setDirection(DcMotorEx.Direction.FORWARD);
         fly2.setDirection(DcMotorEx.Direction.REVERSE);

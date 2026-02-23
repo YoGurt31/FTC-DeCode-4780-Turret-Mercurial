@@ -34,6 +34,8 @@ public class Vision {
     // Limelight (Artifact Pipeline)
     private Limelight3A limelight;
     private LLResult result;
+    private int desiredPipeline = 0;
+    private int lastPipeline = -1;
 
     // TurretCam (AprilTag)
     private VisionPortal turretPortal;
@@ -58,8 +60,9 @@ public class Vision {
     // Limelight (Artifact Pipeline)
     private void initLimelight(HardwareMap hw) {
         limelight = hw.get(Limelight3A.class, Constants.Vision.LIMELIGHT_NAME);
-        limelight.pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
         limelight.start();
+        lastPipeline = -1;
+        setPipeline(Constants.Vision.LOCALIZATION_PIPELINE);
     }
 
     // TurretCam (AprilTag)
@@ -154,7 +157,32 @@ public class Vision {
 
     public Pose3D getPose() {
         LLResult r = getResult();
-        return r == null ? null : r.getBotpose();
+        if (r == null) return null;
+        try { return r.getBotpose_MT2(); } catch (Throwable ignored) { return null; }
+    }
+
+    public boolean hasPose() {
+        return getPose() != null;
+    }
+
+    public void updateRobotYawDeg(double yawDeg) {
+        if (limelight == null) return;
+        try { limelight.updateRobotOrientation(yawDeg); } catch (Exception ignored) {}
+    }
+
+    public void setPipeline(int pipelineIndex) {
+        desiredPipeline = pipelineIndex;
+        if (limelight == null) return;
+        if (desiredPipeline == lastPipeline) return;
+        try {
+            limelight.pipelineSwitch(desiredPipeline);
+            lastPipeline = desiredPipeline;
+        } catch (Exception ignored) { }
+    }
+
+    public int getPipelineIndex() {
+        if (limelight == null || limelight.getStatus() == null) return -1;
+        return limelight.getStatus().getPipelineIndex();
     }
 
     public String getPipelineName() {
@@ -162,7 +190,8 @@ public class Vision {
         if (limelight.getStatus() == null) return "Unknown";
 
         int idx = limelight.getStatus().getPipelineIndex();
-        if (idx == Constants.Vision.DEFAULT_PIPELINE || idx == Constants.Vision.ARTIFACT_PIPELINE) return "Artifacts";
+        if (idx == Constants.Vision.DEFAULT_PIPELINE || idx == Constants.Vision.LOCALIZATION_PIPELINE) return "Localization";
+        if (idx == Constants.Vision.ARTIFACT_PIPELINE) return "Artifact";
         return "Unknown";
     }
 

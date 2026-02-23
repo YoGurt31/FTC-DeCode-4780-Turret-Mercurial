@@ -27,36 +27,27 @@ import com.acmerobotics.roadrunner.TimeTurn;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TrajectoryBuilderParams;
 import com.acmerobotics.roadrunner.TurnConstraints;
-import com.acmerobotics.roadrunner.Twist2dDual;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.Vector2dDual;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
-import com.acmerobotics.roadrunner.ftc.Encoder;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.LazyHardwareMapImu;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
-import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
-import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
-import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import RoadRunner.messages.DriveCommandMessage;
 import RoadRunner.messages.PoseMessage;
 import RoadRunner.messages.TankCommandMessage;
-import RoadRunner.messages.TankLocalizerInputsMessage;
 import Util.Constants;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -136,13 +127,13 @@ public final class TankDrive {
         }
 
         leftMotors = Arrays.asList(
-                hardwareMap.get(DcMotorEx.class, Constants.Drive.frontLeft),
-                hardwareMap.get(DcMotorEx.class, Constants.Drive.backLeft)
+                hardwareMap.get(DcMotorEx.class, Constants.Drive.FRONT_LEFT),
+                hardwareMap.get(DcMotorEx.class, Constants.Drive.BACK_LEFT)
         );
 
         rightMotors = Arrays.asList(
-                hardwareMap.get(DcMotorEx.class, Constants.Drive.frontRight),
-                hardwareMap.get(DcMotorEx.class, Constants.Drive.backRight)
+                hardwareMap.get(DcMotorEx.class, Constants.Drive.FRONT_RIGHT),
+                hardwareMap.get(DcMotorEx.class, Constants.Drive.BACK_RIGHT)
         );
 
         for (DcMotorEx m : leftMotors) {

@@ -1,20 +1,17 @@
 package Util;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 public final class Constants {
 
     public static final class Drive {
-        public static final String frontLeft = "fL";
-        public static final String frontRight = "fR";
-        public static final String backLeft = "bL";
-        public static final String backRight = "bR";
+        public static final String FRONT_LEFT = "fL";
+        public static final String FRONT_RIGHT = "fR";
+        public static final String BACK_LEFT = "bL";
+        public static final String BACK_RIGHT = "bR";
 
         public static final DcMotorSimple.Direction LEFT_DIR  = DcMotorSimple.Direction.REVERSE;
         public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
-
-        public static final double MAX_WHEEL_RPM = 435;
 
         public static final double ROTATE_GAIN = 0.0225;
         public static final double MAX_ROTATE = 0.80;
@@ -26,7 +23,7 @@ public final class Constants {
     }
 
     public static final class PinPoint {
-        public static final String PinPoint = "pinpoint";
+        public static final String PINPOINT = "pinpoint";
 
         public static final boolean X_REVERSED = true;
         public static final boolean Y_REVERSED = false;
@@ -40,10 +37,30 @@ public final class Constants {
         public static final double START_HEADING_DEG = 0;
     }
 
+    public static final class Relocalize {
+        public static final double SHOOT_TRIGGER_DB = 0.10;
+        public static final double STATIONARY_STICK_DB = 0.05;
+        public static final long STATIONARY_TIME_MS = 750;
+        public static final long COOLDOWN_MS = 250;
+
+        public static final double METERS_TO_IN = 39.3701;
+
+        // TODO: Determine Conversions
+        public static final int LL_X_TO_PP_SIGN = +1;
+        public static final int LL_Y_TO_PP_SIGN = +1;
+        public static final boolean SWAP_XY = false;
+
+        public static final double LL_YAW_SIGN = 1.0;
+        public static final double LL_YAW_OFFSET_DEG = 0.0;
+
+        public static final double MAX_DIST_JUMP_IN = 6;
+        public static final double MAX_YAW_JUMP_DEG = 10;
+    }
+
     public static final class Elevator {
-        public static final String gearShift = "gS";
-        public static final String elevatorLeft = "eL";
-        public static final String elevatorRight = "eR";
+        public static final String GEAR_SHIFT = "gS";
+        public static final String ELEVATOR_LEFT = "eL";
+        public static final String ELEVATOR_RIGHT = "eR";
 
         public static final double GEAR_SHIFT_DEFAULT = 0.5;
         public static final double ELEVATOR_LEFT_DEFAULT = 0.5;
@@ -55,7 +72,7 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final String rollerIntake = "rI";
+        public static final String ROLLER_INTAKE = "rI";
 
         public static final double INTAKE_POWER = 1.0;
         public static final double OUTTAKE_POWER = -1.0;
@@ -65,41 +82,41 @@ public final class Constants {
     }
 
     public static final class Turret {
-        public static final String turretRotation = "tR";
+        public static final String TURRET_ROTATION = "tR";
 
-        public static final double TurretTicksPerRev = 145.1;
-        public static final double TurretDriver = 24.0;
-        public static final double TurretDriven = 100.0;
-        public static final double TurretOutputToTurretRatio = TurretDriver / TurretDriven;
-        public static final double TurretTicksPerTurretRev = TurretTicksPerRev / TurretOutputToTurretRatio;
-        public static final double TurretDegPerTick = 360.0 / TurretTicksPerTurretRev;
+        public static final double TURRET_TICKS_PER_REV = 145.1;
+        public static final double TURRET_DRIVER = 24.0;
+        public static final double TURRET_DRIVEN = 100.0;
+        public static final double TURRET_OUTPUT_TO_TURRET_RATIO = TURRET_DRIVER / TURRET_DRIVEN;
+        public static final double TURRET_TICKS_PER_TURRET_REV = TURRET_TICKS_PER_REV / TURRET_OUTPUT_TO_TURRET_RATIO;
+        public static final double TURRET_DEG_PER_TICK = 360.0 / TURRET_TICKS_PER_TURRET_REV;
 
-        public static final double TurretMinDeg = -180.0;
-        public static final double TurretMaxDeg = 180.0;
-        public static final double LimitGuard = 0.25;
+        public static final double TURRET_MIN_DEG = -180.0;
+        public static final double TURRET_MAX_DEG = 180.0;
+        public static final double LIMIT_GUARD = 0.25;
 
         // TODO: TUNE KD
-        public static final double QuickKp = 0.0;
-        public static final double QuickKd = 0.0;
-        public static final double QuickMinPower = 0.0;
-        public static final double QuickMaxPower = 1.0;
+        public static final double QUICK_KP = 0.0;
+        public static final double QUICK_KD = 0.0;
+        public static final double QUICK_MIN_POWER = 0.0;
+        public static final double QUICK_MAX_POWER = 1.0;
 
-        public static final double PreciseKp = 0.0;
-        public static final double PreciseKd = 0.0;
-        public static final double PreciseRateDeadband = 0.0;
-        public static final double PreciseMinPower = 0.0;
-        public static final double PreciseMaxPower = 0.20;
+        public static final double PRECISE_KP = 0.0;
+        public static final double PRECISE_KD = 0.0;
+        public static final double PRECISE_RATE_DEADBAND = 0.0;
+        public static final double PRECISE_MIN_POWER = 0.0;
+        public static final double PRECISE_MAX_POWER = 0.20;
 
-        public static final double QuickDeadband = 1.0;
-        public static final double PreciseDeadband = 0.75;
+        public static final double QUICK_DEADBAND = 1.0;
+        public static final double PRECISE_DEADBAND = 0.75;
 
-        public static final double SwitchDeadband = 5.0;
-        public static final double LostTargetTimeout = 0.20;
+        public static final double SWITCH_DEADBAND = 5.0;
+        public static final double LOST_TARGET_TIMEOUT = 0.20;
     }
 
     public static final class Flywheel {
-        public static final String Flywheel1 = "fW1";
-        public static final String Flywheel2 = "fW2";
+        public static final String FLYWHEEL_1 = "fW1";
+        public static final String FLYWHEEL_2 = "fW2";
 
         public static final double TICKS_PER_REV = 28.0;
 
@@ -120,7 +137,7 @@ public final class Constants {
     }
 
     public static final class Releases {
-        public static final String artifactRelease = "aR";
+        public static final String ARTIFACT_RELEASE = "aR";
 
         public static final double HOLD = 0.5;
         public static final double RELEASE = 0.75;
@@ -129,7 +146,8 @@ public final class Constants {
     public static final class Vision {
         public static final String LIMELIGHT_NAME = "limelight";
         public static final int DEFAULT_PIPELINE = 0;
-        public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
+        public static final int LOCALIZATION_PIPELINE = DEFAULT_PIPELINE;
+        public static final int ARTIFACT_PIPELINE = 1;
 
         public static final String TURRET_CAM_NAME = "TurretCam";
         public static final double INTRINSIC_FX = 650.00;
@@ -168,22 +186,22 @@ public final class Constants {
             BLUE_CLOSE(BLUE_CLOSE_X, BLUE_CLOSE_Y, BLUE_CLOSE_HEADING_DEG, Constants.Vision.BLUE_TAG_ID),
             BLUE_FAR(BLUE_FAR_X, BLUE_FAR_Y, BLUE_FAR_HEADING_DEG, Constants.Vision.BLUE_TAG_ID);
 
-            public final double startXIn, startYIn, startHeadingDeg;
-            public final int trackedTagId;
+            public final double START_X_IN, START_Y_IN, START_HEADING_DEG;
+            public final int TRACKED_TAG_ID;
 
             StartPose(double xIn, double yIn, double headingDeg, int tagId) {
-                this.startXIn = xIn;
-                this.startYIn = yIn;
-                this.startHeadingDeg = headingDeg;
-                this.trackedTagId = tagId;
+                this.START_X_IN = xIn;
+                this.START_Y_IN = yIn;
+                this.START_HEADING_DEG = headingDeg;
+                this.TRACKED_TAG_ID = tagId;
             }
 
             public boolean isRed() {
-                return trackedTagId == Constants.Vision.RED_TAG_ID;
+                return TRACKED_TAG_ID == Constants.Vision.RED_TAG_ID;
             }
 
             public boolean isBlue() {
-                return trackedTagId == Constants.Vision.BLUE_TAG_ID;
+                return TRACKED_TAG_ID == Constants.Vision.BLUE_TAG_ID;
             }
         }
 
@@ -306,14 +324,14 @@ public final class Constants {
 
         public enum Alliance {RED, BLUE}
 
-        private static Alliance currentAlliance;
+        private static Alliance CURRENT_ALLIANCE;
 
         public static void setAlliance(Alliance alliance) {
-            currentAlliance = alliance;
+            CURRENT_ALLIANCE = alliance;
         }
 
         public static Alliance getAlliance() {
-            return currentAlliance;
+            return CURRENT_ALLIANCE;
         }
     }
 }

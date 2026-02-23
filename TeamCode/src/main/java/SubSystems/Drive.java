@@ -4,7 +4,6 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -14,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import Util.Constants;
@@ -32,8 +32,6 @@ public class Drive {
 
     private Iterable<VoltageSensor> voltageSensor;
 
-    private boolean antiTipEnabled = true;
-
     private boolean resetPinPointOnInit = true;
     public void setResetPinPointOnInit(boolean enabled) {
         resetPinPointOnInit = enabled;
@@ -42,22 +40,6 @@ public class Drive {
     public void setPose(double xIn, double yIn, double headingDeg) {
         if (pinpoint == null) return;
         try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, xIn, yIn, AngleUnit.DEGREES, headingDeg)); } catch (Exception ignored) { }
-    }
-
-    public void setAntiTipEnabled(boolean enabled) {
-        antiTipEnabled = enabled;
-    }
-
-    public boolean isAntiTipEnabled() {
-        return antiTipEnabled;
-    }
-
-    private double antiTipCorrection(double pitchDeg) {
-        if (!antiTipEnabled) return 0.0;
-        if (Math.abs(pitchDeg) <= Constants.Drive.TIP_DEADBAND_DEG) return 0.0;
-
-        double cmd = pitchDeg * Constants.Drive.TIP_KP;
-        return Range.clip(cmd, -Constants.Drive.TIP_MAX, Constants.Drive.TIP_MAX);
     }
 
 
@@ -78,10 +60,10 @@ public class Drive {
             imu = null;
         }
 
-        frontLeft = hw.get(DcMotorEx.class, Constants.Drive.frontLeft);
-        frontRight = hw.get(DcMotorEx.class, Constants.Drive.frontRight);
-        backLeft = hw.get(DcMotorEx.class, Constants.Drive.backLeft);
-        backRight = hw.get(DcMotorEx.class, Constants.Drive.backRight);
+        frontLeft = hw.get(DcMotorEx.class, Constants.Drive.FRONT_LEFT);
+        frontRight = hw.get(DcMotorEx.class, Constants.Drive.FRONT_RIGHT);
+        backLeft = hw.get(DcMotorEx.class, Constants.Drive.BACK_LEFT);
+        backRight = hw.get(DcMotorEx.class, Constants.Drive.BACK_RIGHT);
 
         frontLeft.setDirection(Constants.Drive.LEFT_DIR);
         backLeft.setDirection(Constants.Drive.LEFT_DIR);
@@ -93,7 +75,7 @@ public class Drive {
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        pinpoint = hw.get(GoBildaPinpointDriver.class, Constants.PinPoint.PinPoint);
+        pinpoint = hw.get(GoBildaPinpointDriver.class, Constants.PinPoint.PINPOINT);
 
         pinpoint.setEncoderDirections(
                 Constants.PinPoint.X_REVERSED
@@ -130,7 +112,6 @@ public class Drive {
         double drive = driveInput;
         double turn = turnInput;
 
-        // drive = Range.clip(drive + antiTipCorrection(getPitchDeg()), -1.0, 1.0);
         drive = Range.clip(drive, -1.0, 1.0);
 
         if (Math.abs(drive) < 0.05) drive = 0;
@@ -181,14 +162,39 @@ public class Drive {
         return pinpoint.getPosition().getHeading(AngleUnit.DEGREES);
     }
 
-    public double getPitchDeg() {
-        if (imu == null) return 0.0;
-        try {
-            YawPitchRollAngles ypr = imu.getRobotYawPitchRollAngles();
-            return ypr.getPitch(AngleUnit.DEGREES);
-        } catch (Exception ignored) {
-            return 0.0;
+    private static double wrapDeg(double deg) {
+        while (deg > 180.0) deg -= 360.0;
+        while (deg <= -180.0) deg += 360.0;
+        return deg;
+    }
+
+    public void relocalizePose(Pose3D llPose) {
+        if (llPose == null) return;
+        if (pinpoint == null) return;
+
+        double xIn = llPose.getPosition().x * Constants.Relocalize.METERS_TO_IN;
+        double yIn = llPose.getPosition().y * Constants.Relocalize.METERS_TO_IN;
+
+        if (Constants.Relocalize.SWAP_XY) {
+            double tmp = xIn; xIn = yIn; yIn = tmp;
         }
+
+        xIn *= Constants.Relocalize.LL_X_TO_PP_SIGN;
+        yIn *= Constants.Relocalize.LL_Y_TO_PP_SIGN;
+
+        double yawDeg = llPose.getOrientation().getYaw(AngleUnit.DEGREES);
+        yawDeg = yawDeg * Constants.Relocalize.LL_YAW_SIGN + Constants.Relocalize.LL_YAW_OFFSET_DEG;
+        yawDeg = wrapDeg(yawDeg);
+
+        double dX = xIn - getX();
+        double dY = yIn - getY();
+        double dYaw = wrapDeg(yawDeg - (wrapDeg(getHeading())));
+
+        if (Math.abs(dX) > Constants.Relocalize.MAX_DIST_JUMP_IN) return;
+        if (Math.abs(dY) > Constants.Relocalize.MAX_DIST_JUMP_IN) return;
+        if (Math.abs(dYaw) > Constants.Relocalize.MAX_YAW_JUMP_DEG) return;
+
+        try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, xIn, yIn, AngleUnit.DEGREES, yawDeg)); } catch (Exception ignored) { }
     }
 
     public double getBatteryVoltage() {

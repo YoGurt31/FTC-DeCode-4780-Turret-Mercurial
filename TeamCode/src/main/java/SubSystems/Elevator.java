@@ -26,9 +26,9 @@ public class Elevator {
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
-        gearShift = hw.get(Servo.class, Constants.Elevator.gearShift);
-        elevatorLeft = hw.get(Servo.class, Constants.Elevator.elevatorLeft);
-        elevatorRight = hw.get(Servo.class, Constants.Elevator.elevatorRight);
+        gearShift = hw.get(Servo.class, Constants.Elevator.GEAR_SHIFT);
+        elevatorLeft = hw.get(Servo.class, Constants.Elevator.ELEVATOR_LEFT);
+        elevatorRight = hw.get(Servo.class, Constants.Elevator.ELEVATOR_RIGHT);
 
         setDefaultPositions();
     }

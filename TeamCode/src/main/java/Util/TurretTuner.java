@@ -41,18 +41,18 @@ public final class TurretTuner {
         final long[] lastAdjustMs = { 0 };
         final long repeatMs = 120;
 
-        final double[] quickKp = { Constants.Turret.QuickKp };
-        final double[] quickKd = { Constants.Turret.QuickKd };
-        final double[] quickMin = { Constants.Turret.QuickMinPower };
-        final double[] quickMax = { Constants.Turret.QuickMaxPower };
-        final double[] quickDeadband = { Constants.Turret.QuickDeadband };
+        final double[] quickKp = { Constants.Turret.QUICK_KP};
+        final double[] quickKd = { Constants.Turret.QUICK_KD};
+        final double[] quickMin = { Constants.Turret.QUICK_MIN_POWER};
+        final double[] quickMax = { Constants.Turret.QUICK_MAX_POWER};
+        final double[] quickDeadband = { Constants.Turret.QUICK_DEADBAND};
 
-        final double[] preciseKp = { Constants.Turret.PreciseKp };
-        final double[] preciseKd = { Constants.Turret.PreciseKd };
-        final double[] preciseMin = { Constants.Turret.PreciseMinPower };
-        final double[] preciseMax = { Constants.Turret.PreciseMaxPower };
-        final double[] preciseRateDb = { Constants.Turret.PreciseRateDeadband };
-        final double[] preciseDeadband = { Constants.Turret.PreciseDeadband };
+        final double[] preciseKp = { Constants.Turret.PRECISE_KP};
+        final double[] preciseKd = { Constants.Turret.PRECISE_KD};
+        final double[] preciseMin = { Constants.Turret.PRECISE_MIN_POWER};
+        final double[] preciseMax = { Constants.Turret.PRECISE_MAX_POWER};
+        final double[] preciseRateDb = { Constants.Turret.PRECISE_RATE_DEADBAND};
+        final double[] preciseDeadband = { Constants.Turret.PRECISE_DEADBAND};
 
         final int[] turretSel = { 0 };
         final boolean[] turretPrecise = { false };

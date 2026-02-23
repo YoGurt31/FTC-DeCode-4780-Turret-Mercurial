@@ -33,7 +33,7 @@ public final class PinpointLocalizer implements Localizer {
     private Pose2d txPinpointRobot = new Pose2d(0, 0, 0);
 
     public PinpointLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
-        driver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.PinPoint.PinPoint);
+        driver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.PinPoint.PINPOINT);
 
         double mmPerTick = inPerTick * 25.4;
         // TODO: Decide Whether To Use Computed Or PreSet Values

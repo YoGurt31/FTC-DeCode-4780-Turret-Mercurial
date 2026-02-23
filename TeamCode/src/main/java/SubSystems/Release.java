@@ -26,7 +26,7 @@ public class Release {
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
-        release = hw.get(Servo.class, Constants.Releases.artifactRelease);
+        release = hw.get(Servo.class, Constants.Releases.ARTIFACT_RELEASE);
 
         close();
         isOpen = false;

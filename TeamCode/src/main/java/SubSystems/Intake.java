@@ -34,7 +34,7 @@ public class Intake {
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
-        roller = hw.get(DcMotorEx.class, Constants.Intake.rollerIntake);
+        roller = hw.get(DcMotorEx.class, Constants.Intake.ROLLER_INTAKE);
         roller.setDirection(DcMotorSimple.Direction.REVERSE);
 
         roller.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

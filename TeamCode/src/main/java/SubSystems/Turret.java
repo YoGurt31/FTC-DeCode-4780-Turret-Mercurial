@@ -44,7 +44,7 @@ public class Turret {
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
-        turretRotation = hw.get(DcMotorEx.class, Constants.Turret.turretRotation);
+        turretRotation = hw.get(DcMotorEx.class, Constants.Turret.TURRET_ROTATION);
         turretRotation.setDirection(DcMotorSimple.Direction.REVERSE);
         turretRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -82,11 +82,11 @@ public class Turret {
     }
 
     public boolean atMinLimit() {
-        return getTurretDeg() <= (Constants.Turret.TurretMinDeg + Constants.Turret.LimitGuard);
+        return getTurretDeg() <= (Constants.Turret.TURRET_MIN_DEG + Constants.Turret.LIMIT_GUARD);
     }
 
     public boolean atMaxLimit() {
-        return getTurretDeg() >= (Constants.Turret.TurretMaxDeg - Constants.Turret.LimitGuard);
+        return getTurretDeg() >= (Constants.Turret.TURRET_MAX_DEG - Constants.Turret.LIMIT_GUARD);
     }
 
     public double applyTurretLimitsToPower(double requestedPower) {
@@ -98,7 +98,7 @@ public class Turret {
     public double getTurretDeg() {
         if (turretRotation == null) return 0.0;
         double ticks = turretRotation.getCurrentPosition() - turretZeroOffsetTicks;
-        return ticks * Constants.Turret.TurretDegPerTick;
+        return ticks * Constants.Turret.TURRET_DEG_PER_TICK;
     }
 
     public double getTargetDeg() {
@@ -122,8 +122,8 @@ public class Turret {
         double targetShort = currentDeg + errShort;
         double targetLong = currentDeg + errLong;
 
-        boolean shortOk = (targetShort >= Constants.Turret.TurretMinDeg) && (targetShort <= Constants.Turret.TurretMaxDeg);
-        boolean longOk = (targetLong >= Constants.Turret.TurretMinDeg) && (targetLong <= Constants.Turret.TurretMaxDeg);
+        boolean shortOk = (targetShort >= Constants.Turret.TURRET_MIN_DEG) && (targetShort <= Constants.Turret.TURRET_MAX_DEG);
+        boolean longOk = (targetLong >= Constants.Turret.TURRET_MIN_DEG) && (targetLong <= Constants.Turret.TURRET_MAX_DEG);
 
         if (shortOk && longOk) {
             return (Math.abs(errShort) <= Math.abs(errLong)) ? errShort : errLong;
@@ -131,7 +131,7 @@ public class Turret {
         if (shortOk) return errShort;
         if (longOk) return errLong;
 
-        double clampedTarget = clamp(desiredDeg, Constants.Turret.TurretMinDeg, Constants.Turret.TurretMaxDeg);
+        double clampedTarget = clamp(desiredDeg, Constants.Turret.TURRET_MIN_DEG, Constants.Turret.TURRET_MAX_DEG);
         return clampedTarget - currentDeg;
     }
 
@@ -179,7 +179,7 @@ public class Turret {
         turretErrDeg = errDeg;
 
         if (aimMode == TurretAimMode.Quick) {
-            if (Vision.INSTANCE.hasTrackedTag() && Math.abs(errDeg) <= Constants.Turret.SwitchDeadband) {
+            if (Vision.INSTANCE.hasTrackedTag() && Math.abs(errDeg) <= Constants.Turret.SWITCH_DEADBAND) {
                 aimMode = TurretAimMode.Precise;
                 lastQuickErrDeg = 0.0;
                 lastQuickTimeS = 0.0;
@@ -187,7 +187,7 @@ public class Turret {
                 lastPreciseTimeS = 0.0;
             }
         } else {
-            boolean targetRecentlyLost = (!Vision.INSTANCE.hasTrackedTag()) && ((nowS - lastTargetSeenTimeS) > Constants.Turret.LostTargetTimeout);
+            boolean targetRecentlyLost = (!Vision.INSTANCE.hasTrackedTag()) && ((nowS - lastTargetSeenTimeS) > Constants.Turret.LOST_TARGET_TIMEOUT);
             if (targetRecentlyLost) {
                 aimMode = TurretAimMode.Quick;
                 lastQuickErrDeg = 0.0;
@@ -210,19 +210,19 @@ public class Turret {
             lastPreciseErrDeg = tagErrDeg;
             lastPreciseTimeS = now;
 
-            boolean inPos = Math.abs(tagErrDeg) <= Constants.Turret.PreciseDeadband;
-            boolean slow = Math.abs(errRate) <= Constants.Turret.PreciseRateDeadband;
+            boolean inPos = Math.abs(tagErrDeg) <= Constants.Turret.PRECISE_DEADBAND;
+            boolean slow = Math.abs(errRate) <= Constants.Turret.PRECISE_RATE_DEADBAND;
 
             if (inPos && slow) {
                 stopTurret();
                 return true;
             }
 
-            double requested = (tagErrDeg * Constants.Turret.PreciseKp) - (errRate * Constants.Turret.PreciseKd);
-            double cmd = Range.clip(requested, -Constants.Turret.PreciseMaxPower, Constants.Turret.PreciseMaxPower);
+            double requested = (tagErrDeg * Constants.Turret.PRECISE_KP) - (errRate * Constants.Turret.PRECISE_KD);
+            double cmd = Range.clip(requested, -Constants.Turret.PRECISE_MAX_POWER, Constants.Turret.PRECISE_MAX_POWER);
 
-            if (!inPos && Math.abs(cmd) < Constants.Turret.PreciseMinPower) {
-                cmd = Math.copySign(Constants.Turret.PreciseMinPower, cmd);
+            if (!inPos && Math.abs(cmd) < Constants.Turret.PRECISE_MIN_POWER) {
+                cmd = Math.copySign(Constants.Turret.PRECISE_MIN_POWER, cmd);
             }
 
             cmd = applyTurretLimitsToPower(cmd);
@@ -233,7 +233,7 @@ public class Turret {
             return false;
         }
 
-        if (Math.abs(errDeg) <= Constants.Turret.QuickDeadband) {
+        if (Math.abs(errDeg) <= Constants.Turret.QUICK_DEADBAND) {
             stopTurret();
             lastQuickErrDeg = 0.0;
             lastQuickTimeS = 0.0;
@@ -247,11 +247,11 @@ public class Turret {
         lastQuickErrDeg = errDeg;
         lastQuickTimeS = nowS;
 
-        double requested = (errDeg * Constants.Turret.QuickKp) - (errRate * Constants.Turret.QuickKd);
-        double cmd = Range.clip(requested, -Constants.Turret.QuickMaxPower, Constants.Turret.QuickMaxPower);
+        double requested = (errDeg * Constants.Turret.QUICK_KP) - (errRate * Constants.Turret.QUICK_KD);
+        double cmd = Range.clip(requested, -Constants.Turret.QUICK_MAX_POWER, Constants.Turret.QUICK_MAX_POWER);
 
-        if (Math.abs(errDeg) > Constants.Turret.QuickDeadband && Math.abs(cmd) < Constants.Turret.QuickMinPower) {
-            cmd = Math.copySign(Constants.Turret.QuickMinPower, cmd);
+        if (Math.abs(errDeg) > Constants.Turret.QUICK_DEADBAND && Math.abs(cmd) < Constants.Turret.QUICK_MIN_POWER) {
+            cmd = Math.copySign(Constants.Turret.QUICK_MIN_POWER, cmd);
         }
 
         cmd = applyTurretLimitsToPower(cmd);
@@ -277,7 +277,7 @@ public class Turret {
 
         if (!forcePrecise) {
             if (aimMode == TurretAimMode.Quick) {
-                if (Vision.INSTANCE.hasTrackedTag() && Math.abs(errDeg) <= Constants.Turret.SwitchDeadband) {
+                if (Vision.INSTANCE.hasTrackedTag() && Math.abs(errDeg) <= Constants.Turret.SWITCH_DEADBAND) {
                     aimMode = TurretAimMode.Precise;
                     lastQuickErrDeg = 0.0;
                     lastQuickTimeS = 0.0;
@@ -285,7 +285,7 @@ public class Turret {
                     lastPreciseTimeS = 0.0;
                 }
             } else {
-                boolean targetRecentlyLost = (!Vision.INSTANCE.hasTrackedTag()) && ((nowS - lastTargetSeenTimeS) > Constants.Turret.LostTargetTimeout);
+                boolean targetRecentlyLost = (!Vision.INSTANCE.hasTrackedTag()) && ((nowS - lastTargetSeenTimeS) > Constants.Turret.LOST_TARGET_TIMEOUT);
                 if (targetRecentlyLost) {
                     aimMode = TurretAimMode.Quick;
                     lastQuickErrDeg = 0.0;
@@ -316,7 +316,7 @@ public class Turret {
             lastPreciseErrDeg = tagErrDeg;
             lastPreciseTimeS = nowS;
 
-            boolean inPos = Math.abs(tagErrDeg) <= Constants.Turret.PreciseDeadband;
+            boolean inPos = Math.abs(tagErrDeg) <= Constants.Turret.PRECISE_DEADBAND;
             boolean slow = Math.abs(errRate) <= preciseRateDeadband;
 
             if (inPos && slow) {
@@ -339,7 +339,7 @@ public class Turret {
             return false;
         }
 
-        if (Math.abs(errDeg) <= Constants.Turret.QuickDeadband) {
+        if (Math.abs(errDeg) <= Constants.Turret.QUICK_DEADBAND) {
             stopTurret();
             lastQuickErrDeg = 0.0;
             lastQuickTimeS = 0.0;
@@ -356,7 +356,7 @@ public class Turret {
         double requested = (errDeg * quickKp) - (errRate * quickKd);
         double cmd = Range.clip(requested, -quickMaxPower, quickMaxPower);
 
-        if (Math.abs(errDeg) > Constants.Turret.QuickDeadband && Math.abs(cmd) < quickMinPower) {
+        if (Math.abs(errDeg) > Constants.Turret.QUICK_DEADBAND && Math.abs(cmd) < quickMinPower) {
             cmd = Math.copySign(quickMinPower, cmd);
         }
 

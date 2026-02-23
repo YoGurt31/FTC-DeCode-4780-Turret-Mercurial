@@ -188,9 +188,9 @@ public final class TuningOpModes {
             for (Class<?> c : Arrays.asList(
                     AngularRampLogger.class,
                     ForwardRampLogger.class,
-                    LateralRampLogger.class,
+//                    LateralRampLogger.class,
                     ManualFeedforwardTuner.class,
-                    MecanumMotorDirectionDebugger.class,
+//                    MecanumMotorDirectionDebugger.class,
                     ManualFeedbackTuner.class
             )) {
                 configRoot.putVariable(c.getSimpleName(), ReflectionConfig.createVariableFromClass(c));

@@ -10,8 +10,8 @@ public final class Constants {
         public static final String BACK_LEFT = "bL";
         public static final String BACK_RIGHT = "bR";
 
-        public static final DcMotorSimple.Direction LEFT_DIR  = DcMotorSimple.Direction.REVERSE;
-        public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
+        public static final DcMotorSimple.Direction LEFT_DIR  = DcMotorSimple.Direction.FORWARD;
+        public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.REVERSE;
 
         public static final double ROTATE_GAIN = 0.0225;
         public static final double MAX_ROTATE = 0.80;

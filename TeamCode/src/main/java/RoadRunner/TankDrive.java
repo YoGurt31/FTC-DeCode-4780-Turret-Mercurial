@@ -62,7 +62,7 @@ public final class TankDrive {
 
         // TODO: Get These Values
         // drive model parameters
-        public double inPerTick = 0; // XXX: Via ForwardPushTest
+        public double inPerTick = 0.0019396867; // Via ForwardPushTest
         public double trackWidthTicks = 0; // XXX: Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
 
         // TODO: Get These Values

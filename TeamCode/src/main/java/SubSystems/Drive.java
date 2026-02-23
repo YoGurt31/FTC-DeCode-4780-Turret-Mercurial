@@ -110,7 +110,7 @@ public class Drive {
 
     public void drive(double driveInput, double turnInput) {
         double drive = driveInput;
-        double turn = turnInput;
+        double turn = -turnInput;
 
         drive = Range.clip(drive, -1.0, 1.0);
 

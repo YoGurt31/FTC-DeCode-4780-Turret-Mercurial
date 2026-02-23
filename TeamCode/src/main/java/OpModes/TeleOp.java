@@ -5,8 +5,6 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
 import SubSystems.DefaultTelemetry;
@@ -37,101 +35,113 @@ public final class TeleOp {
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
-            final boolean[] wasShooting = { false };
-            final long[] lastMs = { 0 };
-            final long[] stationarySinceMs = { 0 };
+            final boolean[] wasShooting = {false};
+            final long[] lastMs = {0};
+            final long[] stationarySinceMs = {0};
 
-            // Main Loop
-            linsane.schedule(sequence(
-                    waitUntil(linsane::inLoop),
-                    loop(exec(() -> {
-                        Drive.INSTANCE.updateOdometry();
-                        Vision.INSTANCE.updateRobotYawDeg(Drive.INSTANCE.getHeading());
-                        Vision.INSTANCE.update();
+            // Intake
+            linsane.bindWhileTrue(() -> linsane.gamepad1().left_bumper, loop(exec(() -> {
+                Intake.INSTANCE.setMode(Intake.Mode.EJECT);
+                Intake.INSTANCE.apply();
+            })));
+            linsane.bindWhileTrue(() -> linsane.gamepad1().right_bumper && !linsane.gamepad1().left_bumper, loop(exec(() -> {
+                Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                Intake.INSTANCE.apply();
+            })));
 
-                        // Turret
-                        Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
-                        // Turret.INSTANCE.lockTurret();
+            // Flywheel + Release
+            linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
+                // Flywheel.INSTANCE.enableAutoRange();
+                Flywheel.INSTANCE.setVelocityRps(67);
+                Release.INSTANCE.open();
+                Flywheel.INSTANCE.apply();
+                Release.INSTANCE.update();
+            })));
 
-                        // Intake
-                        if (linsane.gamepad1().left_bumper) {
-                            Intake.INSTANCE.setMode(Intake.Mode.EJECT);
-                        } else if (linsane.gamepad1().right_bumper) {
-                            Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
-                        } else {
-                            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
-                        }
-                        Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
-                        Vision.INSTANCE.setPipeline((Intake.INSTANCE.getMode() == Intake.Mode.INTAKE) ? Constants.Vision.ARTIFACT_PIPELINE : Constants.Vision.LOCALIZATION_PIPELINE);
-
-                        // Flywheel + Release
-                        boolean shooting = linsane.gamepad1().right_trigger > Constants.Relocalize.SHOOT_TRIGGER_DB;
-                        if (shooting) {
-                            // Flywheel.INSTANCE.enableAutoRange();
-                            Flywheel.INSTANCE.setVelocityRps(67);
-                            Release.INSTANCE.open();
-                        } else {
-                            Flywheel.INSTANCE.stop();
-                            Release.INSTANCE.close();
-                        }
-                        boolean justStoppedShooting = wasShooting[0] && !shooting;
-                        wasShooting[0] = shooting;
-
-                        // Drive
-                        double driveCmd = -linsane.gamepad1().left_stick_y;
-                        double turnCmd = linsane.gamepad1().right_stick_x;
-                        double rawDrive = driveCmd, rawTurn = turnCmd;
-
-                        if (Intake.INSTANCE.getMode() == Intake.Mode.INTAKE) {
-                            if (Vision.INSTANCE.hasArtifact()) {
-                                double tx = Vision.INSTANCE.getTX();
-                                if (Math.abs(tx) <= Constants.Drive.ARTIFACT_AIM_DEADBAND_DEG) {
-                                    turnCmd = 0.0;
-                                } else {
-                                    double assist = tx * Constants.Drive.ROTATE_GAIN;
-                                    if (assist > Constants.Drive.MAX_ROTATE) assist = Constants.Drive.MAX_ROTATE;
-                                    if (assist < -Constants.Drive.MAX_ROTATE) assist = -Constants.Drive.MAX_ROTATE;
-                                    turnCmd = assist;
-                                }
-                            }
-                        }
-
-                        long now = System.currentTimeMillis();
-                        boolean stationary = Math.abs(rawDrive) < Constants.Relocalize.STATIONARY_STICK_DB && Math.abs(rawTurn) < Constants.Relocalize.STATIONARY_STICK_DB;
-                        if (stationary) { if (stationarySinceMs[0] == 0) stationarySinceMs[0] = now; } else { stationarySinceMs[0] = 0; }
-                        boolean stationaryLongEnough = stationarySinceMs[0] != 0 && (now - stationarySinceMs[0]) >= Constants.Relocalize.STATIONARY_TIME_MS;
-                        boolean cooldownOk = (now - lastMs[0]) > Constants.Relocalize.COOLDOWN_MS;
-                        boolean inLocalizationPipe = Vision.INSTANCE.getPipelineIndex() == Constants.Vision.LOCALIZATION_PIPELINE;
-                        boolean shouldRelocalize = (stationaryLongEnough || (justStoppedShooting && stationary));
-
-                        if (shouldRelocalize && cooldownOk && inLocalizationPipe && Vision.INSTANCE.hasPose()) {
-                            if (Vision.INSTANCE.getPose() != null) {
-                                Drive.INSTANCE.relocalizePose(Vision.INSTANCE.getPose());
-                                lastMs[0] = now;
-                                stationarySinceMs[0] = now;
-                            }
-                        }
-
-                        Drive.INSTANCE.drive(driveCmd, turnCmd);
-
-                        Intake.INSTANCE.apply();
-                        Flywheel.INSTANCE.apply();
-                        Release.INSTANCE.update();
-                        Elevator.INSTANCE.updateRise();
-
-                        if (telemetry) {
-                            DefaultTelemetry.INSTANCE.update(linsane.telemetry());
-                        }
-                    }))
-            ));
+            linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger < Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
+                Flywheel.INSTANCE.stop();
+                Release.INSTANCE.close();
+                Flywheel.INSTANCE.apply();
+                Release.INSTANCE.update();
+            })));
 
             // Elevator
-            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share),
-                    exec(Elevator.INSTANCE::applyPreset)
-            );
-            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().dpad_up),
-                    exec(Elevator.INSTANCE::startRise)
-            );
+            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share), exec(Elevator.INSTANCE::applyPreset));
+            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().dpad_up), exec(Elevator.INSTANCE::startRise));
+
+            // Main Loop
+            linsane.schedule(sequence(waitUntil(linsane::inLoop), loop(exec(() -> {
+                Drive.INSTANCE.updateOdometry();
+                Vision.INSTANCE.updateRobotYawDeg(Drive.INSTANCE.getHeading());
+                Vision.INSTANCE.update();
+
+                boolean shootingNow = linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB;
+                boolean intakingNow = linsane.gamepad1().right_bumper && !linsane.gamepad1().left_bumper;
+
+                Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
+                Vision.INSTANCE.setPipeline(intakingNow ? Constants.Vision.ARTIFACT_PIPELINE : Constants.Vision.LOCALIZATION_PIPELINE);
+
+                // Turret
+                Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+                // Turret.INSTANCE.lockTurret();
+
+                // Drive
+                double driveCmd = -linsane.gamepad1().left_stick_y;
+                double turnCmd = linsane.gamepad1().right_stick_x;
+                double rawDrive = driveCmd, rawTurn = turnCmd;
+
+                if (intakingNow) {
+                    if (Vision.INSTANCE.hasArtifact()) {
+                        double tx = Vision.INSTANCE.getTX();
+                        if (Math.abs(tx) <= Constants.Drive.ARTIFACT_AIM_DEADBAND_DEG) {
+                            turnCmd = 0.0;
+                        } else {
+                            double assist = tx * Constants.Drive.ROTATE_GAIN;
+                            if (assist > Constants.Drive.MAX_ROTATE)
+                                assist = Constants.Drive.MAX_ROTATE;
+                            if (assist < -Constants.Drive.MAX_ROTATE)
+                                assist = -Constants.Drive.MAX_ROTATE;
+                            turnCmd = assist;
+                        }
+                    }
+                }
+
+                // Intake Idle
+                if (!linsane.gamepad1().left_bumper && !linsane.gamepad1().right_bumper) {
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                }
+
+                // Relocalize
+                boolean justStoppedShooting = wasShooting[0] && !shootingNow;
+                wasShooting[0] = shootingNow;
+                long now = System.currentTimeMillis();
+                boolean stationary = Math.abs(rawDrive) < Constants.Relocalize.STATIONARY_STICK_DB && Math.abs(rawTurn) < Constants.Relocalize.STATIONARY_STICK_DB;
+                if (stationary) {
+                    if (stationarySinceMs[0] == 0) stationarySinceMs[0] = now;
+                } else {
+                    stationarySinceMs[0] = 0;
+                }
+                boolean stationaryLongEnough = stationarySinceMs[0] != 0 && (now - stationarySinceMs[0]) >= Constants.Relocalize.STATIONARY_TIME_MS;
+                boolean cooldownOk = (now - lastMs[0]) > Constants.Relocalize.COOLDOWN_MS;
+                boolean inLocalizationPipe = Vision.INSTANCE.getPipelineIndex() == Constants.Vision.LOCALIZATION_PIPELINE;
+                boolean shouldRelocalize = (stationaryLongEnough || (justStoppedShooting && stationary));
+
+                if (shouldRelocalize && cooldownOk && inLocalizationPipe && Vision.INSTANCE.hasPose()) {
+                    if (Vision.INSTANCE.getPose() != null) {
+                        Drive.INSTANCE.relocalizePose(Vision.INSTANCE.getPose());
+                        lastMs[0] = now;
+                        stationarySinceMs[0] = now;
+                    }
+                }
+
+                Drive.INSTANCE.drive(driveCmd, turnCmd);
+                Intake.INSTANCE.apply();
+                Elevator.INSTANCE.updateRise();
+
+                if (telemetry) {
+                    DefaultTelemetry.INSTANCE.update(linsane.telemetry());
+                }
+            }))));
 
             // Shut Off
             linsane.dropToScheduler();

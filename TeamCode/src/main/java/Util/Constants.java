@@ -16,10 +16,6 @@ public final class Constants {
         public static final double ROTATE_GAIN = 0.0225;
         public static final double MAX_ROTATE = 0.80;
         public static final double ARTIFACT_AIM_DEADBAND_DEG = 5;
-
-        public static final double TIP_DEADBAND_DEG = 5.0;
-        public static final double TIP_KP = 0.055;
-        public static final double TIP_MAX = 0.50;
     }
 
     public static final class PinPoint {

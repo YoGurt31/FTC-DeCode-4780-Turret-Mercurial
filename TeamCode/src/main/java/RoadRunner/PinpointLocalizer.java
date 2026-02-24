@@ -18,10 +18,10 @@ import Util.Constants;
 @Config
 public final class PinpointLocalizer implements Localizer {
     public static class Params {
-        // TODO: Get These Values
-        // XXX: Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
-        public double parYTicks = 0.0; // Y Position of the Parallel (Forward/Back) Encoder (in tick units)
-        public double perpXTicks = 0.0; // X Position of the Perpendicular (Left/Right) Encoder (in tick units)
+        // Get These Values
+        // Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
+        public double parYTicks = 2510.7415316160; // Y Position of the Parallel (Forward/Back) Encoder (in tick units)
+        public double perpXTicks = -1000.0172038122; // X Position of the Perpendicular (Left/Right) Encoder (in tick units)
     }
 
     public static Params PARAMS = new Params();
@@ -35,15 +35,13 @@ public final class PinpointLocalizer implements Localizer {
     public PinpointLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
         driver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.PinPoint.PINPOINT);
 
-        double mmPerTick = inPerTick * 25.4;
+        double mmPerTick = inPerTick * 25.4; // 0.04926804
         // TODO: Decide Whether To Use Computed Or PreSet Values
-//        driver.setEncoderResolution(1 / mmPerTick, DistanceUnit.MM);
-//        driver.setOffsets(mmPerTick * PARAMS.parYTicks, mmPerTick * PARAMS.perpXTicks, DistanceUnit.MM);
-        driver.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        driver.setOffsets(Constants.PinPoint.X_OFFSET_MM, Constants.PinPoint.Y_OFFSET_MM, DistanceUnit.MM);
+        driver.setEncoderResolution(1 / mmPerTick, DistanceUnit.MM);
+        driver.setOffsets(mmPerTick * PARAMS.parYTicks, mmPerTick * PARAMS.perpXTicks, DistanceUnit.MM);
+//        driver.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+//        driver.setOffsets(Constants.PinPoint.X_OFFSET_MM, Constants.PinPoint.Y_OFFSET_MM, DistanceUnit.MM);
 
-
-        // TODO: Verify Encoder Direction
         initialParDirection = Constants.PinPoint.X_REVERSED
                 ? GoBildaPinpointDriver.EncoderDirection.REVERSED
                 : GoBildaPinpointDriver.EncoderDirection.FORWARD;

@@ -60,15 +60,14 @@ public final class TankDrive {
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
-        // TODO: Get These Values
         // drive model parameters
         public double inPerTick = 0.0019396867; // Via ForwardPushTest
-        public double trackWidthTicks = 0; // XXX: Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
+        public double trackWidthTicks = 4618.671298799306; // Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
 
         // TODO: Get These Values
         // feedforward parameters (in tick units)
-        public double kS = 0; // XXX: Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
-        public double kV = 0; // XXX: Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kS = 1.360756318549041; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kV = 0.000279264452703; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
         public double kA = 0; // XXX: Via ManualFeedforwardTuner (http://192.168.43.1:8080/dash)
 
         // XXX: DO NOT TOUCH THESE VARIABLES

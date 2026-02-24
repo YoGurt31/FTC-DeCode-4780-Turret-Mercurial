@@ -17,7 +17,6 @@ import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
 import SubSystems.DefaultTelemetry;
 import SubSystems.Drive;
-import SubSystems.Elevator;
 import SubSystems.Flywheel;
 import SubSystems.Intake;
 import SubSystems.Release;
@@ -28,21 +27,21 @@ import Util.Constants;
 @SuppressWarnings("unused")
 public final class Auton {
     private interface AutoBuilder {
-        Closure build(AutoRuntime rt);
+        Closure build(AutoRuntime runTime);
     }
 
     private static final class AutoRuntime {
         private final Constants.Field.StartPose startPose;
-        private final TankDrive rr;
+        private final TankDrive TankDrive;
         private Action action;
 
-        private AutoRuntime(Constants.Field.StartPose startPose, TankDrive rr) {
+        private AutoRuntime(Constants.Field.StartPose startPose, TankDrive TankDrive) {
             this.startPose = startPose;
-            this.rr = rr;
+            this.TankDrive = TankDrive;
         }
 
-        TankDrive rr() {
-            return rr;
+        TankDrive TDrive() {
+            return TankDrive;
         }
 
         void start(Action a) {
@@ -88,12 +87,11 @@ public final class Auton {
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.zeroTurret();
 
-            TankDrive rr = new TankDrive(linsane.hardwareMap(), new Pose2d(startPose.START_X_IN, startPose.START_Y_IN, Math.toRadians(startPose.START_HEADING_DEG)));
-            AutoRuntime rt = new AutoRuntime(startPose, rr);
+            TankDrive tankDrive = new TankDrive(linsane.hardwareMap(), new Pose2d(startPose.START_X_IN, startPose.START_Y_IN, Math.toRadians(startPose.START_HEADING_DEG)));
+            AutoRuntime autoRuntime = new AutoRuntime(startPose, tankDrive);
 
             final boolean[] wasInZone = {false};
 
@@ -123,24 +121,23 @@ public final class Auton {
                         }
                         wasInZone[0] = inZone;
 
-                        Elevator.INSTANCE.updateRise();
                         Release.INSTANCE.update();
 
                         DefaultTelemetry.INSTANCE.update(linsane.telemetry()); // TODO: DEBUGGING ONLY - DISABLE FOR COMP
 
-                        rt.stepAction();
+                        autoRuntime.stepAction();
                     })
             )));
 
             linsane.schedule(sequence(
                     waitUntil(linsane::inLoop),
-                    auton.build(rt),
+                    auton.build(autoRuntime),
                     exec(() -> {
                         Drive.INSTANCE.stop();
                         Intake.INSTANCE.stop();
                         Flywheel.INSTANCE.stop();
                         Release.INSTANCE.close();
-                        rr.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+                        tankDrive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
                     })
             ));
 
@@ -155,8 +152,8 @@ public final class Auton {
             Constants.Field.StartPose.RED_FAR,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(36, -36), Math.toRadians(0))
                             .lineToX(54)
@@ -177,7 +174,7 @@ public final class Auton {
                             .splineTo(new Vector2d(12, 12), Math.toRadians(180))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -186,8 +183,8 @@ public final class Auton {
             Constants.Field.StartPose.BLUE_FAR,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(-36, -36), Math.toRadians(180))
                             .lineToX(-54)
@@ -208,7 +205,7 @@ public final class Auton {
                             .splineTo(new Vector2d(-12, 12), Math.toRadians(0))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -217,8 +214,8 @@ public final class Auton {
             Constants.Field.StartPose.RED_CLOSE,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(36, 12), Math.toRadians(0))
                             .lineToX(54)
@@ -240,7 +237,7 @@ public final class Auton {
                             .splineTo(new Vector2d(12, 12), Math.toRadians(180))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -249,8 +246,8 @@ public final class Auton {
             Constants.Field.StartPose.BLUE_CLOSE,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(-36, 12), Math.toRadians(180))
                             .lineToX(-54)
@@ -272,7 +269,7 @@ public final class Auton {
                             .splineTo(new Vector2d(-12, 12), Math.toRadians(0))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -283,8 +280,8 @@ public final class Auton {
             Constants.Field.StartPose.RED_FAR,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(36, -36), Math.toRadians(0))
                             .lineToX(54)
@@ -309,7 +306,7 @@ public final class Auton {
                             .splineTo(new Vector2d(12, -60), Math.toRadians(180))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -318,8 +315,8 @@ public final class Auton {
             Constants.Field.StartPose.BLUE_FAR,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(-36, -36), Math.toRadians(180))
                             .lineToX(-54)
@@ -344,7 +341,7 @@ public final class Auton {
                             .splineTo(new Vector2d(-12, -60), Math.toRadians(0))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -353,8 +350,8 @@ public final class Auton {
             Constants.Field.StartPose.RED_CLOSE,
             Constants.Field.Alliance.RED,
             Constants.Vision.RED_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(36, 12), Math.toRadians(0))
                             .lineToX(54)
@@ -379,7 +376,7 @@ public final class Auton {
                             .splineTo(new Vector2d(12, 12), Math.toRadians(180))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 
@@ -388,8 +385,8 @@ public final class Auton {
             Constants.Field.StartPose.BLUE_CLOSE,
             Constants.Field.Alliance.BLUE,
             Constants.Vision.BLUE_TAG_ID,
-            rt -> sequence(
-                    exec(() -> rt.start(rt.rr().actionBuilder(new Pose2d(rt.startPose().START_X_IN, rt.startPose().START_Y_IN, Math.toRadians(rt.startPose().START_HEADING_DEG)))
+            runtime -> sequence(
+                    exec(() -> runtime.start(runtime.TDrive().actionBuilder(new Pose2d(runtime.startPose().START_X_IN, runtime.startPose().START_Y_IN, Math.toRadians(runtime.startPose().START_HEADING_DEG)))
                             .setReversed(false)
                             .splineTo(new Vector2d(-36, 12), Math.toRadians(180))
                             .lineToX(-54)
@@ -414,7 +411,7 @@ public final class Auton {
                             .splineTo(new Vector2d(-12, 12), Math.toRadians(0))
                             .build()
                     )),
-                    rt.waitForAction()
+                    runtime.waitForAction()
             )
     );
 }

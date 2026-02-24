@@ -66,9 +66,9 @@ public final class TankDrive {
 
         // TODO: Get These Values
         // feedforward parameters (in tick units)
-        public double kS = 1.360756318549041; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
-        public double kV = 0.000279264452703; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
-        public double kA = 0; // XXX: Via ManualFeedforwardTuner (http://192.168.43.1:8080/dash)
+        public double kS = 1.6; // (1.360756318549041) Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kV = 0.00026; // (0.000279264452703) Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kA = 0.000025; // Via ManualFeedforwardTuner (http://192.168.43.1:8080/dash)
 
         // XXX: DO NOT TOUCH THESE VARIABLES
         // path profile parameters (in inches)

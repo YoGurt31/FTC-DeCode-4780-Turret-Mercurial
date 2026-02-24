@@ -163,24 +163,11 @@ public final class Constants {
         public static final double RED_GOAL_Y = -66.0;
         public static final double BLUE_GOAL_Y = 66.0;
 
-        public static final double RED_CLOSE_X = 60.0;
-        public static final double BLUE_CLOSE_X = 60.0;
-        public static final double RED_CLOSE_Y = -56.0;
-        public static final double BLUE_CLOSE_Y = 56.0;
-        public static final double RED_CLOSE_HEADING_DEG = 180.0;
-        public static final double BLUE_CLOSE_HEADING_DEG = 180.0;
-        public static final double RED_FAR_X = -58.0;
-        public static final double BLUE_FAR_X = -58.0;
-        public static final double RED_FAR_Y = -20.0;
-        public static final double BLUE_FAR_Y = 20.0;
-        public static final double RED_FAR_HEADING_DEG = 0.0;
-        public static final double BLUE_FAR_HEADING_DEG = 0.0;
-
         public enum StartPose {
-            RED_CLOSE(RED_CLOSE_X, RED_CLOSE_Y, RED_CLOSE_HEADING_DEG, Constants.Vision.RED_TAG_ID),
-            RED_FAR(RED_FAR_X, RED_FAR_Y, RED_FAR_HEADING_DEG, Constants.Vision.RED_TAG_ID),
-            BLUE_CLOSE(BLUE_CLOSE_X, BLUE_CLOSE_Y, BLUE_CLOSE_HEADING_DEG, Constants.Vision.BLUE_TAG_ID),
-            BLUE_FAR(BLUE_FAR_X, BLUE_FAR_Y, BLUE_FAR_HEADING_DEG, Constants.Vision.BLUE_TAG_ID);
+            BLUE_CLOSE(61.0, 40.0, 180.0, Constants.Vision.BLUE_TAG_ID),
+            BLUE_FAR(-61.0, 16.0, 0.0, Constants.Vision.BLUE_TAG_ID),
+            RED_CLOSE(61.0, -40.0, 180.0, Constants.Vision.RED_TAG_ID),
+            RED_FAR(-61.0, -16.0, 0.0, Constants.Vision.RED_TAG_ID);
 
             public final double START_X_IN, START_Y_IN, START_HEADING_DEG;
             public final int TRACKED_TAG_ID;
@@ -200,6 +187,24 @@ public final class Constants {
                 return TRACKED_TAG_ID == Constants.Vision.BLUE_TAG_ID;
             }
         }
+
+        public enum PathPose {
+            CLOSE_SHOT(0.0, 0.0, 0.0),
+            FAR_SHOT(0.0, -48.0, 0.0),
+
+            // TODO: GET THESE VALUES
+            BLUE_RAMP(0.0, 60.0, 45.0),
+            RED_RAMP(0.0, -60.0, -45.0);
+
+            public final double X_IN, Y_IN, HEADING_DEG;
+
+            PathPose(double xIn, double yIn, double headingDeg) {
+                this.X_IN = xIn;
+                this.Y_IN = yIn;
+                this.HEADING_DEG = headingDeg;
+            }
+        }
+
 
         private static double wrapDeg(double deg) {
             while (deg > 180.0) deg -= 360.0;

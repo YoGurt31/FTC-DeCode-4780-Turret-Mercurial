@@ -25,7 +25,7 @@ import SubSystems.Vision;
 import Util.Constants;
 
 @SuppressWarnings("unused")
-public final class Auton {
+public final class AutonOld {
     private interface AutoBuilder {
         Closure build(AutoRuntime runTime);
     }

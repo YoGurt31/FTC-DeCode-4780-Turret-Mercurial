@@ -1,9 +1,8 @@
 package Util;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-
-import SubSystems.Drive;
 
 public final class Constants {
 
@@ -16,9 +15,10 @@ public final class Constants {
         public static final DcMotorSimple.Direction LEFT_DIR = DcMotorSimple.Direction.REVERSE;
         public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
 
-        public static final double ROTATE_GAIN = 0.0225;
-        public static final double MAX_ROTATE = 0.80;
-        public static final double ARTIFACT_AIM_DEADBAND_DEG = 5;
+        // TODO: RETUNE
+        public static final double ROTATE_GAIN = Tunable.DRIVE_ROTATE_GAIN;
+        public static final double MAX_ROTATE = Tunable.DRIVE_MAX_ROTATE;
+        public static final double ARTIFACT_AIM_DEADBAND_DEG = Tunable.DRIVE_ARTIFACT_AIM_DEADBAND_DEG;
     }
 
     public static final class PinPoint {
@@ -92,25 +92,25 @@ public final class Constants {
 
         public static final double TURRET_MIN_DEG = -180.0;
         public static final double TURRET_MAX_DEG = 180.0;
-        public static final double LIMIT_GUARD = 0.25;
+        public static final double LIMIT_GUARD = 0.1;
 
         // TODO: TUNE TURRET
-        public static final double QUICK_KP = 0.0;
-        public static final double QUICK_KD = 0.0;
-        public static final double QUICK_MIN_POWER = 0.0;
-        public static final double QUICK_MAX_POWER = 1.0;
+        public static final double QUICK_KP = Tunable.TURRET_QUICK_KP;
+        public static final double QUICK_KD = Tunable.TURRET_QUICK_KD;
+        public static final double QUICK_MIN_POWER = Tunable.TURRET_QUICK_MIN_POWER;
+        public static final double QUICK_MAX_POWER = Tunable.TURRET_QUICK_MAX_POWER;
 
-        public static final double PRECISE_KP = 0.0;
-        public static final double PRECISE_KD = 0.0;
-        public static final double PRECISE_RATE_DEADBAND = 0.0;
-        public static final double PRECISE_MIN_POWER = 0.0;
-        public static final double PRECISE_MAX_POWER = 0.20;
+        public static final double PRECISE_KP = Tunable.TURRET_PRECISE_KP;
+        public static final double PRECISE_KD = Tunable.TURRET_PRECISE_KD;
+        public static final double PRECISE_RATE_DEADBAND = Tunable.TURRET_PRECISE_RATE_DEADBAND;
+        public static final double PRECISE_MIN_POWER = Tunable.TURRET_PRECISE_MIN_POWER;
+        public static final double PRECISE_MAX_POWER = Tunable.TURRET_PRECISE_MAX_POWER;
 
-        public static final double QUICK_DEADBAND = 1.0;
-        public static final double PRECISE_DEADBAND = 0.75;
+        public static final double QUICK_DEADBAND = Tunable.TURRET_QUICK_DEADBAND;
+        public static final double PRECISE_DEADBAND = Tunable.TURRET_PRECISE_DEADBAND;
 
-        public static final double SWITCH_DEADBAND = 5.0;
-        public static final double LOST_TARGET_TIMEOUT = 0.20;
+        public static final double SWITCH_DEADBAND = Tunable.TURRET_SWITCH_DEADBAND;
+        public static final double LOST_TARGET_TIMEOUT = Tunable.TURRET_LOST_TARGET_TIMEOUT;
     }
 
     public static final class Flywheel {
@@ -130,14 +130,14 @@ public final class Constants {
         public static final double MIN_RPS = 65.0;
         public static final double MAX_RPS = 100.0;
 
+        // TODO: RETUNE
         public static double F(double voltage) {
-            if (voltage <= 1e-6) return 12.5;
-            return 12.5 * (13.5 / voltage);
+            if (voltage <= 1e-6) return Tunable.FLYWHEEL_F;
+            return Tunable.FLYWHEEL_F * (13.5 / voltage);
         }
-
-        public static final double P = 55.0;
-        public static final double I = 0.0;
-        public static final double D = 0.0;
+        public static final double P = Tunable.FLYWHEEL_P;
+        public static final double I = Tunable.FLYWHEEL_I;
+        public static final double D = Tunable.FLYWHEEL_D;
     }
 
     public static final class Releases {
@@ -153,6 +153,7 @@ public final class Constants {
         public static final int LOCALIZATION_PIPELINE = DEFAULT_PIPELINE;
         public static final int ARTIFACT_PIPELINE = 1;
 
+        // TODO: RETUNE
         public static final String TURRET_CAM_NAME = "TurretCam";
         public static final double INTRINSIC_FX = 650.00;
         public static final double INTRINSIC_FY = 650.00;
@@ -349,5 +350,38 @@ public final class Constants {
             if (speed <= EPS) return 0.0;
             return Math.max(0.0, dist / speed);
         }
+    }
+
+    @Configurable
+    public static final class Tunable {
+        // Drive
+        public static double DRIVE_ROTATE_GAIN = 0.0225;
+        public static double DRIVE_MAX_ROTATE = 0.80;
+        public static double DRIVE_ARTIFACT_AIM_DEADBAND_DEG = 5;
+
+        // Turret
+        public static double TURRET_QUICK_KP = 0.0;
+        public static double TURRET_QUICK_KD = 0.0;
+        public static double TURRET_QUICK_MIN_POWER = 0.0;
+        public static double TURRET_QUICK_MAX_POWER = 1.0;
+
+        public static double TURRET_PRECISE_KP = 0.0;
+        public static double TURRET_PRECISE_KD = 0.0;
+        public static double TURRET_PRECISE_RATE_DEADBAND = 0.0;
+        public static double TURRET_PRECISE_MIN_POWER = 0.0;
+        public static double TURRET_PRECISE_MAX_POWER = 0.20;
+
+        public static double TURRET_QUICK_DEADBAND = 1.0;
+        public static double TURRET_PRECISE_DEADBAND = 0.75;
+
+        public static double TURRET_SWITCH_DEADBAND = 5.0;
+        public static double TURRET_LOST_TARGET_TIMEOUT = 0.20;
+
+        // FlyWheel
+        public static double FLYWHEEL_TARGET_RPS = 65.0;
+        public static double FLYWHEEL_F = 12.5; // @ 13.5 VOLTS
+        public static double FLYWHEEL_P = 55.0;
+        public static double FLYWHEEL_I = 0.0;
+        public static double FLYWHEEL_D = 0.0;
     }
 }

@@ -44,9 +44,10 @@ repositories {
 dependencies {
     implementation project(':FtcRobotController')
     implementation("dev.frozenmilk.dairy:MercurialFTC:2.0.0-beta9")
-    implementation("com.bylazar.sloth:fullpanels:0.2.4+1.0.12")
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
     implementation("com.acmerobotics.slothboard:dashboard:0.2.4+0.5.1") { exclude group: "com.google.code.gson", module: "gson" }
     implementation("com.acmerobotics.slothboard:core:0.2.4+0.5.1") { exclude group: "com.google.code.gson", module: "gson" }
+    implementation("com.bylazar.sloth:fullpanels:0.2.4.1+1.0.12")
     implementation("com.acmerobotics.roadrunner:core:1.0.1")
     implementation("com.acmerobotics.roadrunner:ftc:0.1.25") { exclude group: "com.acmerobotics.dashboard" }
     implementation ("com.acmerobotics.roadrunner:actions:1.0.1") { exclude group: "com.acmerobotics.dashboard" }

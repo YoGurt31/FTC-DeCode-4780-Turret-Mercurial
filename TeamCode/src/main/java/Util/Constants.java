@@ -339,7 +339,7 @@ public final class Constants {
 
     public static final class Ballistic {
         // TODO: UPDATE LAUNCH ANGLE + TUNE SLIP
-        public static final double LAUNCH_ANGLE_DEG = 45.0;
+        public static final double LAUNCH_ANGLE_DEG = 35.0;
         public static final double FLYWHEEL_RADIUS_IN = (36.0 / 25.4);
         public static final double SLIP = 0.85;
         private static final double EPS = 1e-6;

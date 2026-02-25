@@ -344,13 +344,10 @@ public final class Constants {
         public static final double SLIP = 0.85;
         private static final double EPS = 1e-6;
 
-        public static double flyTime(double distanceIn, double rps) {
-            double surfaceSpeed = 2.0 * Math.PI * FLYWHEEL_RADIUS_IN * rps;
-            double exitSpeed = surfaceSpeed * SLIP;
-            double theta = Math.toRadians(LAUNCH_ANGLE_DEG);
-            double horizontalSpeed = exitSpeed * Math.cos(theta);
-            if (horizontalSpeed <= EPS) return 0.0;
-            return Math.max(0.0, distanceIn / horizontalSpeed);
+        public static double flyTime(double dist, double rps) {
+            double speed = ((2.0 * Math.PI * FLYWHEEL_RADIUS_IN * rps) * (SLIP)) * Math.cos(Math.toRadians(LAUNCH_ANGLE_DEG));
+            if (speed <= EPS) return 0.0;
+            return Math.max(0.0, dist / speed);
         }
     }
 }

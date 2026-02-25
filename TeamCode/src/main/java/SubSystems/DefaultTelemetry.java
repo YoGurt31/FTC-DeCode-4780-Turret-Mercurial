@@ -18,7 +18,7 @@ public class DefaultTelemetry {
         telemetry.addData("X Pos", "%5.2f", Drive.INSTANCE.getX());
         telemetry.addData("Y Pos", "%5.2f", Drive.INSTANCE.getY());
         telemetry.addData("Angle", "%5.2f", Drive.INSTANCE.getHeading());
-        telemetry.addData("Distance To Goal", "%5.2f", Math.hypot(Constants.Field.GOAL_X - Drive.INSTANCE.getX(), ((Constants.Field.getAlliance() == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y) - Drive.INSTANCE.getY()));
+        telemetry.addData("Distance To Goal", "%5.2f", Constants.Field.distanceToGoal());
         telemetry.addData("In Shoot Zone", Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()));
         telemetry.addLine();
 

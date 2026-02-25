@@ -14,7 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import Util.Constants;
 
@@ -104,9 +103,11 @@ public class Drive {
         if (pinpoint == null) return;
         try {
             pinpoint.update();
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) { }
     }
+
+    public double getVx() { return pinpoint.getVelX(DistanceUnit.INCH); }
+    public double getVy() { return pinpoint.getVelY(DistanceUnit.INCH); }
 
     public void drive(double driveInput, double turnInput) {
         double drive = driveInput;

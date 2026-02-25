@@ -1,6 +1,9 @@
 package Util;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import SubSystems.Drive;
 
 public final class Constants {
 
@@ -10,7 +13,7 @@ public final class Constants {
         public static final String BACK_LEFT = "bL";
         public static final String BACK_RIGHT = "bR";
 
-        public static final DcMotorSimple.Direction LEFT_DIR  = DcMotorSimple.Direction.REVERSE;
+        public static final DcMotorSimple.Direction LEFT_DIR = DcMotorSimple.Direction.REVERSE;
         public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
 
         public static final double ROTATE_GAIN = 0.0225;
@@ -41,7 +44,7 @@ public final class Constants {
 
         public static final double METERS_TO_IN = 39.3701;
 
-        // TODO: Determine Conversions
+        // TODO: DETERMINE CONVERSIONS
         public static final int LL_X_TO_PP_SIGN = +1;
         public static final int LL_Y_TO_PP_SIGN = +1;
         public static final boolean SWAP_XY = false;
@@ -91,7 +94,7 @@ public final class Constants {
         public static final double TURRET_MAX_DEG = 180.0;
         public static final double LIMIT_GUARD = 0.25;
 
-        // TODO: TUNE KD
+        // TODO: TUNE TURRET
         public static final double QUICK_KP = 0.0;
         public static final double QUICK_KD = 0.0;
         public static final double QUICK_MIN_POWER = 0.0;
@@ -123,10 +126,15 @@ public final class Constants {
         public static final double M = 0.0;
         public static final double R = 0.0;
 
-        public static final double MIN_RPS = 55.0;
+        // TODO: DETERMINE MIN RPS
+        public static final double MIN_RPS = 65.0;
         public static final double MAX_RPS = 100.0;
 
-        public static double F(double voltage) { if (voltage <= 1e-6) return 12.5; return 12.5 * (13.5 / voltage); }
+        public static double F(double voltage) {
+            if (voltage <= 1e-6) return 12.5;
+            return 12.5 * (13.5 / voltage);
+        }
+
         public static final double P = 55.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
@@ -188,22 +196,10 @@ public final class Constants {
             }
         }
 
-        public enum PathPose {
-            CLOSE_SHOT(0.0, 0.0, 0.0),
-            FAR_SHOT(0.0, -48.0, 0.0),
-
-            // TODO: GET THESE VALUES
-            BLUE_RAMP(0.0, 60.0, 45.0),
-            RED_RAMP(0.0, -60.0, -45.0);
-
-            public final double X_IN, Y_IN, HEADING_DEG;
-
-            PathPose(double xIn, double yIn, double headingDeg) {
-                this.X_IN = xIn;
-                this.Y_IN = yIn;
-                this.HEADING_DEG = headingDeg;
-            }
+        public static Pose2d predictPose(double x, double y, double headingRad, double vx, double vy, double flyTimeSec) {
+            return new Pose2d(x + vx * flyTimeSec, y + vy * flyTimeSec, headingRad);
         }
+
 
 
         private static double wrapDeg(double deg) {
@@ -271,8 +267,8 @@ public final class Constants {
 
             boolean farZone = inTriangle(
                     x, y,
-                    -72 - buffer,  24 + buffer,
-                    -48 + buffer,   0,
+                    -72 - buffer, 24 + buffer,
+                    -48 + buffer, 0,
                     -72 - buffer, -24 - buffer
             );
 
@@ -302,8 +298,8 @@ public final class Constants {
 
             return inTriangle(
                     x, y,
-                    72 + buffer,  72 + buffer,
-                    0 - buffer,   0,
+                    72 + buffer, 72 + buffer,
+                    0 - buffer, 0,
                     72 + buffer, -72 - buffer
             );
         }
@@ -333,6 +329,28 @@ public final class Constants {
 
         public static Alliance getAlliance() {
             return CURRENT_ALLIANCE;
+        }
+
+        public static double distanceToGoal() {
+            return Math.hypot(Constants.Field.GOAL_X - SubSystems.Drive.INSTANCE.getX(), ((Constants.Field.getAlliance() == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y) - SubSystems.Drive.INSTANCE.getY());
+        }
+
+    }
+
+    public static final class Ballistic {
+        // TODO: UPDATE LAUNCH ANGLE + TUNE SLIP
+        public static final double LAUNCH_ANGLE_DEG = 45.0;
+        public static final double FLYWHEEL_RADIUS_IN = (36.0 / 25.4);
+        public static final double SLIP = 0.85;
+        private static final double EPS = 1e-6;
+
+        public static double flyTime(double distanceIn, double rps) {
+            double surfaceSpeed = 2.0 * Math.PI * FLYWHEEL_RADIUS_IN * rps;
+            double exitSpeed = surfaceSpeed * SLIP;
+            double theta = Math.toRadians(LAUNCH_ANGLE_DEG);
+            double horizontalSpeed = exitSpeed * Math.cos(theta);
+            if (horizontalSpeed <= EPS) return 0.0;
+            return Math.max(0.0, distanceIn / horizontalSpeed);
         }
     }
 }

@@ -5,6 +5,8 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
+import com.acmerobotics.roadrunner.Pose2d;
+
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
 import SubSystems.DefaultTelemetry;
@@ -51,8 +53,8 @@ public final class TeleOp {
 
             // Flywheel + Release
             linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
-                // Flywheel.INSTANCE.enableAutoRange();
-                Flywheel.INSTANCE.setVelocityRps(67);
+                 Flywheel.INSTANCE.enableAutoRange();
+//                Flywheel.INSTANCE.setVelocityRps(67);
                 Release.INSTANCE.open();
                 Flywheel.INSTANCE.apply();
                 Release.INSTANCE.update();
@@ -82,7 +84,9 @@ public final class TeleOp {
                 Vision.INSTANCE.setPipeline(intakingNow ? Constants.Vision.ARTIFACT_PIPELINE : Constants.Vision.LOCALIZATION_PIPELINE);
 
                 // Turret
-                Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+                Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
+                Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
+                // Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
                 // Turret.INSTANCE.lockTurret();
 
                 // Drive

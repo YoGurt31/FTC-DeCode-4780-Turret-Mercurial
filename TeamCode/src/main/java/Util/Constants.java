@@ -95,22 +95,11 @@ public final class Constants {
         public static final double LIMIT_GUARD = 0.1;
 
         // TODO: TUNE TURRET
-        public static final double QUICK_KP = Tunable.TURRET_QUICK_KP;
-        public static final double QUICK_KD = Tunable.TURRET_QUICK_KD;
-        public static final double QUICK_MIN_POWER = Tunable.TURRET_QUICK_MIN_POWER;
-        public static final double QUICK_MAX_POWER = Tunable.TURRET_QUICK_MAX_POWER;
-
-        public static final double PRECISE_KP = Tunable.TURRET_PRECISE_KP;
-        public static final double PRECISE_KD = Tunable.TURRET_PRECISE_KD;
-        public static final double PRECISE_RATE_DEADBAND = Tunable.TURRET_PRECISE_RATE_DEADBAND;
-        public static final double PRECISE_MIN_POWER = Tunable.TURRET_PRECISE_MIN_POWER;
-        public static final double PRECISE_MAX_POWER = Tunable.TURRET_PRECISE_MAX_POWER;
-
-        public static final double QUICK_DEADBAND = Tunable.TURRET_QUICK_DEADBAND;
-        public static final double PRECISE_DEADBAND = Tunable.TURRET_PRECISE_DEADBAND;
-
-        public static final double SWITCH_DEADBAND = Tunable.TURRET_SWITCH_DEADBAND;
-        public static final double LOST_TARGET_TIMEOUT = Tunable.TURRET_LOST_TARGET_TIMEOUT;
+        public static final double TURRET_KP = 0.02;
+        public static final double TURRET_KD = 0.000001;
+        public static final double TURRET_MIN_POWER = 0;
+        public static final double TURRET_MAX_POWER = 1;
+        public static final double TURRET_DEADBAND = 1;
     }
 
     public static final class Flywheel {
@@ -120,11 +109,11 @@ public final class Constants {
         public static final double TICKS_PER_REV = 28.0;
 
         // TODO: GET VALUES
-        public static final double A = 0.0;
-        public static final double B = 0.0;
-        public static final double C = 0.0;
-        public static final double M = 0.0;
-        public static final double R = 0.0;
+        public static final double A = 25.46382;
+        public static final double B = 1198.15909;
+        public static final double C = 1198.15909;
+        public static final double M = 0.182786;
+        public static final double R = 51.88337;
 
         // TODO: DETERMINE MIN RPS
         public static final double MIN_RPS = 65.0;
@@ -360,22 +349,10 @@ public final class Constants {
         public static double DRIVE_ARTIFACT_AIM_DEADBAND_DEG = 5;
 
         // Turret
-        public static double TURRET_QUICK_KP = 0.0;
-        public static double TURRET_QUICK_KD = 0.0;
-        public static double TURRET_QUICK_MIN_POWER = 0.0;
-        public static double TURRET_QUICK_MAX_POWER = 1.0;
-
-        public static double TURRET_PRECISE_KP = 0.0;
-        public static double TURRET_PRECISE_KD = 0.0;
-        public static double TURRET_PRECISE_RATE_DEADBAND = 0.0;
-        public static double TURRET_PRECISE_MIN_POWER = 0.0;
-        public static double TURRET_PRECISE_MAX_POWER = 0.20;
-
-        public static double TURRET_QUICK_DEADBAND = 1.0;
-        public static double TURRET_PRECISE_DEADBAND = 0.75;
-
-        public static double TURRET_SWITCH_DEADBAND = 5.0;
-        public static double TURRET_LOST_TARGET_TIMEOUT = 0.20;
+        public static double TurKp = 0.25;
+        public static double TurKd = 0.000000001;
+        public static double TurMin = 0.0;
+        public static double TurMax = 1.0;
 
         // FlyWheel
         public static double FLYWHEEL_TARGET_RPS = 65.0;

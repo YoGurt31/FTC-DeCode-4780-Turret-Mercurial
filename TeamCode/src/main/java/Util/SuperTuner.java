@@ -30,7 +30,7 @@ public final class SuperTuner {
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
         final Mode[] mode = { Mode.TURRET };
-        final Constants.Field.Alliance[] alliance = { Constants.Field.Alliance.BLUE };
+        final Util.Constants.Field.Alliance[] alliance = { Util.Constants.Field.Alliance.BLUE };
 
         final boolean[] prevL1 = { false };
         final boolean[] prevR1 = { false };
@@ -71,13 +71,9 @@ public final class SuperTuner {
                     prevB[0] = b;
 
                     if (mode[0] == Mode.TURRET) {
-                        if (aRise) alliance[0] = Constants.Field.Alliance.BLUE;
-                        if (bRise) alliance[0] = Constants.Field.Alliance.RED;
-                        Constants.Field.setAlliance(alliance[0]);
-                        Vision.INSTANCE.setTrackedTag(alliance[0] == Constants.Field.Alliance.RED
-                                ? Constants.Vision.RED_TAG_ID
-                                : Constants.Vision.BLUE_TAG_ID
-                        );
+                        if (aRise) alliance[0] = Util.Constants.Field.Alliance.BLUE;
+                        if (bRise) alliance[0] = Util.Constants.Field.Alliance.RED;
+                        Util.Constants.Field.setAlliance(alliance[0]);
                     }
 
                     switch (mode[0]) {
@@ -90,20 +86,14 @@ public final class SuperTuner {
                             double x = Drive.INSTANCE.getX();
                             double y = Drive.INSTANCE.getY();
                             double h = Drive.INSTANCE.getHeading();
-                            double goalHeading = Constants.Field.computeGoalHeadingDeg(x, y, alliance[0]);
+                            double goalHeading = Util.Constants.Field.computeGoalHeadingDeg(x, y, alliance[0]);
 
                             Turret.INSTANCE.autoAimTurretTunable(
                                     h, goalHeading,
-                                    Constants.Tunable.TURRET_QUICK_KP,
-                                    Constants.Tunable.TURRET_QUICK_KD,
-                                    Constants.Tunable.TURRET_QUICK_MIN_POWER,
-                                    Constants.Tunable.TURRET_QUICK_MAX_POWER,
-                                    Constants.Tunable.TURRET_PRECISE_KP,
-                                    Constants.Tunable.TURRET_PRECISE_KD,
-                                    Constants.Tunable.TURRET_PRECISE_MIN_POWER,
-                                    Constants.Tunable.TURRET_PRECISE_RATE_DEADBAND,
-                                    Constants.Tunable.TURRET_PRECISE_MAX_POWER,
-                                    false
+                                    Util.Constants.Tunable.TurKp,
+                                    Util.Constants.Tunable.TurKd,
+                                    Util.Constants.Tunable.TurMin,
+                                    Util.Constants.Tunable.TurMax
                             );
 
                             Flywheel.INSTANCE.stop();
@@ -116,24 +106,25 @@ public final class SuperTuner {
                             Drive.INSTANCE.drive(driveCmd, turnCmd);
 
                             if (linsane.gamepad1().right_trigger > 0.1) {
-                                Flywheel.INSTANCE.setVelocityRps(Constants.Tunable.FLYWHEEL_TARGET_RPS);
+                                Flywheel.INSTANCE.setVelocityRps(Util.Constants.Tunable.FLYWHEEL_TARGET_RPS);
                                 Flywheel.INSTANCE.apply();
                             } else {
                                 Flywheel.INSTANCE.stop();
                             }
+
                             break;
                         }
 
                         case TRACKING: {
-                            Vision.INSTANCE.setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
+                            Vision.INSTANCE.setPipeline(Util.Constants.Vision.ARTIFACT_PIPELINE);
 
                             double turn = 0.0;
                             if (Vision.INSTANCE.hasArtifact()) {
                                 double tx = Vision.INSTANCE.getTX();
-                                if (Math.abs(tx) > Constants.Tunable.DRIVE_ARTIFACT_AIM_DEADBAND_DEG) {
-                                    turn = Range.clip(tx * Constants.Tunable.DRIVE_ROTATE_GAIN,
-                                            -Constants.Tunable.DRIVE_MAX_ROTATE,
-                                            +Constants.Tunable.DRIVE_MAX_ROTATE);
+                                if (Math.abs(tx) > Util.Constants.Tunable.DRIVE_ARTIFACT_AIM_DEADBAND_DEG) {
+                                    turn = Range.clip(tx * Util.Constants.Tunable.DRIVE_ROTATE_GAIN,
+                                            -Util.Constants.Tunable.DRIVE_MAX_ROTATE,
+                                            +Util.Constants.Tunable.DRIVE_MAX_ROTATE);
                                 }
                             }
                             Drive.INSTANCE.drive(0.0, turn);
@@ -147,6 +138,49 @@ public final class SuperTuner {
                     linsane.telemetry().addData("Alliance", alliance[0]);
                     linsane.telemetry().addData("Pose (x,y,h)", "(%.1f, %.1f, %.1f)",
                             Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Drive.INSTANCE.getHeading());
+                    linsane.telemetry().addLine();
+
+                    if (mode[0] == Mode.TURRET) {
+                        double x = Drive.INSTANCE.getX();
+                        double y = Drive.INSTANCE.getY();
+                        double h = Drive.INSTANCE.getHeading();
+                        double goalHeading = Util.Constants.Field.computeGoalHeadingDeg(x, y, alliance[0]);
+
+                        linsane.telemetry().addLine("--- Turret ---");
+                        linsane.telemetry().addData("Robot Heading", "%.1f deg", h);
+                        linsane.telemetry().addData("Goal Heading", "%.1f deg", goalHeading);
+                        linsane.telemetry().addData("Turret Heading", "%.1f deg", Turret.INSTANCE.getTurretDeg());
+                        linsane.telemetry().addData("kP", Util.Constants.Tunable.TurKp);
+                        linsane.telemetry().addData("kD", Util.Constants.Tunable.TurKd);
+                        linsane.telemetry().addData("Min Power", Util.Constants.Tunable.TurMin);
+                        linsane.telemetry().addData("Max Power", Util.Constants.Tunable.TurMax);
+                    }
+                    else if (mode[0] == Mode.FLYWHEEL) {
+                        double rt = linsane.gamepad1().right_trigger;
+
+                        linsane.telemetry().addLine("--- Flywheel ---");
+                        linsane.telemetry().addData("RT", "%.2f", rt);
+                        linsane.telemetry().addData("Target RPS", Util.Constants.Tunable.FLYWHEEL_TARGET_RPS);
+                        linsane.telemetry().addData("RPS1", "%.1f", Flywheel.INSTANCE.getRps1(), "RPS2", "%.1f", Flywheel.INSTANCE.getRps2());
+                        linsane.telemetry().addData("Avg RPS", "%.1f", Flywheel.INSTANCE.getAverageRps());
+                        linsane.telemetry().addData("P", Util.Constants.Tunable.FLYWHEEL_P);
+                        linsane.telemetry().addData("I", Util.Constants.Tunable.FLYWHEEL_I);
+                        linsane.telemetry().addData("D", Util.Constants.Tunable.FLYWHEEL_D);
+                        linsane.telemetry().addData("F @ 13.5V", Util.Constants.Tunable.FLYWHEEL_F);
+                    }
+                    else { // TRACKING
+                        boolean has = Vision.INSTANCE.hasArtifact();
+                        double tx = has ? Vision.INSTANCE.getTX() : 0.0;
+
+                        linsane.telemetry().addLine("--- Tracking ---");
+                        linsane.telemetry().addData("Pipeline", Util.Constants.Vision.ARTIFACT_PIPELINE);
+                        linsane.telemetry().addData("Has Artifact", has);
+                        linsane.telemetry().addData("TX", "%.2f deg", tx);
+                        linsane.telemetry().addData("Rotate Gain", Util.Constants.Tunable.DRIVE_ROTATE_GAIN);
+                        linsane.telemetry().addData("Max Rotate", Util.Constants.Tunable.DRIVE_MAX_ROTATE);
+                        linsane.telemetry().addData("Deadband", Util.Constants.Tunable.DRIVE_ARTIFACT_AIM_DEADBAND_DEG);
+                    }
+
                     linsane.telemetry().update();
                 }))
         ));

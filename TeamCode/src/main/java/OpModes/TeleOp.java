@@ -30,7 +30,6 @@ public final class TeleOp {
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Vision.INSTANCE.setPipeline(Constants.Vision.LOCALIZATION_PIPELINE);
-            Vision.INSTANCE.setTrackedTag(alliance == Constants.Field.Alliance.RED ? Constants.Vision.RED_TAG_ID : Constants.Vision.BLUE_TAG_ID);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -54,7 +53,6 @@ public final class TeleOp {
             // Flywheel + Release
             linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
                  Flywheel.INSTANCE.enableAutoRange();
-//                Flywheel.INSTANCE.setVelocityRps(67);
                 Release.INSTANCE.open();
                 Flywheel.INSTANCE.apply();
                 Release.INSTANCE.update();

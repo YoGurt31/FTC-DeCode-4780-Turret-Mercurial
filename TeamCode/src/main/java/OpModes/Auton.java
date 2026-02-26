@@ -52,7 +52,6 @@ public final class Auton {
             }
 
             Constants.Field.setAlliance(alliance());
-            Vision.INSTANCE.setTrackedTag(trackedTagId());
 
             Intake.INSTANCE.init(hardwareMap, telemetry);
             Flywheel.INSTANCE.init(hardwareMap, telemetry);

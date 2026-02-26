@@ -82,7 +82,6 @@ public final class AutonOld {
             }
 
             Constants.Field.setAlliance(alliance);
-            Vision.INSTANCE.setTrackedTag(trackedTagId);
 
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());

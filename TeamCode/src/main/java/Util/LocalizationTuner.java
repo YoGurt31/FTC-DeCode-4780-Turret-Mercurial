@@ -62,7 +62,7 @@ public final class LocalizationTuner {
         return out;
     }
 
-    public static final Mercurial.RegisterableProgram TUNER = Mercurial.teleop(linsane -> {
+    public static final Mercurial.RegisterableProgram Localizer = Mercurial.teleop(linsane -> {
 
         Drive.INSTANCE.setResetPinPointOnInit(false);
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());

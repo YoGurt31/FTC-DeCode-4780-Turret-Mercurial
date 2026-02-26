@@ -30,11 +30,6 @@ public class DefaultTelemetry {
         telemetry.addData("TX", "%5.2f", Vision.INSTANCE.getTX());
         telemetry.addData("TY", "%5.2f", Vision.INSTANCE.getTY());
         telemetry.addData("TA", "%5.2f", Vision.INSTANCE.getTA());
-        telemetry.addLine("--- TurretCam (AprilTag) ---");
-        telemetry.addData("Tracked Tag ID", Vision.INSTANCE.getTrackedTag());
-        telemetry.addData("Has Tracked Tag", Vision.INSTANCE.hasTrackedTag());
-        telemetry.addData("Yaw (Deg)", "%5.2f", Vision.INSTANCE.getTrackedTagCX());
-        telemetry.addData("Range", "%5.2f", Vision.INSTANCE.getTrackedRange());
         telemetry.addLine();
 
         // Intake
@@ -49,7 +44,6 @@ public class DefaultTelemetry {
         telemetry.addData("Current Deg", "%6.2f", Turret.INSTANCE.getTurretDeg());
         telemetry.addData("Target Deg", "%6.2f", Turret.INSTANCE.getTargetDeg());
         telemetry.addData("Turret Error", "%6.2f", Turret.INSTANCE.getErrorDeg());
-        telemetry.addData("Aim Mode", Turret.INSTANCE.getAimModeName());
         telemetry.addData("At Min", Turret.INSTANCE.atMinLimit());
         telemetry.addData("At Max", Turret.INSTANCE.atMaxLimit());
         telemetry.addLine();

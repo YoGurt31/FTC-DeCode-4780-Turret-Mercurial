@@ -51,7 +51,6 @@ public class Vision {
         }
 
         initLimelight(hw);
-        initTurretCam(hw);
 
         result = null;
         trackedDetection = null;
@@ -65,24 +64,8 @@ public class Vision {
         setPipeline(Constants.Vision.LOCALIZATION_PIPELINE);
     }
 
-    // TurretCam (AprilTag)
-    private void initTurretCam(HardwareMap hw) {
-        WebcamName turretCam = hw.get(WebcamName.class, Constants.Vision.TURRET_CAM_NAME);
-        aprilTag = new AprilTagProcessor.Builder()
-                .setLensIntrinsics(Constants.Vision.INTRINSIC_FX, Constants.Vision.INTRINSIC_FY, Constants.Vision.INTRINSIC_CX, Constants.Vision.INTRINSIC_CY)
-                .setCameraPose(new Position(DistanceUnit.INCH, 0, 0, 14, 0), new YawPitchRollAngles(AngleUnit.DEGREES, 0, 15.0, 180.0,0))
-                .build();
-        turretPortal = new VisionPortal.Builder()
-                .setCamera(turretCam)
-                .setCameraResolution(new Size(Constants.Vision.RESOLUTION_WIDTH, Constants.Vision.RESOLUTION_HEIGHT))
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .addProcessor(aprilTag)
-                .build();
-    }
-
     public void update() {
         updateLimelight();
-        updateTurretCam();
     }
 
     private void updateLimelight() {
@@ -91,38 +74,10 @@ public class Vision {
         }
     }
 
-    private void updateTurretCam() {
-        trackedDetection = null;
-        if (aprilTag == null) return;
-        List<AprilTagDetection> detections = aprilTag.getDetections();
-        if (detections == null) return;
-
-        for (AprilTagDetection d : detections) {
-            if (d != null && d.id == trackedTagId) {
-                trackedDetection = d;
-                break;
-            }
-        }
-    }
-
-    public void stop() {
-        stopLimelight();
-        stopTurretCam();
-    }
-
-    private void stopLimelight() {
+    private void stop() {
         if (limelight != null) {
             try {
                 limelight.stop();
-            } catch (Exception ignored) {
-            }
-        }
-    }
-
-    private void stopTurretCam() {
-        if (turretPortal != null) {
-            try {
-                turretPortal.close();
             } catch (Exception ignored) {
             }
         }
@@ -197,45 +152,5 @@ public class Vision {
 
     public Limelight3A getLimelight() {
         return limelight;
-    }
-
-    // XXX: TurretCam (AprilTag) Functions
-    public void setTrackedTag(int tagId) {
-        trackedTagId = tagId;
-    }
-
-    public int getTrackedTag() {
-        return trackedTagId;
-    }
-
-    public boolean hasTrackedTag() {
-        return trackedDetection != null;
-    }
-
-    public double getTrackedCenterX() {
-        return trackedDetection == null ? 0.0 : trackedDetection.center.x;
-    }
-
-    public double getTrackedCenterError() {
-        if (trackedDetection == null) return 0.0;
-        return trackedDetection.center.x - (Constants.Vision.RESOLUTION_WIDTH / 2.0);
-    }
-
-    public double getTrackedTagCX() {
-        if (trackedDetection == null) return 0.0;
-
-        double tagCx = trackedDetection.center.x;
-        double imgCx = (Constants.Vision.RESOLUTION_WIDTH / 2.0);
-        double errPx = tagCx - imgCx;
-
-        return errPx * Constants.Vision.TURRET_DEG_PER_PIXEL;
-    }
-
-    public double getTrackedRange() {
-        return trackedDetection == null ? 0.0 : trackedDetection.ftcPose.range;
-    }
-
-    public AprilTagDetection getTrackedDetection() {
-        return trackedDetection;
     }
 }

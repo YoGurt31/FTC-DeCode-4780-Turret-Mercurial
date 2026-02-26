@@ -20,11 +20,6 @@ public final class BlueFar extends Auton.BaseAuto {
     }
 
     @Override
-    protected int trackedTagId() {
-        return Constants.Vision.BLUE_TAG_ID;
-    }
-
-    @Override
     protected Action buildMain(TankDrive drive, Pose2d startPose, boolean[] intakeEnabled) {
         return Auton.Paths.blueFar(drive, startPose, intakeEnabled);
     }

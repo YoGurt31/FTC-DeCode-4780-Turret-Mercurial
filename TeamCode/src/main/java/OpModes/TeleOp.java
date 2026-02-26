@@ -25,7 +25,7 @@ public final class TeleOp {
         return Mercurial.teleop(linsane -> {
 
             // Hardware Init
-            Drive.INSTANCE.setResetPinPointOnInit(false);
+            Drive.INSTANCE.setResetPinPointOnInit(true); // Change To False
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -52,7 +52,7 @@ public final class TeleOp {
 
             // Flywheel + Release
             linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
-                 Flywheel.INSTANCE.enableAutoRange();
+                Flywheel.INSTANCE.enableAutoRange();
                 Release.INSTANCE.open();
                 Flywheel.INSTANCE.apply();
                 Release.INSTANCE.update();

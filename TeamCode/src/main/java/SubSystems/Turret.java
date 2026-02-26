@@ -159,6 +159,7 @@ public class Turret {
         double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
         double currentTurretDeg = getTurretDeg();
         double errDeg = turretErrDeg(desiredTurretDeg, currentTurretDeg);
+
         turretTargetDeg = desiredTurretDeg;
         turretErrDeg = errDeg;
 

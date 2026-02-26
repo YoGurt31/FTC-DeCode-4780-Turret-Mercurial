@@ -20,11 +20,6 @@ public final class RedClose extends Auton.BaseAuto {
     }
 
     @Override
-    protected int trackedTagId() {
-        return Constants.Vision.RED_TAG_ID;
-    }
-
-    @Override
     protected Action buildMain(TankDrive drive, Pose2d startPose, boolean[] intakeEnabled) {
         return Auton.Paths.redClose(drive, startPose, intakeEnabled);
     }

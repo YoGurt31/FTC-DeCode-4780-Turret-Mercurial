@@ -54,17 +54,7 @@ public class Release {
         openedAtMs = 0;
     }
 
-    public void toggle() {
-        if (release == null) return;
-        if (isOpen) close();
-        else open();
-    }
-
     public boolean isGateOpen() {
         return release != null && isOpen;
-    }
-
-    public boolean isShooting() {
-        return isOpen;
     }
 }

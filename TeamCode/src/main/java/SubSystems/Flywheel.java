@@ -3,6 +3,7 @@ package SubSystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -36,8 +37,8 @@ public class Flywheel {
         fly1 = hw.get(DcMotorEx.class, Constants.Flywheel.FLYWHEEL_1);
         fly2 = hw.get(DcMotorEx.class, Constants.Flywheel.FLYWHEEL_2);
 
-        fly1.setDirection(DcMotorEx.Direction.FORWARD);
-        fly2.setDirection(DcMotorEx.Direction.REVERSE);
+        fly1.setDirection(DcMotorEx.Direction.REVERSE);
+        fly2.setDirection(DcMotorEx.Direction.FORWARD);
 
         fly1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fly2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

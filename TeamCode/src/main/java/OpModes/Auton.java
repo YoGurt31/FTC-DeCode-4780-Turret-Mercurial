@@ -41,7 +41,6 @@ public final class Auton {
     static abstract class BaseAuto extends LinearOpMode {
         protected abstract Constants.Field.StartPose startPoseDefined();
         protected abstract Constants.Field.Alliance alliance();
-        protected abstract int trackedTagId();
         protected abstract Action buildMain(TankDrive drive, Pose2d startPose, boolean[] intakeEnabled);
 
         @Override

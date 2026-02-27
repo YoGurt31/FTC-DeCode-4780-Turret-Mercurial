@@ -1,14 +1,15 @@
 package SubSystems;
 
-import com.bylazar.panels.Panels;
-import com.bylazar.telemetry.TelemetryManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 
 import Util.Constants;
 
 public class DefaultTelemetry {
     public static final DefaultTelemetry INSTANCE = new DefaultTelemetry();
-//    private static final TelemetryManager panels = new TelemetryManager();
+    private static final TelemetryManager panels = PanelsTelemetry.INSTANCE.getTelemetry();
 
     private DefaultTelemetry() {
     }
@@ -61,6 +62,7 @@ public class DefaultTelemetry {
         telemetry.addData("Gate", Release.INSTANCE.isGateOpen() ? "Open" : "Closed");
         telemetry.addLine();
 
-//        panels.update(telemetry);
+        panels.update(telemetry);
+        telemetry.update();
     }
 }

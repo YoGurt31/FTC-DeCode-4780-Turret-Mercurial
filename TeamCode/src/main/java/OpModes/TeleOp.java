@@ -75,17 +75,20 @@ public final class TeleOp {
                 Vision.INSTANCE.updateRobotYawDeg(Drive.INSTANCE.getHeading());
                 Vision.INSTANCE.update();
 
-                boolean shootingNow = linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB;
+                boolean shootingNow = linsane.gamepad1().right_trigger >= 0.10;
                 boolean intakingNow = linsane.gamepad1().right_bumper && !linsane.gamepad1().left_bumper;
 
                 Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
                 Vision.INSTANCE.setPipeline(intakingNow ? Constants.Vision.ARTIFACT_PIPELINE : Constants.Vision.LOCALIZATION_PIPELINE);
 
                 // Turret
-                Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
-                Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
-                // Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
-                // Turret.INSTANCE.lockTurret();
+                if (!(linsane.gamepad1().left_trigger >= 0.10) && (linsane.gamepad1().right_trigger >= 0.10)) {
+                    Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
+                    Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
+                    // Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+                } else {
+                    Turret.INSTANCE.lockTurret();
+                }
 
                 // Drive
                 double driveCmd = -linsane.gamepad1().left_stick_y;

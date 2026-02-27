@@ -151,10 +151,10 @@ public class MeepMeepTesting {
         meepMeep.setBackground(img)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
-                .addEntity(SoloBlueClose)
+//                .addEntity(SoloBlueClose)
                 .addEntity(SoloBlueFar)
-                .addEntity(SoloRedClose)
-                .addEntity(SoloRedFar)
+//                .addEntity(SoloRedClose)
+//                .addEntity(SoloRedFar)
                 .start();
     }
 }

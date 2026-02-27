@@ -23,6 +23,7 @@ public final class Constants {
         public static double ARTIFACT_AIM_DEADBAND_DEG = 5.0;
     }
 
+    @Configurable
     public static final class PinPoint {
         public static final String PINPOINT = "pinpoint";
 

@@ -31,8 +31,8 @@ public final class Constants {
         public static final boolean Y_REVERSED = false;
 
         // TODO: GET VALUES
-        public static final double X_OFFSET_MM = 102.00;
-        public static final double Y_OFFSET_MM = -34.348;
+        public static double X_OFFSET_MM = -102.00;
+        public static double Y_OFFSET_MM = -34.348;
 
         public static final double START_X_IN = 0;
         public static final double START_Y_IN = 0;

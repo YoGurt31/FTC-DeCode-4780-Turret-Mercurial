@@ -62,11 +62,11 @@ public final class TankDrive {
 
         // drive model parameters
         public double inPerTick = 0.0019396867; // Via ForwardPushTest
-        public double trackWidthTicks = 4592.0; // Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
+        public double trackWidthTicks = 5100.0; // Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
 
         // feedforward parameters (in tick units)
-        public double kS = 1.27; // (1.360756318549041) Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
-        public double kV = 0.00027; // (0.000279264452703) Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kS = 1.27; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kV = 0.00027; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
         public double kA = 0.000035; // Via ManualFeedforwardTuner (http://192.168.43.1:8080/dash)
 
         // XXX: DO NOT TOUCH THESE VARIABLES

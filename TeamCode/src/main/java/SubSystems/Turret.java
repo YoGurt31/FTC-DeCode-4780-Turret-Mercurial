@@ -154,8 +154,6 @@ public class Turret {
     public boolean autoAimTurret(double robotHeadingDeg, double goalHeadingDeg) {
         if (turretRotation == null) return false;
 
-        double nowS = turretAimTimer.seconds();
-
         double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
         double currentTurretDeg = getTurretDeg();
         double errDeg = turretErrDeg(desiredTurretDeg, currentTurretDeg);
@@ -165,66 +163,11 @@ public class Turret {
 
         if (Math.abs(errDeg) <= Constants.Turret.TURRET_DEADBAND) {
             stopTurret();
-            lastQuickErrDeg = 0.0;
-            lastQuickTimeS = 0.0;
             return true;
         }
 
-        double dt = (lastQuickTimeS > 0.0) ? (nowS - lastQuickTimeS) : 0.0;
-        if (dt <= 1e-6) dt = 0.02;
-
-        double errRate = (errDeg - lastQuickErrDeg) / dt;
-        lastQuickErrDeg = errDeg;
-        lastQuickTimeS = nowS;
-
-        double requested = (errDeg * Constants.Turret.TURRET_KP) - (errRate * Constants.Turret.TURRET_KD);
-        double cmd = Range.clip(requested, -Constants.Turret.TURRET_MAX_POWER, Constants.Turret.TURRET_MAX_POWER);
-
-        if (Math.abs(cmd) < Constants.Turret.TURRET_MIN_POWER) {
-            cmd = Math.copySign(Constants.Turret.TURRET_MIN_POWER, cmd);
-        }
-
-        cmd = applyTurretLimitsToPower(cmd);
-
-        if (Math.abs(cmd) < 1e-6) stopTurret();
-        else setTurretPower(cmd);
-
-        return false;
-    }
-
-    public boolean autoAimTurretTunable(double robotHeadingDeg, double goalHeadingDeg, double quickKp, double quickKd, double quickMinPower, double quickMaxPower) {
-        if (turretRotation == null) return false;
-
-        double nowS = turretAimTimer.seconds();
-
-        double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
-        double currentTurretDeg = getTurretDeg();
-        double errDeg = turretErrDeg(desiredTurretDeg, currentTurretDeg);
-
-        turretTargetDeg = desiredTurretDeg;
-        turretErrDeg = errDeg;
-
-        if (Math.abs(errDeg) <= Constants.Turret.TURRET_DEADBAND) {
-            stopTurret();
-            lastQuickErrDeg = 0.0;
-            lastQuickTimeS = 0.0;
-            return true;
-        }
-
-        double dt = (lastQuickTimeS > 0.0) ? (nowS - lastQuickTimeS) : 0.0;
-        if (dt <= 1e-6) dt = 0.02;
-
-        double errRate = (errDeg - lastQuickErrDeg) / dt;
-        lastQuickErrDeg = errDeg;
-        lastQuickTimeS = nowS;
-
-        double requested = (errDeg * quickKp) - (errRate * quickKd);
-        double cmd = Range.clip(requested, -quickMaxPower, quickMaxPower);
-
-        if (Math.abs(cmd) < quickMinPower) {
-            cmd = Math.copySign(quickMinPower, cmd);
-        }
-
+        double cmd = (Constants.Turret.TURRET_KP * errDeg) + (Constants.Turret.TURRET_KS * Math.signum(errDeg));
+        cmd = Range.clip(cmd, -Constants.Turret.TURRET_MAX_POWER, +Constants.Turret.TURRET_MAX_POWER);
         cmd = applyTurretLimitsToPower(cmd);
 
         if (Math.abs(cmd) < 1e-6) stopTurret();

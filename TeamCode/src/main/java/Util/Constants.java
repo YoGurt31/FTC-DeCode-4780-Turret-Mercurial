@@ -102,9 +102,8 @@ public final class Constants {
         public static final double LIMIT_GUARD = 0.1;
 
         // TODO: TUNE TURRET
-        public static double TURRET_KP = 0.25;
-        public static double TURRET_KD = 0.0;
-        public static double TURRET_MIN_POWER = 0.0;
+        public static double TURRET_KS = 0.0;
+        public static double TURRET_KP = 0.0;
         public static double TURRET_MAX_POWER = 1.0;
         public static double TURRET_DEADBAND = 1;
     }

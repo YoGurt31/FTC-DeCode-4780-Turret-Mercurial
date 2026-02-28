@@ -40,31 +40,6 @@ public final class TeleOp {
             final long[] lastMs = {0};
             final long[] stationarySinceMs = {0};
 
-            // Intake
-            linsane.bindWhileTrue(() -> linsane.gamepad1().left_bumper, loop(exec(() -> {
-                Intake.INSTANCE.setMode(Intake.Mode.EJECT);
-                Intake.INSTANCE.apply();
-            })));
-            linsane.bindWhileTrue(() -> linsane.gamepad1().right_bumper && !linsane.gamepad1().left_bumper, loop(exec(() -> {
-                Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
-                Intake.INSTANCE.apply();
-            })));
-
-            // Flywheel + Release
-            linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger >= Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
-                Flywheel.INSTANCE.enableAutoRange();
-                Release.INSTANCE.open();
-                Flywheel.INSTANCE.apply();
-                Release.INSTANCE.update();
-            })));
-
-            linsane.bindWhileTrue(() -> linsane.gamepad1().right_trigger < Constants.Relocalize.SHOOT_TRIGGER_DB, loop(exec(() -> {
-                Flywheel.INSTANCE.stop();
-                Release.INSTANCE.close();
-                Flywheel.INSTANCE.apply();
-                Release.INSTANCE.update();
-            })));
-
             // Elevator
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share), exec(Elevator.INSTANCE::applyPreset));
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().dpad_up), exec(Elevator.INSTANCE::startRise));
@@ -81,14 +56,34 @@ public final class TeleOp {
                 Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
                 Vision.INSTANCE.setPipeline(intakingNow ? Constants.Vision.ARTIFACT_PIPELINE : Constants.Vision.LOCALIZATION_PIPELINE);
 
-                // Turret
-                if (!(linsane.gamepad1().left_trigger >= 0.10) && (linsane.gamepad1().right_trigger >= 0.10)) {
+                // Intake
+                if (linsane.gamepad1().left_bumper) {
+                    Intake.INSTANCE.setMode(Intake.Mode.EJECT);
+                } else if (linsane.gamepad1().right_bumper) {
+                    Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                } else {
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                }
+
+                // Turret + Flywheel + Release
+                if (linsane.gamepad1().right_trigger >= 0.10) {
                     Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
                     Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
-                    // Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), alliance));
+                    Flywheel.INSTANCE.enableAutoRange();
+                    Release.INSTANCE.open();
+                } else if (linsane.gamepad1().left_trigger >= 0.10) {
+                    Turret.INSTANCE.lockTurret();
+                    Flywheel.INSTANCE.enableAutoRange();
+                    Release.INSTANCE.open();
                 } else {
                     Turret.INSTANCE.lockTurret();
+                    Flywheel.INSTANCE.stop();
+                    Release.INSTANCE.close();
                 }
+
+                // Turret Temporary
+//                Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
+//                Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
 
                 // Drive
                 double driveCmd = -linsane.gamepad1().left_stick_y;
@@ -109,11 +104,6 @@ public final class TeleOp {
                             turnCmd = assist;
                         }
                     }
-                }
-
-                // Intake Idle
-                if (!linsane.gamepad1().left_bumper && !linsane.gamepad1().right_bumper) {
-                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                 }
 
                 // Relocalize
@@ -141,6 +131,8 @@ public final class TeleOp {
 
                 Drive.INSTANCE.drive(driveCmd, turnCmd);
                 Intake.INSTANCE.apply();
+                Flywheel.INSTANCE.apply();
+                Release.INSTANCE.apply();
                 Elevator.INSTANCE.updateRise();
 
                 if (telemetry) {

@@ -102,7 +102,7 @@ public final class Auton {
                     }
                 }
                 wasInZone[0] = inZone;
-                Release.INSTANCE.update();
+                Release.INSTANCE.apply();
 
                 TelemetryPacket packet = new TelemetryPacket();
                 boolean keepRunning = running.run(packet);

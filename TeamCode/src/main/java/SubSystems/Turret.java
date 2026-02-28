@@ -28,12 +28,10 @@ public class Turret {
 
     private double turretTargetDeg = 0.0;
     private double turretErrDeg = 0.0;
-    private double lastQuickErrDeg = 0.0;
-    private double lastQuickTimeS = 0.0;
 
     private static final double FORWARD_LOCK_DEADBAND_DEG = 0.5;
-    private static final double FORWARD_LOCK_KP = 0.03;
-    private static final double FORWARD_LOCK_MAX_POWER = 0.80;
+    private static final double FORWARD_LOCK_KP = 0.025;
+    private static final double FORWARD_LOCK_MAX_POWER = 0.75;
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
@@ -46,8 +44,6 @@ public class Turret {
 
         turretTargetDeg = 0.0;
         turretErrDeg = 0.0;
-        lastQuickErrDeg = 0.0;
-        lastQuickTimeS = 0.0;
         turretZeroOffsetTicks = turretRotation.getCurrentPosition();
     }
 
@@ -125,7 +121,7 @@ public class Turret {
         turretRotation.setPower(Range.clip(pwr, -1.0, 1.0));
     }
 
-    public void stopTurret() {
+    public void stop() {
         if (turretRotation == null) return;
         turretRotation.setPower(0.0);
     }
@@ -138,14 +134,14 @@ public class Turret {
         turretErrDeg = errDeg;
 
         if (Math.abs(errDeg) <= FORWARD_LOCK_DEADBAND_DEG) {
-            stopTurret();
+            stop();
             return true;
         }
 
         double cmd = Range.clip(errDeg * FORWARD_LOCK_KP, -FORWARD_LOCK_MAX_POWER, FORWARD_LOCK_MAX_POWER);
         cmd = applyTurretLimitsToPower(cmd);
 
-        if (Math.abs(cmd) < 1e-6) stopTurret();
+        if (Math.abs(cmd) < 1e-6) stop();
         else setTurretPower(cmd);
 
         return false;
@@ -162,7 +158,7 @@ public class Turret {
         turretErrDeg = errDeg;
 
         if (Math.abs(errDeg) <= Constants.Turret.TURRET_DEADBAND) {
-            stopTurret();
+            stop();
             return true;
         }
 
@@ -170,7 +166,7 @@ public class Turret {
         cmd = Range.clip(cmd, -Constants.Turret.TURRET_MAX_POWER, +Constants.Turret.TURRET_MAX_POWER);
         cmd = applyTurretLimitsToPower(cmd);
 
-        if (Math.abs(cmd) < 1e-6) stopTurret();
+        if (Math.abs(cmd) < 1e-6) stop();
         else setTurretPower(cmd);
 
         return false;

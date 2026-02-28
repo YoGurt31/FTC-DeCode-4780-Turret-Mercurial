@@ -33,9 +33,8 @@ public class Release {
         openedAtMs = 0;
     }
 
-    public void update() {
+    public void apply() {
         if (!isOpen) return;
-
         long elapsed = System.currentTimeMillis() - openedAtMs;
         if (elapsed >= AUTO_CLOSE_MS) {
             close();

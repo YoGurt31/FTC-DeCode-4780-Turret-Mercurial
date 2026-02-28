@@ -5,6 +5,8 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -13,6 +15,7 @@ import SubSystems.Turret;
 import SubSystems.Vision;
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
+@Disabled
 @SuppressWarnings("unused")
 public final class LocalizationTuner {
 

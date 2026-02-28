@@ -102,8 +102,8 @@ public final class Constants {
         public static final double LIMIT_GUARD = 0.1;
 
         // TODO: TUNE TURRET
-        public static double TURRET_KS = 0.0;
-        public static double TURRET_KP = 0.0;
+        public static double TURRET_KS = 0.07;
+        public static double TURRET_KP = 0.01;
         public static double TURRET_MAX_POWER = 1.0;
         public static double TURRET_DEADBAND = 1;
     }
@@ -122,11 +122,10 @@ public final class Constants {
         public static final double M = 0.182786;
         public static final double R = 51.88337;
 
-        // TODO: DETERMINE MIN RPS
-        public static double MIN_RPS = 65.0;
+        public static double IDLE_RPS = 40.0;
+        public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;
 
-        // TODO: RETUNE
         public static double F(double voltage) {
             if (voltage <= 1e-6) return 12.5;
             return 12.5 * (13.5 / voltage);
@@ -311,7 +310,6 @@ public final class Constants {
 
     @Configurable
     public static final class Ballistic {
-        // TODO: UPDATE LAUNCH ANGLE + TUNE SLIP
         public static final double LAUNCH_ANGLE_DEG = 35.0;
         public static final double FLYWHEEL_RADIUS_IN = (36.0 / 25.4);
         public static double SLIP = 0.85;

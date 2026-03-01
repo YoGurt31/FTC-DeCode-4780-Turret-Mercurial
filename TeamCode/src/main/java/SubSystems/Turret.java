@@ -195,4 +195,12 @@ public class Turret {
         setTurretPower(cmd);
         return false;
     }
+
+    public void onRobotPoseReset() {
+        if (turretRotation == null) return;
+        turretAimTimer.reset();
+        turretErrDeg = 0.0;
+        turretTargetDeg = getTurretDeg();
+        stop();
+    }
 }

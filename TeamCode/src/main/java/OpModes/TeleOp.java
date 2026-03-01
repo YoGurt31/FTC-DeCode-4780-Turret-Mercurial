@@ -25,6 +25,7 @@ public final class TeleOp {
         return Mercurial.teleop(linsane -> {
 
             // Hardware Init
+            Drive.INSTANCE.setResetPinPointOnInit(false);
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -119,6 +120,7 @@ public final class TeleOp {
                 if (shouldRelocalize && cooldownOk && inLocalizationPipe && Vision.INSTANCE.hasPose()) {
                     if (Vision.INSTANCE.getPose() != null) {
                         Drive.INSTANCE.relocalizePose(Vision.INSTANCE.getPose());
+                        Turret.INSTANCE.onRobotPoseReset();
                         lastMs[0] = now;
                         stationarySinceMs[0] = now;
                     }
@@ -126,6 +128,7 @@ public final class TeleOp {
 
                 if (linsane.gamepad1().psWasPressed()) {
                     Drive.INSTANCE.setPose(-61, (Constants.Field.getAlliance() == Constants.Field.Alliance.BLUE) ? -65 : 65, (Constants.Field.getAlliance() == Constants.Field.Alliance.BLUE) ? 88 : -88);
+                    Turret.INSTANCE.onRobotPoseReset();
                 }
 
                 Drive.INSTANCE.drive(driveCmd, turnCmd);

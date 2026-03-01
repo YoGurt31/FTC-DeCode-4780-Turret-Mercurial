@@ -182,10 +182,10 @@ public final class Auton {
         };
 
         Action shot1 = new RunForAction(0.15, shootLoop);
-        Action gap1  = new WaitAction(0.5);
+        Action gap1  = new WaitAction(1.5);
 
         Action shot2 = new RunForAction(0.15, shootLoop);
-        Action gap2  = new WaitAction(0.5);
+        Action gap2  = new WaitAction(1.5);
 
         Action shot3 = new RunForAction(0.15, shootLoop);
 
@@ -280,6 +280,9 @@ public final class Auton {
                 }
                 Release.INSTANCE.apply();
 
+                Intake.INSTANCE.apply();
+                Flywheel.INSTANCE.apply();
+
                 TelemetryPacket packet = new TelemetryPacket();
                 boolean keepRunning = running.run(packet);
                 if (!keepRunning) running = null;
@@ -321,21 +324,30 @@ public final class Auton {
 //        }
 
         static Action blueFar(TankDrive drive, Pose2d startPose) {
-            return drive.actionBuilder(startPose)
-                    .stopAndAdd(Auton.shootArtifactsAction(drive, Constants.Field.Alliance.BLUE))
-                    .setReversed(false)
-                    .splineTo(new Vector2d(-36, 24), Math.toRadians(90))
-                    .stopAndAdd(new ParallelAction(
-                            drive.actionBuilder(new Pose2d(-36, 24, Math.toRadians(90)))
-                                    .lineToY(54)
-                                    .build(),
-                            Auton.intakeArtifactsAction()
-                    ))
+            Action shootStart = Auton.shootArtifactsAction(drive, Constants.Field.Alliance.BLUE);
+
+            Action driveAndIntake = new ParallelAction(
+                    drive.actionBuilder(startPose)
+                            .setReversed(false)
+                            .splineTo(new Vector2d(-36, 24), Math.toRadians(90))
+                            .lineToY(54)
+                            .build(),
+                    Auton.intakeArtifactsAction()
+            );
+
+            Action toFarZone = drive.actionBuilder(new Pose2d(-36, 54, Math.toRadians(90)))
                     .setReversed(true)
                     .splineTo(new Vector2d(-60, 12), Math.toRadians(180))
-                    .stopAndAdd(Auton.shootArtifactsAction(drive, Constants.Field.Alliance.BLUE))
-                    .setReversed(false)
                     .build();
+
+            Action shootAgain = Auton.shootArtifactsAction(drive, Constants.Field.Alliance.BLUE);
+
+            return new SequenceAction(
+                    shootStart,
+                    driveAndIntake,
+                    toFarZone,
+                    shootAgain
+            );
         }
     }
 }

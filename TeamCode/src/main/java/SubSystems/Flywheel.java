@@ -146,7 +146,7 @@ public class Flywheel {
         double sqrtRPS = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
 
         // 3) Safety Clamp
-        return Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, sqrtRPS));
+        return Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, linearRPS));
     }
 
     public boolean isReady() {

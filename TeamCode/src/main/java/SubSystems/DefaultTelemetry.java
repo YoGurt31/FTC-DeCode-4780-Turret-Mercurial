@@ -26,15 +26,16 @@ public class DefaultTelemetry {
         telemetry.addData("In Shoot Zone", Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()));
         telemetry.addLine();
 
-//        // Vision
-//        telemetry.addLine("=== Vision ===");
-//        telemetry.addLine("--- Limelight (Artifacts) ---");
-//        telemetry.addData("Pipeline", Vision.INSTANCE.getPipelineName());
-//        telemetry.addData("Has Artifact", Vision.INSTANCE.hasArtifact());
-//        telemetry.addData("TX", "%5.2f", Vision.INSTANCE.getTX());
-//        telemetry.addData("TY", "%5.2f", Vision.INSTANCE.getTY());
-//        telemetry.addData("TA", "%5.2f", Vision.INSTANCE.getTA());
-//        telemetry.addLine();
+        // Vision
+        telemetry.addLine("=== Vision ===");
+        telemetry.addLine("--- Limelight (AprilTag) ---");
+        telemetry.addData("Pipeline", Vision.INSTANCE.getPipelineName());
+        telemetry.addData("Has Tag", Vision.INSTANCE.getTag());
+        telemetry.addData("BotPose", Vision.INSTANCE.getPose().getPosition().toString());
+        telemetry.addData("TX", "%5.2f", Vision.INSTANCE.getTX());
+        telemetry.addData("TY", "%5.2f", Vision.INSTANCE.getTY());
+        telemetry.addData("TA", "%5.2f", Vision.INSTANCE.getTA());
+        telemetry.addLine();
 
         // Intake
         telemetry.addLine("=== Intake ===");

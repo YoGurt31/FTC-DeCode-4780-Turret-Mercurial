@@ -13,12 +13,9 @@ import SubSystems.Drive;
 @Configurable
 public class P2PTuner extends LinearOpMode {
 
-    public static double KS_STEP = 0.01;
-    public static double KP_STEP = 0.0025;
-    public static double MAX_STEP = 0.05;
+    private static final double[] STEPS = new double[]{0.0001, 0.0005, 0.0010, 0.0025, 0.0050, 0.0100, 0.0250, 0.0500, 0.1000, 0.2500, 0.5000, 1.000};
 
-    public static double STEP_MIN = 1e-4;
-    public static double STEP_MAX = 0.5;
+    private int stepIndex = 5;
 
     public static double DRIVE_TEST_IN = 24.0;
     public static double GOTO_FWD_IN = 12.0;
@@ -46,10 +43,6 @@ public class P2PTuner extends LinearOpMode {
     }
 
     private TuneParam selected = TuneParam.KS_FWD;
-
-    private double ksStep = KS_STEP;
-    private double kpStep = KP_STEP;
-    private double maxStep = MAX_STEP;
 
     private static final class Waypoint {
         final double x;
@@ -116,11 +109,12 @@ public class P2PTuner extends LinearOpMode {
         if (rb && !lastRB) selected = next(selected);
         if (lb && !lastLB) selected = prev(selected);
 
-        if (dpadRight && !lastDpadRight) bumpStep(selected, +1);
-        if (dpadLeft && !lastDpadLeft) bumpStep(selected, -1);
+        if (dpadRight && !lastDpadRight) bumpStep(+1);
+        if (dpadLeft && !lastDpadLeft) bumpStep(-1);
 
-        if (dpadUp && !lastDpadUp) applyDelta(selected, +getStep(selected));
-        if (dpadDown && !lastDpadDown) applyDelta(selected, -getStep(selected));
+        double step = getStep();
+        if (dpadUp && !lastDpadUp) applyDelta(selected, +step);
+        if (dpadDown && !lastDpadDown) applyDelta(selected, -step);
 
         boolean start = gamepad1.start;
         if (start && !lastStart) {
@@ -158,38 +152,18 @@ public class P2PTuner extends LinearOpMode {
         return vals[i];
     }
 
-    private double getStep(TuneParam p) {
-        switch (p) {
-            case KS_FWD:
-            case KS_TURN:
-                return ksStep;
-            case KP_DIST:
-            case KP_ANG:
-                return kpStep;
-            case MAX_FWD:
-            case MAX_TURN:
-                return maxStep;
-            default:
-                return kpStep;
-        }
+    private double getStep() {
+        if (stepIndex < 0) stepIndex = 0;
+        if (stepIndex >= STEPS.length) stepIndex = STEPS.length - 1;
+        return STEPS[stepIndex];
     }
 
-    private void bumpStep(TuneParam p, int dir) {
-        double mult = (dir > 0) ? 2.0 : 0.5;
-        switch (p) {
-            case KS_FWD:
-            case KS_TURN:
-                ksStep = clamp(STEP_MIN, STEP_MAX, ksStep * mult);
-                break;
-            case KP_DIST:
-            case KP_ANG:
-                kpStep = clamp(STEP_MIN, STEP_MAX, kpStep * mult);
-                break;
-            case MAX_FWD:
-            case MAX_TURN:
-                maxStep = clamp(STEP_MIN, STEP_MAX, maxStep * mult);
-                break;
-        }
+    private void bumpStep(int dir) {
+        if (dir > 0) stepIndex++;
+        else stepIndex--;
+
+        if (stepIndex < 0) stepIndex = 0;
+        if (stepIndex >= STEPS.length) stepIndex = STEPS.length - 1;
     }
 
     private void applyDelta(TuneParam p, double delta) {
@@ -389,7 +363,8 @@ public class P2PTuner extends LinearOpMode {
 
         t.addLine("== Tuning ==");
         t.addData("Selected", selected.name());
-        t.addData("Step", "ks=%.4f | kp=%.4f | max=%.3f", ksStep, kpStep, maxStep);
+        t.addData("Step", "%.4f", getStep());
+        t.addData("StepIndex", "%d / %d", stepIndex + 1, STEPS.length);
 
         t.addLine("-- Values --");
         t.addData("kSFwd", p2p.kSFwd);

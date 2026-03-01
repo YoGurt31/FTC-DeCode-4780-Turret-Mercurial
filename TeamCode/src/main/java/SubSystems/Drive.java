@@ -182,14 +182,6 @@ public class Drive {
         yawDeg = yawDeg * Constants.Relocalize.LL_YAW_SIGN + Constants.Relocalize.LL_YAW_OFFSET_DEG;
         yawDeg = Constants.wrapDeg(yawDeg);
 
-        double dX = xIn - getX();
-        double dY = yIn - getY();
-        double dYaw = Constants.wrapDeg(yawDeg - (Constants.wrapDeg(getHeading())));
-
-        if (Math.abs(dX) > Constants.Relocalize.MAX_DIST_JUMP_IN) return;
-        if (Math.abs(dY) > Constants.Relocalize.MAX_DIST_JUMP_IN) return;
-        if (Math.abs(dYaw) > Constants.Relocalize.MAX_YAW_JUMP_DEG) return;
-
         try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, xIn, yIn, AngleUnit.DEGREES, yawDeg)); } catch (Exception ignored) { }
     }
 

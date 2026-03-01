@@ -6,7 +6,6 @@ import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequenc
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.util.Range;
 
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
@@ -21,7 +20,6 @@ import SubSystems.Turret;
 import SubSystems.Vision;
 import Util.Constants;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 @SuppressWarnings("unused")
@@ -41,12 +39,9 @@ public final class TeleOp {
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
-            // AprilTag Auto Relocalizer (uses raw Limelight pose for stability; Drive.relocalizePose() does mapping + jump reject)
+            // AprilTag Auto Relocalizer
             final long[] lastRelocalizeMs = {0};
             final long[] stableSinceMs = {0};
-            final double[] lastXM = {Double.NaN};
-            final double[] lastYM = {Double.NaN};
-            final double[] lastYawDeg = {Double.NaN};
 
             // Elevator
             linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share), exec(Elevator.INSTANCE::applyPreset));
@@ -70,29 +65,9 @@ public final class TeleOp {
                 boolean stationary = Math.abs(driveCmd) < 0.05 && Math.abs(turnCmd) < 0.05;
 
                 if (stationary && tagPose != null) {
-                    double xM = tagPose.getPosition().x;
-                    double yM = tagPose.getPosition().y;
-                    double yawDeg = tagPose.getOrientation().getYaw(AngleUnit.DEGREES);
+                    if (stableSinceMs[0] == 0) stableSinceMs[0] = nowMs;
 
-                    boolean haveLast = !Double.isNaN(lastXM[0]) && !Double.isNaN(lastYM[0]) && !Double.isNaN(lastYawDeg[0]);
-                    boolean stableNow = false;
-                    if (haveLast) {
-                        double maxJitterM = Constants.Relocalize.MAX_DIST_JUMP_IN / Constants.Relocalize.METERS_TO_IN;
-
-                        double dX = Math.abs(xM - lastXM[0]);
-                        double dY = Math.abs(yM - lastYM[0]);
-                        double dYaw = Math.abs(Constants.wrapDeg(yawDeg - lastYawDeg[0]));
-
-                        stableNow = (dX <= maxJitterM) && (dY <= maxJitterM) && (dYaw <= Constants.Relocalize.MAX_YAW_JUMP_DEG);
-                    }
-
-                    if (stableNow) {
-                        if (stableSinceMs[0] == 0) stableSinceMs[0] = nowMs;
-                    } else {
-                        stableSinceMs[0] = 0;
-                    }
-
-                    boolean stableLongEnough = stableSinceMs[0] != 0 && (nowMs - stableSinceMs[0]) >= Constants.Relocalize.STATIONARY_TIME_MS;
+                    boolean stableLongEnough = (nowMs - stableSinceMs[0]) >= Constants.Relocalize.STATIONARY_TIME_MS;
                     boolean cooldownOk = (nowMs - lastRelocalizeMs[0]) >= Constants.Relocalize.COOLDOWN_MS;
 
                     if (stableLongEnough && cooldownOk) {
@@ -100,10 +75,6 @@ public final class TeleOp {
                         lastRelocalizeMs[0] = nowMs;
                         stableSinceMs[0] = 0;
                     }
-
-                    lastXM[0] = xM;
-                    lastYM[0] = yM;
-                    lastYawDeg[0] = yawDeg;
                 } else {
                     stableSinceMs[0] = 0;
                 }

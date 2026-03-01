@@ -66,9 +66,6 @@ public final class Constants {
 
         public static double LL_YAW_SIGN = 1.0;
         public static double LL_YAW_OFFSET_DEG = 0.0;
-
-        public static final double MAX_DIST_JUMP_IN = 6;
-        public static final double MAX_YAW_JUMP_DEG = 10;
     }
 
 

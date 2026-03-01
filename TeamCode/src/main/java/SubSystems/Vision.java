@@ -82,6 +82,13 @@ public class Vision {
         return r == null ? 0.0 : r.getTa();
     }
 
+    public int getTagId() {
+        LLResultTypes.FiducialResult tag = getTag();
+        if (tag == null) return -1;
+        try { return tag.getFiducialId(); } catch (Exception ignored) { return -1; }
+    }
+
+
     public LLResultTypes.FiducialResult getTag() {
         LLResult r = getResult();
         if (r == null) return null;
@@ -110,7 +117,7 @@ public class Vision {
     public Pose3D getPose() {
         LLResult r = getResult();
         if (r == null) return null;
-        try { return r.getBotpose_MT2(); } catch (Throwable ignored) { return null; }
+        try { return r.getBotpose(); } catch (Throwable ignored) { return null; }
     }
 
     public boolean hasPose() {

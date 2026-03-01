@@ -54,7 +54,7 @@ public final class Constants {
 
     @Configurable
     public static final class Relocalize {
-        public static final long STATIONARY_TIME_MS = 750;
+        public static final long STATIONARY_TIME_MS = 3000;
         public static final long COOLDOWN_MS = 250;
 
         public static final double METERS_TO_IN = 39.3701;

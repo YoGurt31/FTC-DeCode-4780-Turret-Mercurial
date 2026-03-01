@@ -17,10 +17,24 @@ public final class Constants {
         public static final DcMotorSimple.Direction LEFT_DIR = DcMotorSimple.Direction.REVERSE;
         public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
 
-        // TODO: RETUNE
-        public static double ROTATE_GAIN = 0.02;
-        public static double MAX_ROTATE = 0.5;
-        public static double ARTIFACT_AIM_DEADBAND_DEG = 5.0;
+        // AprilTag Alignment
+        public static double KP = 0.0250;
+        public static double MAX_TURN = 0.75;
+        public static double TX_SIGN = 1.0; // TODO: NEGATE IF ROBOT ROTATES WRONG WAY
+
+        public static boolean FILTER_BY_ALLIANCE = false;
+        public static int[] BLUE_TAG_IDS = new int[]{};
+        public static int[] RED_TAG_IDS = new int[]{};
+
+        public static boolean isAllowedTagId(int id, Constants.Field.Alliance alliance) {
+            if (!FILTER_BY_ALLIANCE) return true;
+            int[] allowed = (alliance == Constants.Field.Alliance.BLUE) ? BLUE_TAG_IDS : RED_TAG_IDS;
+            if (allowed == null || allowed.length == 0) return true;
+            for (int v : allowed) {
+                if (v == id) return true;
+            }
+            return false;
+        }
     }
 
     @Configurable
@@ -30,7 +44,6 @@ public final class Constants {
         public static final boolean X_REVERSED = true;
         public static final boolean Y_REVERSED = false;
 
-        // TODO: GET VALUES
         public static double X_OFFSET_MM = -102.00;
         public static double Y_OFFSET_MM = -34.348;
 
@@ -41,8 +54,6 @@ public final class Constants {
 
     @Configurable
     public static final class Relocalize {
-        public static final double SHOOT_TRIGGER_DB = 0.10;
-        public static final double STATIONARY_STICK_DB = 0.05;
         public static final long STATIONARY_TIME_MS = 750;
         public static final long COOLDOWN_MS = 250;
 
@@ -59,6 +70,7 @@ public final class Constants {
         public static final double MAX_DIST_JUMP_IN = 6;
         public static final double MAX_YAW_JUMP_DEG = 10;
     }
+
 
     @Configurable
     public static final class Elevator {
@@ -101,7 +113,7 @@ public final class Constants {
         public static final double TURRET_MIN_DEG = -180.0;
         public static final double TURRET_MAX_DEG = 180.0;
         public static final double LIMIT_GUARD = 0.1;
-        // TODO: TUNE TURRET
+
         public static double TURRET_KS = 0.1;
         public static double TURRET_KP = 0.0075;
         public static double TURRET_MAX_POWER = 1.0;
@@ -119,7 +131,7 @@ public final class Constants {
 
         public static final double TICKS_PER_REV = 28.0;
 
-        // TODO: GET VALUES
+        // TODO: GET BETTER VALUES
         public static final double A = 25.46382;
         public static final double B = 1198.15909;
         public static final double C = 1198.15909;
@@ -176,12 +188,6 @@ public final class Constants {
             return new Pose2d(x + vx * flyTimeSec, y + vy * flyTimeSec, headingRad);
         }
 
-        private static double wrapDeg(double deg) {
-            while (deg > 180.0) deg -= 360.0;
-            while (deg <= -180.0) deg += 360.0;
-            return deg;
-        }
-
         public static double computeGoalHeadingDeg(double robotX, double robotY, Alliance alliance) {
             double goalX = GOAL_X;
             double goalY = (alliance == Alliance.BLUE) ? BLUE_GOAL_Y : RED_GOAL_Y;
@@ -189,7 +195,7 @@ public final class Constants {
             double dx = goalX - robotX;
             double dy = goalY - robotY;
 
-            return wrapDeg(Math.toDegrees(Math.atan2(dy, dx)));
+            return Constants.wrapDeg(Math.toDegrees(Math.atan2(dy, dx)));
         }
 
         public static boolean inShootZone(double x, double y) {
@@ -323,5 +329,11 @@ public final class Constants {
             if (speed <= EPS) return 0.0;
             return Math.max(0.0, dist / speed);
         }
+    }
+
+    public static double wrapDeg(double deg) {
+        while (deg > 180.0) deg -= 360.0;
+        while (deg <= -180.0) deg += 360.0;
+        return deg;
     }
 }

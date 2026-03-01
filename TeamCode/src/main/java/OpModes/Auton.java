@@ -1,203 +1,233 @@
 package OpModes;
 
-import androidx.annotation.NonNull;
+import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.exec;
+import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
+import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
+import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import RoadRunner.TankDrive;
-import SubSystems.DefaultTelemetry;
 import SubSystems.Drive;
+import SubSystems.Elevator;
 import SubSystems.Flywheel;
 import SubSystems.Intake;
 import SubSystems.Release;
 import SubSystems.Turret;
 import SubSystems.Vision;
 import Util.Constants;
+import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
+import com.qualcomm.robotcore.util.Range;
+
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+
+import Util.Actions;
+import Util.P2PTankController;
+
+@SuppressWarnings("unused")
 public final class Auton {
-    private Auton() {
-    }
+    private static Action runningAction = null;
 
-    static final class InstantAction implements Action {
-        private final Runnable r;
-        private boolean ran;
+    public static final Mercurial.RegisterableProgram RedFar = Mercurial.autonomous(linsane -> {
 
-        InstantAction(Runnable r) {
-            this.r = r;
-        }
+        // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
+        Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Constants.Field.setAlliance(Constants.Field.Alliance.RED);
+        Drive.INSTANCE.setPose(Constants.Field.StartPose.RED_FAR.START_X_IN, Constants.Field.StartPose.RED_FAR.START_Y_IN, Constants.Field.StartPose.RED_FAR.START_HEADING_DEG);
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!ran) {
-                ran = true;
-                r.run();
-            }
-            return false;
-        }
-    }
+        Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Turret.INSTANCE.zeroTurret();
 
-    static final class WaitAction implements Action {
-        private final double seconds;
-        private final ElapsedTime timer = new ElapsedTime();
-        private boolean started;
+        runningAction = null;
 
-        WaitAction(double seconds) {
-            this.seconds = Math.max(0.0, seconds);
-        }
+        // Background Update Loop
+        linsane.schedule(loop(sequence(
+                waitUntil(linsane::inLoop),
+                exec(() -> {
+                    Drive.INSTANCE.updateOdometry();
+                    if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) Release.INSTANCE.open();
+                    else Release.INSTANCE.close();
+                    Vision.INSTANCE.update();
+                    Intake.INSTANCE.apply();
+                    Flywheel.INSTANCE.apply();
+                    Release.INSTANCE.apply();
+                    Elevator.INSTANCE.updateRise();
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!started) {
-                started = true;
-                timer.reset();
-            }
-            return timer.seconds() < seconds;
-        }
-    }
+                    if (runningAction != null) {
+                        TelemetryPacket packet = new TelemetryPacket();
+                        boolean keep = runningAction.run(packet);
+                        if (!keep) runningAction = null;
+                    }
+                })
+        )));
 
-    static final class RunForAction implements Action {
-        private final double seconds;
-        private final Runnable onLoop;
-        private final ElapsedTime timer = new ElapsedTime();
-        private boolean started;
+        // Autonomous Sequence
+        linsane.schedule(sequence(
+                waitUntil(linsane::inLoop),
+                exec(() -> runningAction = buildMain(new P2PTankController(), Constants.Field.getAlliance())),
+                waitUntil(() -> runningAction == null),
 
-        RunForAction(double seconds, Runnable onLoop) {
-            this.seconds = Math.max(0.0, seconds);
-            this.onLoop = onLoop;
-        }
+                // End Auton
+                exec(() -> {
+                    Drive.INSTANCE.stop();
+                    Intake.INSTANCE.stop();
+                    Flywheel.INSTANCE.stop();
+                    Release.INSTANCE.close();
+                })
+        ));
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!started) {
-                started = true;
-                timer.reset();
-            }
-            if (onLoop != null) onLoop.run();
-            return timer.seconds() < seconds;
-        }
-    }
+        // Shut Off
+        linsane.dropToScheduler();
+    });
 
-    static final class UntilAction implements Action {
-        interface Condition {
-            boolean get();
-        }
+    public static final Mercurial.RegisterableProgram BlueFar = Mercurial.autonomous(linsane -> {
 
-        private final Condition cond;
-        private final double timeoutSec;
-        private final Runnable onLoop;
-        private final ElapsedTime timer = new ElapsedTime();
-        private boolean started;
+        // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
+        Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
+        Drive.INSTANCE.setPose(Constants.Field.StartPose.BLUE_FAR.START_X_IN, Constants.Field.StartPose.BLUE_FAR.START_Y_IN, Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG);
 
-        UntilAction(Condition cond, double timeoutSec, Runnable onLoop) {
-            this.cond = cond;
-            this.timeoutSec = Math.max(0.0, timeoutSec);
-            this.onLoop = onLoop;
-        }
+        Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+        Turret.INSTANCE.zeroTurret();
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!started) {
-                started = true;
-                timer.reset();
-            }
-            if (onLoop != null) onLoop.run();
-            boolean done = (cond != null && cond.get());
-            boolean timedOut = timer.seconds() >= timeoutSec;
-            return !(done || timedOut);
-        }
-    }
+        runningAction = null;
 
-    static final class SequenceAction implements Action {
-        private final Action[] actions;
-        private int i;
+        // Background Update Loop
+        linsane.schedule(loop(sequence(
+                waitUntil(linsane::inLoop),
+                exec(() -> {
+                    Drive.INSTANCE.updateOdometry();
+                    if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) Release.INSTANCE.open();
+                    else Release.INSTANCE.close();
+                    Vision.INSTANCE.update();
+                    Intake.INSTANCE.apply();
+                    Flywheel.INSTANCE.apply();
+                    Release.INSTANCE.apply();
+                    Elevator.INSTANCE.updateRise();
 
-        SequenceAction(Action... actions) {
-            this.actions = actions;
-        }
+                    if (runningAction != null) {
+                        TelemetryPacket packet = new TelemetryPacket();
+                        boolean keep = runningAction.run(packet);
+                        if (!keep) runningAction = null;
+                    }
+                })
+        )));
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (actions == null || actions.length == 0) return false;
-            while (i < actions.length) {
-                Action a = actions[i];
-                if (a == null) {
-                    i++;
-                    continue;
+        // Autonomous Sequence
+        linsane.schedule(sequence(
+                waitUntil(linsane::inLoop),
+                exec(() -> runningAction = buildMain(new P2PTankController(), Constants.Field.getAlliance())),
+                waitUntil(() -> runningAction == null),
+
+                // End Auton
+                exec(() -> {
+                    Drive.INSTANCE.stop();
+                    Intake.INSTANCE.stop();
+                    Flywheel.INSTANCE.stop();
+                    Release.INSTANCE.close();
+                })
+        ));
+
+        // Shut Off
+        linsane.dropToScheduler();
+    });
+
+    private static Action p2pTo(P2PTankController p2p, double xIn, double yIn, double headingDeg) {
+        return new Action() {
+            private boolean started;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (!started) {
+                    started = true;
+                    p2p.beginAbs(xIn, yIn, headingDeg);
                 }
-                boolean keep = a.run(packet);
-                if (keep) return true;
-                i++;
+                return p2p.step();
             }
-            return false;
-        }
+        };
     }
 
-    static final class ParallelAction implements Action {
-        private final Action[] actions;
+    private static Action shootArtifactsAction(Constants.Field.Alliance alliance) {
 
-        ParallelAction(Action... actions) {
-            this.actions = actions;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            boolean anyRunning = false;
-            for (Action a : actions) {
-                if (a != null && a.run(packet)) {
-                    anyRunning = true;
-                }
-            }
-            return anyRunning;
-        }
-    }
-
-    static Action shootArtifactsAction(TankDrive drive, Constants.Field.Alliance alliance) {
-        Runnable autoAim = () -> {
-            if (drive == null) return;
-            Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
-            Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance));
+        Runnable lockTurret = () -> {
+            Turret.INSTANCE.lockTurretAt(0.0);
         };
 
-        Action spinUpAndAimUntilReady = new UntilAction(
-                () -> Flywheel.INSTANCE.isReady(),
-                1.50,
+        Action spinUpAndAlignUntilReady = Actions.until(
                 () -> {
-                    autoAim.run();
+                    return Flywheel.INSTANCE.isReady() && (!(Vision.INSTANCE.hasTag()) || Math.abs(Vision.INSTANCE.getTX()) <= 1.0);
+                },
+                2.25,
+                () -> {
+                    lockTurret.run();
+
+                    double turn = Range.clip((Vision.INSTANCE.getTX() * Constants.Drive.KP) * Constants.Drive.TX_SIGN, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
+
+                    if (!Vision.INSTANCE.hasTag() || Math.abs(Vision.INSTANCE.getTX()) <= 1.0) {
+                        turn = 0.0;
+                    }
+
+                    Drive.INSTANCE.drive(0.0, turn);
+
                     Flywheel.INSTANCE.enableAutoRange();
                     Flywheel.INSTANCE.apply();
                 }
         );
 
         Runnable shootLoop = () -> {
-            autoAim.run();
+            lockTurret.run();
+
             Flywheel.INSTANCE.enableAutoRange();
             Flywheel.INSTANCE.apply();
-            Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+
+            if (Flywheel.INSTANCE.isReady() && ((!Vision.INSTANCE.hasTag()) || Math.abs(Vision.INSTANCE.getTX()) <= 1.0)) {
+                Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+            } else {
+                Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                double turn = 0.0;
+                if (Vision.INSTANCE.hasTag() && Math.abs(Vision.INSTANCE.getTX()) > 1.0) {
+                    turn = Range.clip((Vision.INSTANCE.getTX() * Constants.Drive.KP) * Constants.Drive.TX_SIGN, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
+                }
+                Drive.INSTANCE.drive(0.0, turn);
+            }
+
             Intake.INSTANCE.apply();
+
+            if (Flywheel.INSTANCE.isReady() && ((!Vision.INSTANCE.hasTag()) || Math.abs(Vision.INSTANCE.getTX()) <= 1.0)) Drive.INSTANCE.drive(0.0, 0.0);
         };
 
-        Action shot1 = new RunForAction(0.15, shootLoop);
-        Action gap1  = new WaitAction(1.5);
+        Action shot1 = Actions.runFor(0.15, shootLoop);
+        Action gap1 = Actions.waitSeconds(1.50);
 
-        Action shot2 = new RunForAction(0.15, shootLoop);
-        Action gap2  = new WaitAction(1.5);
+        Action shot2 = Actions.runFor(0.15, shootLoop);
+        Action gap2 = Actions.waitSeconds(1.50);
 
-        Action shot3 = new RunForAction(0.15, shootLoop);
+        Action shot3 = Actions.runFor(0.15, shootLoop);
 
-        Action cleanup = new InstantAction(() -> {
+        Action cleanup = Actions.instant(() -> {
+            Drive.INSTANCE.drive(0.0, 0.0);
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.stop();
             Turret.INSTANCE.stop();
         });
 
-        return new SequenceAction(
-                spinUpAndAimUntilReady,
+        return Actions.sequence(
+                spinUpAndAlignUntilReady,
                 shot1, gap1,
                 shot2, gap2,
                 shot3,
@@ -205,149 +235,76 @@ public final class Auton {
         );
     }
 
-    static Action intakeArtifactsAction() {
-        Action intake = new RunForAction(3.00, () -> {
+    private static Action intakeArtifactsAction() {
+        Action intake = Actions.runFor(3.00, () -> {
             Release.INSTANCE.close();
             Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
             Intake.INSTANCE.apply();
         });
 
-        Action cleanup = new InstantAction(() -> {
+        Action cleanup = Actions.instant(() -> {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
         });
 
-        return new SequenceAction(
-                intake,
-                cleanup
+        return Actions.sequence(intake, cleanup);
+    }
+
+    private static Action buildMain(P2PTankController p2p, Constants.Field.Alliance alliance) {
+        Constants.Field.StartPose sp = (alliance == Constants.Field.Alliance.BLUE) ? Constants.Field.StartPose.BLUE_FAR : Constants.Field.StartPose.RED_FAR;
+
+        Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
+
+        return (alliance == Constants.Field.Alliance.BLUE) ? blueFar(p2p, alliance) : redFar(p2p, alliance);
+    }
+
+    // TODO: BlueFar Path
+    private static Action blueFar(P2PTankController p2p, Constants.Field.Alliance alliance) {
+        Action driveAndIntakeLine1 = Actions.parallel(
+                Actions.sequence(
+                        p2pTo(p2p, -36, 24, 90),
+                        p2pTo(p2p, -36, 54, 90)
+                ),
+                intakeArtifactsAction()
+        );
+        Action driveAndIntakeHPZ = Actions.parallel(
+                p2pTo(p2p, -60, 54, 90),
+                intakeArtifactsAction()
+        );
+
+        return Actions.sequence(
+                shootArtifactsAction(alliance),
+                driveAndIntakeLine1,
+                p2pTo(p2p, -60, 12, 180),
+                shootArtifactsAction(alliance),
+                driveAndIntakeHPZ,
+                p2pTo(p2p, -60, 12, 180),
+                shootArtifactsAction(alliance)
         );
     }
 
-    static abstract class BaseAuto extends LinearOpMode {
-        protected abstract Constants.Field.StartPose startPoseDefined();
-        protected abstract Constants.Field.Alliance alliance();
+    // TODO: RedFar Path
+    private static Action redFar(P2PTankController p2p, Constants.Field.Alliance alliance) {
+        Action driveAndIntakeLine1 = Actions.parallel(
+                Actions.sequence(
+                        p2pTo(p2p, -36, -24, -90),
+                        p2pTo(p2p, -36, -54, -90)
+                ),
+                intakeArtifactsAction()
+        );
+        Action driveAndIntakeHPZ = Actions.parallel(
+                p2pTo(p2p, -60, -54, -90),
+                intakeArtifactsAction()
+        );
 
-        protected abstract Action buildMain(TankDrive drive, Pose2d startPose);
-
-        @Override
-        public final void runOpMode() {
-            Vision.INSTANCE.init(hardwareMap, telemetry);
-            if (Vision.INSTANCE.getLimelight() != null) {
-                Vision.INSTANCE.getLimelight().pipelineSwitch(Constants.Vision.ARTIFACT_PIPELINE);
-            }
-
-            Constants.Field.setAlliance(alliance());
-
-            Drive.INSTANCE.setResetPinPointOnInit(true);
-            Drive.INSTANCE.init(hardwareMap, telemetry);
-            Intake.INSTANCE.init(hardwareMap, telemetry);
-            Flywheel.INSTANCE.init(hardwareMap, telemetry);
-            Release.INSTANCE.init(hardwareMap, telemetry);
-            Turret.INSTANCE.init(hardwareMap, telemetry);
-            Turret.INSTANCE.zeroTurret();
-
-            Constants.Field.StartPose sp = startPoseDefined();
-            Pose2d startPose = new Pose2d(sp.START_X_IN, sp.START_Y_IN, Math.toRadians(sp.START_HEADING_DEG));
-            Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, Math.toRadians(sp.START_HEADING_DEG));
-            Drive.INSTANCE.updateOdometry();
-
-            TankDrive drive = new TankDrive(hardwareMap, startPose);
-
-            Action main = buildMain(drive, startPose);
-
-            waitForStart();
-            if (isStopRequested()) return;
-
-            Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, Math.toRadians(sp.START_HEADING_DEG));
-            Drive.INSTANCE.updateOdometry();
-
-            Action running = main;
-            while (opModeIsActive() && running != null) {
-                Drive.INSTANCE.updateOdometry();
-
-                Vision.INSTANCE.update();
-                Vision.INSTANCE.updateRobotYawDeg(Drive.INSTANCE.getHeading());
-
-                Pose2d pose = drive.localizer.getPose();
-                double x = pose.position.x;
-                double y = pose.position.y;
-                double headingDeg = Math.toDegrees(pose.heading.toDouble());
-
-                if (Constants.Field.inShootZone(x, y)) {
-                    Release.INSTANCE.open();
-                } else {
-                    Release.INSTANCE.close();
-                }
-                Release.INSTANCE.apply();
-
-                Intake.INSTANCE.apply();
-                Flywheel.INSTANCE.apply();
-
-                TelemetryPacket packet = new TelemetryPacket();
-                boolean keepRunning = running.run(packet);
-                if (!keepRunning) running = null;
-
-                DefaultTelemetry.INSTANCE.update(telemetry);
-                telemetry.update();
-            }
-
-            Drive.INSTANCE.drive(0.0, 0.0);
-            Intake.INSTANCE.stop();
-            Flywheel.INSTANCE.stop();
-            Turret.INSTANCE.stop();
-            Release.INSTANCE.close();
-        }
-    }
-
-    static final class Paths {
-        private Paths() {
-        }
-
-//        static Action redFar(TankDrive drive, Pose2d startPose) {
-//            return drive.actionBuilder(startPose)
-//                    .setReversed(false)
-//                    .splineTo(new Vector2d(-36, -24), Math.toRadians(270))
-//                    .lineToY(-54)
-//                    .setReversed(true)
-//                    .splineTo(new Vector2d(-60, -12), Math.toRadians(180))
-//                    .setReversed(false)
-//                    .splineTo(new Vector2d(-12, -24), Math.toRadians(270))
-//                    .lineToY(-54)
-//                    .setReversed(true)
-//                    .splineTo(new Vector2d(-60, -12), Math.toRadians(180))
-//                    .setReversed(false)
-//                    .splineTo(new Vector2d(12, -32), Math.toRadians(270))
-//                    .lineToY(-54)
-//                    .setReversed(true)
-//                    .splineTo(new Vector2d(-60, -12), Math.toRadians(180))
-//                    .build();
-//        }
-
-        static Action blueFar(TankDrive drive, Pose2d startPose) {
-            Action shootStart = Auton.shootArtifactsAction(drive, Constants.Field.Alliance.BLUE);
-
-            Action driveAndIntake = new ParallelAction(
-                    drive.actionBuilder(startPose)
-                            .setReversed(false)
-                            .splineTo(new Vector2d(-36, 24), Math.toRadians(90))
-                            .lineToY(54)
-                            .build(),
-                    Auton.intakeArtifactsAction()
-            );
-
-            Action toFarZone = drive.actionBuilder(new Pose2d(-36, 54, Math.toRadians(90)))
-                    .setReversed(true)
-                    .splineTo(new Vector2d(-60, 12), Math.toRadians(180))
-                    .build();
-
-            Action shootAgain = Auton.shootArtifactsAction(drive, Constants.Field.Alliance.BLUE);
-
-            return new SequenceAction(
-                    shootStart,
-                    driveAndIntake,
-                    toFarZone,
-                    shootAgain
-            );
-        }
+        return Actions.sequence(
+                shootArtifactsAction(alliance),
+                driveAndIntakeLine1,
+                p2pTo(p2p, -60, -12, 180),
+                shootArtifactsAction(alliance),
+                driveAndIntakeHPZ,
+                p2pTo(p2p, -60, -12, 180),
+                shootArtifactsAction(alliance)
+        );
     }
 }

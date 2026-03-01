@@ -35,10 +35,6 @@ public final class PinpointLocalizer implements Localizer {
     public PinpointLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
         driver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.PinPoint.PINPOINT);
 
-        double mmPerTick = inPerTick * 25.4;
-        // TODO: Decide Whether To Use Computed Or PreSet Values
-//        driver.setEncoderResolution(1 / mmPerTick, DistanceUnit.MM);
-//        driver.setOffsets(mmPerTick * PARAMS.parYTicks, mmPerTick * PARAMS.perpXTicks, DistanceUnit.MM);
         driver.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         driver.setOffsets(Constants.PinPoint.X_OFFSET_MM, Constants.PinPoint.Y_OFFSET_MM, DistanceUnit.MM);
 

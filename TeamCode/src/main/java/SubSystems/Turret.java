@@ -55,12 +55,6 @@ public class Turret {
         return Math.max(lo, Math.min(hi, v));
     }
 
-    private static double wrapDeg(double deg) {
-        while (deg > 180.0) deg -= 360.0;
-        while (deg <= -180.0) deg += 360.0;
-        return deg;
-    }
-
     public boolean atMinLimit() {
         return getTurretDeg() <= (Constants.Turret.TURRET_MIN_DEG + Constants.Turret.LIMIT_GUARD);
     }
@@ -90,7 +84,7 @@ public class Turret {
     }
 
     public double turretErrDeg(double desiredDeg, double currentDeg) {
-        double errShort = wrapDeg(desiredDeg - currentDeg);
+        double errShort = Constants.wrapDeg(desiredDeg - currentDeg);
         double errLong;
 
         if (errShort >= 0) {
@@ -147,7 +141,7 @@ public class Turret {
     public boolean lockTurretAt(double deg) {
         if (turretRotation == null) return false;
 
-        double targetDeg = wrapDeg(deg);
+        double targetDeg = Constants.wrapDeg(deg);
         targetDeg = clamp(targetDeg, Constants.Turret.TURRET_MIN_DEG, Constants.Turret.TURRET_MAX_DEG);
         double currentDeg = getTurretDeg();
 
@@ -170,7 +164,7 @@ public class Turret {
     public boolean autoAimTurret(double robotHeadingDeg, double goalHeadingDeg) {
         if (turretRotation == null) return false;
 
-        double desiredTurretDeg = wrapDeg(goalHeadingDeg - robotHeadingDeg);
+        double desiredTurretDeg = Constants.wrapDeg(goalHeadingDeg - robotHeadingDeg);
         double currentTurretDeg = getTurretDeg();
         double errDeg = turretErrDeg(desiredTurretDeg, currentTurretDeg);
 
@@ -194,13 +188,5 @@ public class Turret {
 
         setTurretPower(cmd);
         return false;
-    }
-
-    public void onRobotPoseReset() {
-        if (turretRotation == null) return;
-        turretAimTimer.reset();
-        turretErrDeg = 0.0;
-        turretTargetDeg = getTurretDeg();
-        stop();
     }
 }

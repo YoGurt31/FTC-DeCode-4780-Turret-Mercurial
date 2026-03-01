@@ -164,12 +164,6 @@ public class Drive {
         return pinpoint.getPosition().getHeading(AngleUnit.DEGREES);
     }
 
-    private static double wrapDeg(double deg) {
-        while (deg > 180.0) deg -= 360.0;
-        while (deg <= -180.0) deg += 360.0;
-        return deg;
-    }
-
     public void relocalizePose(Pose3D llPose) {
         if (llPose == null) return;
         if (pinpoint == null) return;
@@ -186,11 +180,11 @@ public class Drive {
 
         double yawDeg = llPose.getOrientation().getYaw(AngleUnit.DEGREES);
         yawDeg = yawDeg * Constants.Relocalize.LL_YAW_SIGN + Constants.Relocalize.LL_YAW_OFFSET_DEG;
-        yawDeg = wrapDeg(yawDeg);
+        yawDeg = Constants.wrapDeg(yawDeg);
 
         double dX = xIn - getX();
         double dY = yIn - getY();
-        double dYaw = wrapDeg(yawDeg - (wrapDeg(getHeading())));
+        double dYaw = Constants.wrapDeg(yawDeg - (Constants.wrapDeg(getHeading())));
 
         if (Math.abs(dX) > Constants.Relocalize.MAX_DIST_JUMP_IN) return;
         if (Math.abs(dY) > Constants.Relocalize.MAX_DIST_JUMP_IN) return;

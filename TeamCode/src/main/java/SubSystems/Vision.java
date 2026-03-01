@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
-import java.util.List;
-
 import Util.Constants;
 
 public class Vision {
@@ -20,7 +18,7 @@ public class Vision {
 
     private Telemetry telemetry;
 
-    // Limelight (Artifact Pipeline)
+    // Limelight (AprilTag / Localization)
     private Limelight3A limelight;
     private LLResult result;
     private int desiredPipeline = 0;
@@ -38,7 +36,7 @@ public class Vision {
         result = null;
     }
 
-    // Limelight (Artifact Pipeline)
+    // Limelight (AprilTag / Localization)
     private void initLimelight(HardwareMap hw) {
         limelight = hw.get(Limelight3A.class, Constants.Vision.LIMELIGHT_NAME);
         limelight.start();
@@ -69,13 +67,6 @@ public class Vision {
         return (result != null && result.isValid()) ? result : null;
     }
 
-    public boolean hasArtifact() {
-        LLResult r = getResult();
-        if (r == null) return false;
-        List<LLResultTypes.ColorResult> artifacts = r.getColorResults();
-        return artifacts != null && !artifacts.isEmpty();
-    }
-
     public double getTX() {
         LLResult r = getResult();
         return r == null ? 0.0 : r.getTx();
@@ -89,6 +80,31 @@ public class Vision {
     public double getTA() {
         LLResult r = getResult();
         return r == null ? 0.0 : r.getTa();
+    }
+
+    public LLResultTypes.FiducialResult getTag() {
+        LLResult r = getResult();
+        if (r == null) return null;
+
+        try { java.util.List<LLResultTypes.FiducialResult> tags = r.getFiducialResults();
+            if (tags == null || tags.isEmpty()) return null;
+
+            LLResultTypes.FiducialResult best = null;
+            double bestArea = -1.0;
+
+            for (LLResultTypes.FiducialResult t : tags) {
+                if (t == null) continue;
+                if (t.getTargetArea() > bestArea) {
+                    bestArea = t.getTargetArea();
+                    best = t;
+                }
+            }
+
+            return best; } catch (Throwable ignored) { return null; }
+    }
+
+    public boolean hasTag() {
+        return getTag() != null;
     }
 
     public Pose3D getPose() {
@@ -126,8 +142,7 @@ public class Vision {
         if (limelight.getStatus() == null) return "Unknown";
 
         int idx = limelight.getStatus().getPipelineIndex();
-        if (idx == Constants.Vision.DEFAULT_PIPELINE || idx == Constants.Vision.LOCALIZATION_PIPELINE) return "Localization";
-        if (idx == Constants.Vision.ARTIFACT_PIPELINE) return "Artifact";
+        if (idx == Constants.Vision.DEFAULT_PIPELINE || idx == Constants.Vision.LOCALIZATION_PIPELINE) return "AprilTag";
         return "Unknown";
     }
 

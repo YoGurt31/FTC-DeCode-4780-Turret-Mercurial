@@ -87,6 +87,7 @@ public class Drive {
 
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setOffsets(Constants.PinPoint.X_OFFSET_MM, Constants.PinPoint.Y_OFFSET_MM, DistanceUnit.MM);
+
         if (resetPinPointOnInit) {
             pinpoint.resetPosAndIMU();
             pinpoint.setPosition(new Pose2D(

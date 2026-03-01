@@ -97,14 +97,18 @@ public final class Constants {
         public static final double TURRET_TICKS_PER_TURRET_REV = TURRET_TICKS_PER_REV / TURRET_OUTPUT_TO_TURRET_RATIO;
         public static final double TURRET_DEG_PER_TICK = 360.0 / TURRET_TICKS_PER_TURRET_REV;
 
+        public static final double TURRET_HOME_DEG = 180.0;
         public static final double TURRET_MIN_DEG = -180.0;
         public static final double TURRET_MAX_DEG = 180.0;
         public static final double LIMIT_GUARD = 0.1;
-
         // TODO: TUNE TURRET
-        public static double TURRET_KS = 0.07;
-        public static double TURRET_KP = 0.01;
+        public static double TURRET_KS = 0.1;
+        public static double TURRET_KP = 0.0075;
         public static double TURRET_MAX_POWER = 1.0;
+        public static double TURRET_CRUISE1_POWER = 1.0;
+        public static double TURRET_CRUISE2_POWER = 0.5;
+        public static double TURRET_CRUISE1_DEADBAND = 45;
+        public static double TURRET_CRUISE2_DEADBAND = 20;
         public static double TURRET_DEADBAND = 1;
     }
 
@@ -122,7 +126,6 @@ public final class Constants {
         public static final double M = 0.182786;
         public static final double R = 51.88337;
 
-        public static double IDLE_RPS = 40.0;
         public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;
 
@@ -190,7 +193,7 @@ public final class Constants {
         }
 
         public static boolean inShootZone(double x, double y) {
-            int buffer = 12;
+            int buffer = 18;
 
             // Allowed Zones
             // Triangle 1: (-72, 24), (-48, 0), (-72, -24)
@@ -234,7 +237,7 @@ public final class Constants {
         }
 
         public static boolean inFarZone(double x, double y) {
-            int buffer = 12;
+            int buffer = 18;
 
             boolean farZone = inTriangle(
                     x, y,
@@ -265,7 +268,7 @@ public final class Constants {
         }
 
         public static boolean inCloseZone(double x, double y) {
-            int buffer = 12;
+            int buffer = 18;
 
             return inTriangle(
                     x, y,

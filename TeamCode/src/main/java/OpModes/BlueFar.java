@@ -20,7 +20,7 @@ public final class BlueFar extends Auton.BaseAuto {
     }
 
     @Override
-    protected Action buildMain(TankDrive drive, Pose2d startPose, boolean[] intakeEnabled) {
-        return Auton.Paths.blueFar(drive, startPose, intakeEnabled);
+    protected Action buildMain(TankDrive drive, Pose2d startPose) {
+        return Auton.Paths.blueFar(drive, startPose);
     }
 }

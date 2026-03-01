@@ -25,7 +25,6 @@ public final class TeleOp {
         return Mercurial.teleop(linsane -> {
 
             // Hardware Init
-            Drive.INSTANCE.setResetPinPointOnInit(true); // Change To False
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -76,14 +75,10 @@ public final class TeleOp {
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();
                 } else {
-                    Turret.INSTANCE.lockTurret();
-                    Flywheel.INSTANCE.stop();
+                    Turret.INSTANCE.stop();
+                    Flywheel.INSTANCE.setVelocityRps(Constants.Flywheel.MIN_RPS);
                     Release.INSTANCE.close();
                 }
-
-                // Turret Temporary
-//                Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
-//                Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
 
                 // Drive
                 double driveCmd = -linsane.gamepad1().left_stick_y;
@@ -127,6 +122,10 @@ public final class TeleOp {
                         lastMs[0] = now;
                         stationarySinceMs[0] = now;
                     }
+                }
+
+                if (linsane.gamepad1().psWasPressed()) {
+                    Drive.INSTANCE.setPose(-61, (Constants.Field.getAlliance() == Constants.Field.Alliance.BLUE) ? -65 : 65, (Constants.Field.getAlliance() == Constants.Field.Alliance.BLUE) ? 88 : -88);
                 }
 
                 Drive.INSTANCE.drive(driveCmd, turnCmd);

@@ -44,7 +44,6 @@ public class Turret {
 
         turretTargetDeg = 0.0;
         turretErrDeg = 0.0;
-        turretZeroOffsetTicks = turretRotation.getCurrentPosition();
     }
 
     public void zeroTurret() {
@@ -79,7 +78,7 @@ public class Turret {
     public double getTurretDeg() {
         if (turretRotation == null) return 0.0;
         double ticks = turretRotation.getCurrentPosition() - turretZeroOffsetTicks;
-        return ticks * Constants.Turret.TURRET_DEG_PER_TICK;
+        return ticks * Constants.Turret.TURRET_DEG_PER_TICK + Constants.Turret.TURRET_HOME_DEG;
     }
 
     public double getTargetDeg() {
@@ -129,8 +128,8 @@ public class Turret {
     public boolean lockTurret() {
         if (turretRotation == null) return false;
 
-        double errDeg = -getTurretDeg();
-        turretTargetDeg = 0.0;
+        double errDeg = turretErrDeg(Constants.Turret.TURRET_HOME_DEG, getTurretDeg());
+        turretTargetDeg = Constants.Turret.TURRET_HOME_DEG;
         turretErrDeg = errDeg;
 
         if (Math.abs(errDeg) <= FORWARD_LOCK_DEADBAND_DEG) {
@@ -141,9 +140,30 @@ public class Turret {
         double cmd = Range.clip(errDeg * FORWARD_LOCK_KP, -FORWARD_LOCK_MAX_POWER, FORWARD_LOCK_MAX_POWER);
         cmd = applyTurretLimitsToPower(cmd);
 
-        if (Math.abs(cmd) < 1e-6) stop();
-        else setTurretPower(cmd);
+        setTurretPower(cmd);
+        return false;
+    }
 
+    public boolean lockTurretAt(double deg) {
+        if (turretRotation == null) return false;
+
+        double targetDeg = wrapDeg(deg);
+        targetDeg = clamp(targetDeg, Constants.Turret.TURRET_MIN_DEG, Constants.Turret.TURRET_MAX_DEG);
+        double currentDeg = getTurretDeg();
+
+        double errDeg = turretErrDeg(targetDeg, currentDeg);
+        turretTargetDeg = targetDeg;
+        turretErrDeg = errDeg;
+
+        if (Math.abs(errDeg) <= FORWARD_LOCK_DEADBAND_DEG) {
+            stop();
+            return true;
+        }
+
+        double cmd = Range.clip(errDeg * FORWARD_LOCK_KP, -FORWARD_LOCK_MAX_POWER, FORWARD_LOCK_MAX_POWER);
+        cmd = applyTurretLimitsToPower(cmd);
+
+        setTurretPower(cmd);
         return false;
     }
 
@@ -162,13 +182,17 @@ public class Turret {
             return true;
         }
 
+        double cruise1 = 0.0, cruise2 = 0.0;
         double cmd = (Constants.Turret.TURRET_KP * errDeg) + (Constants.Turret.TURRET_KS * Math.signum(errDeg));
+        if (Math.abs(errDeg) > Constants.Turret.TURRET_CRUISE1_DEADBAND) cruise1 = Constants.Turret.TURRET_CRUISE1_POWER;
+        cmd = Math.signum(errDeg) * Math.max(Math.abs(cmd), cruise1);
+        if (Math.abs(errDeg) < Constants.Turret.TURRET_CRUISE1_DEADBAND && Math.abs(errDeg) > Constants.Turret.TURRET_CRUISE2_DEADBAND) cruise2 = Constants.Turret.TURRET_CRUISE2_POWER;
+        cmd = Math.signum(errDeg) * Math.max(Math.abs(cmd), cruise2);
+
         cmd = Range.clip(cmd, -Constants.Turret.TURRET_MAX_POWER, +Constants.Turret.TURRET_MAX_POWER);
         cmd = applyTurretLimitsToPower(cmd);
 
-        if (Math.abs(cmd) < 1e-6) stop();
-        else setTurretPower(cmd);
-
+        setTurretPower(cmd);
         return false;
     }
 }

@@ -1,23 +1,12 @@
 package SubSystems;
 
-import android.util.Size;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
@@ -37,12 +26,6 @@ public class Vision {
     private int desiredPipeline = 0;
     private int lastPipeline = -1;
 
-    // TurretCam (AprilTag)
-    private VisionPortal turretPortal;
-    private AprilTagProcessor aprilTag;
-    private AprilTagDetection trackedDetection;
-    private int trackedTagId = -1;
-
     public void init(HardwareMap hw, Telemetry telemetry) {
         this.telemetry = telemetry;
 
@@ -53,7 +36,6 @@ public class Vision {
         initLimelight(hw);
 
         result = null;
-        trackedDetection = null;
     }
 
     // Limelight (Artifact Pipeline)
@@ -83,7 +65,6 @@ public class Vision {
         }
     }
 
-    // XXX: Limelight Functions
     public LLResult getResult() {
         return (result != null && result.isValid()) ? result : null;
     }

@@ -61,26 +61,25 @@ public final class TankDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 0.0019396867; // Via ForwardPushTest
-        public double trackWidthTicks = 5100.0; // Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
+        public double inPerTick = 0.00198; // Via ForwardPushTest
+        public double trackWidthTicks = 22500; // Via AngularRampLogger (http://192.168.43.1:8080/tuning/dead-wheel-angular-ramp.html)
 
         // feedforward parameters (in tick units)
-        public double kS = 1.27; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
-        public double kV = 0.00027; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
-        public double kA = 0.000035; // Via ManualFeedforwardTuner (http://192.168.43.1:8080/dash)
+        public double kS = 1.435000; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kV = 0.000281; // Via ForwardRampLogger (http://192.168.43.1:8080/tuning/forward-ramp.html)
+        public double kA = 0.000045; // Via ManualFeedforwardTuner (http://192.168.43.1:8080/dash)
 
-        // XXX: DO NOT TOUCH THESE VARIABLES
         // path profile parameters (in inches)
-        public double maxWheelVel = 75;
+        public double maxWheelVel = 50;
         public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+        public double maxProfileAccel = 35;
 
         // turn profile parameters (in radians)
-        public double maxAngVel = Math.PI; // shared with path
+        public double maxAngVel   = Math.PI; // shared with path
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double ramseteZeta = 0.7; // in the range (0, 1)
+        public double ramseteZeta = 1.0; // in the range (0, 1)
         public double ramseteBBar = 2.0; // positive
 
         // turn controller gains

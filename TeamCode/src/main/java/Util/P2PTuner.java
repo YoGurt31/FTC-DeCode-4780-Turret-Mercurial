@@ -13,10 +13,12 @@ import SubSystems.Drive;
 @Configurable
 public class P2PTuner extends LinearOpMode {
 
-    public static double KP_DIST_STEP = 0.0025;
-    public static double KP_ANG_STEP = 0.0010;
-    public static double MAX_FWD_STEP = 0.05;
-    public static double MAX_TURN_STEP = 0.05;
+    public static double KS_STEP = 0.01;
+    public static double KP_STEP = 0.0025;
+    public static double MAX_STEP = 0.05;
+
+    public static double STEP_MIN = 1e-4;
+    public static double STEP_MAX = 0.5;
 
     public static double DRIVE_TEST_IN = 24.0;
     public static double GOTO_FWD_IN = 12.0;
@@ -33,6 +35,21 @@ public class P2PTuner extends LinearOpMode {
     private boolean lastA, lastB, lastX, lastY, lastBack, lastStart;
     private boolean lastDpadUp, lastDpadDown, lastDpadLeft, lastDpadRight;
     private boolean lastLB, lastRB;
+
+    private enum TuneParam {
+        KS_FWD,
+        KS_TURN,
+        KP_DIST,
+        KP_ANG,
+        MAX_FWD,
+        MAX_TURN
+    }
+
+    private TuneParam selected = TuneParam.KS_FWD;
+
+    private double ksStep = KS_STEP;
+    private double kpStep = KP_STEP;
+    private double maxStep = MAX_STEP;
 
     private static final class Waypoint {
         final double x;
@@ -61,8 +78,8 @@ public class P2PTuner extends LinearOpMode {
 
         telemetry.setMsTransmissionInterval(50);
         telemetry.addLine("P2P Tuner Ready. Press Play.");
-        telemetry.addLine("A: turn +90 | B: drive +24 | X: goTo +12F +12L | Y: square | Back: cancel");
-        telemetry.addLine("Tune: Dpad (kP), RB/LB (maxFwd), RT/LT (maxTurn)");
+        telemetry.addLine("Tests: A turn | B drive | X goTo | Y square");
+        telemetry.addLine("Tune: LB/RB Select Param | DPad Up/Down Change Value | DPad Left/Right Change Step");
         telemetry.update();
 
         waitForStart();
@@ -96,22 +113,14 @@ public class P2PTuner extends LinearOpMode {
         boolean lb = gamepad1.left_bumper;
         boolean rb = gamepad1.right_bumper;
 
-        // Dpad: gains
-        if (dpadUp && !lastDpadUp) p2p.kPDist = Math.max(0.0, p2p.kPDist + KP_DIST_STEP);
-        if (dpadDown && !lastDpadDown) p2p.kPDist = Math.max(0.0, p2p.kPDist - KP_DIST_STEP);
+        if (rb && !lastRB) selected = next(selected);
+        if (lb && !lastLB) selected = prev(selected);
 
-        if (dpadRight && !lastDpadRight) p2p.kPAng = Math.max(0.0, p2p.kPAng + KP_ANG_STEP);
-        if (dpadLeft && !lastDpadLeft) p2p.kPAng = Math.max(0.0, p2p.kPAng - KP_ANG_STEP);
+        if (dpadRight && !lastDpadRight) bumpStep(selected, +1);
+        if (dpadLeft && !lastDpadLeft) bumpStep(selected, -1);
 
-        // Bumpers: max forward
-        if (rb && !lastRB) p2p.maxFwd = clamp01(p2p.maxFwd + MAX_FWD_STEP);
-        if (lb && !lastLB) p2p.maxFwd = clamp01(p2p.maxFwd - MAX_FWD_STEP);
-
-        // Triggers: max turn (continuous)
-        double rt = gamepad1.right_trigger;
-        double lt = gamepad1.left_trigger;
-        if (rt > 0.2) p2p.maxTurn = clamp01(p2p.maxTurn + MAX_TURN_STEP * rt);
-        if (lt > 0.2) p2p.maxTurn = clamp01(p2p.maxTurn - MAX_TURN_STEP * lt);
+        if (dpadUp && !lastDpadUp) applyDelta(selected, +getStep(selected));
+        if (dpadDown && !lastDpadDown) applyDelta(selected, -getStep(selected));
 
         boolean start = gamepad1.start;
         if (start && !lastStart) {
@@ -134,6 +143,82 @@ public class P2PTuner extends LinearOpMode {
         lastLB = lb;
         lastRB = rb;
         lastStart = start;
+    }
+
+    private static TuneParam next(TuneParam p) {
+        int i = p.ordinal() + 1;
+        TuneParam[] vals = TuneParam.values();
+        return vals[i % vals.length];
+    }
+
+    private static TuneParam prev(TuneParam p) {
+        int i = p.ordinal() - 1;
+        TuneParam[] vals = TuneParam.values();
+        if (i < 0) i = vals.length - 1;
+        return vals[i];
+    }
+
+    private double getStep(TuneParam p) {
+        switch (p) {
+            case KS_FWD:
+            case KS_TURN:
+                return ksStep;
+            case KP_DIST:
+            case KP_ANG:
+                return kpStep;
+            case MAX_FWD:
+            case MAX_TURN:
+                return maxStep;
+            default:
+                return kpStep;
+        }
+    }
+
+    private void bumpStep(TuneParam p, int dir) {
+        double mult = (dir > 0) ? 2.0 : 0.5;
+        switch (p) {
+            case KS_FWD:
+            case KS_TURN:
+                ksStep = clamp(STEP_MIN, STEP_MAX, ksStep * mult);
+                break;
+            case KP_DIST:
+            case KP_ANG:
+                kpStep = clamp(STEP_MIN, STEP_MAX, kpStep * mult);
+                break;
+            case MAX_FWD:
+            case MAX_TURN:
+                maxStep = clamp(STEP_MIN, STEP_MAX, maxStep * mult);
+                break;
+        }
+    }
+
+    private void applyDelta(TuneParam p, double delta) {
+        switch (p) {
+            case KS_FWD:
+                p2p.kSFwd = Math.max(0.0, p2p.kSFwd + delta);
+                break;
+            case KS_TURN:
+                p2p.kSTurn = Math.max(0.0, p2p.kSTurn + delta);
+                break;
+            case KP_DIST:
+                p2p.kPDist = Math.max(0.0, p2p.kPDist + delta);
+                break;
+            case KP_ANG:
+                p2p.kPAng = Math.max(0.0, p2p.kPAng + delta);
+                break;
+            case MAX_FWD:
+                p2p.maxFwd = clamp01(p2p.maxFwd + delta);
+                break;
+            case MAX_TURN:
+                p2p.maxTurn = clamp01(p2p.maxTurn + delta);
+                break;
+        }
+    }
+
+    private static double clamp(double lo, double hi, double v) {
+        if (v < lo) return lo;
+        if (v > hi) return hi;
+        return v;
     }
 
     private void handleTestButtons() {
@@ -286,31 +371,42 @@ public class P2PTuner extends LinearOpMode {
         double distErr = Math.hypot(ex, ey);
         double angErr = hasTarget ? Constants.wrapDeg(th - h) : 0.0;
 
-        t.addData("Pose (in,deg)", "x=%.2f y=%.2f h=%.1f", x, y, h);
+        t.addLine("== Pose ==");
+        t.addData("Robot", "x=%.2f in | y=%.2f in | h=%.1f deg", x, y, h);
+
+        t.addLine("== Target ==");
         if (hasTarget) {
-            t.addData("Target", "x=%.2f y=%.2f h=%.1f", tx, ty, th);
+            t.addData("Target", "x=%.2f | y=%.2f | h=%.1f", tx, ty, th);
             t.addData("Error", "dist=%.2f in | ang=%.1f deg", distErr, angErr);
             t.addData("Waypoint", "%d / %d", (seqIndex + 1), sequence.length);
         } else {
-            t.addLine("Target: (none)  |  Press A/B/X/Y to start a test");
+            t.addLine("Target: none (press A/B/X/Y to start a test)");
         }
 
+        t.addLine("== Status ==");
         t.addData("Busy", p2p.isBusy());
         t.addData("Elapsed", "%.2fs", runTimer.seconds());
 
-        t.addLine("--- Tunables ---");
-        t.addData("kPDist", p2p.kPDist);
-        t.addData("kPAng", p2p.kPAng);
+        t.addLine("== Tuning ==");
+        t.addData("Selected", selected.name());
+        t.addData("Step", "ks=%.4f | kp=%.4f | max=%.3f", ksStep, kpStep, maxStep);
+
+        t.addLine("-- Values --");
         t.addData("kSFwd", p2p.kSFwd);
         t.addData("kSTurn", p2p.kSTurn);
+        t.addData("kPDist", p2p.kPDist);
+        t.addData("kPAng", p2p.kPAng);
         t.addData("maxFwd", p2p.maxFwd);
         t.addData("maxTurn", p2p.maxTurn);
+
+        t.addLine("-- Tolerances --");
         t.addData("posTolIn", p2p.posTolIn);
         t.addData("angTolDeg", p2p.angTolDeg);
         t.addData("blendDistIn", p2p.headingBlendDistIn);
 
-        t.addLine("Controls: A turn | B drive | X goTo | Y square | Back cancel");
-        t.addLine("Tune: Dpad (kP), RB/LB (maxFwd), RT/LT (maxTurn), Start prints values");
+        t.addLine("== Controls ==");
+        t.addLine("Tests: A turn | B drive | X goTo | Y square | Back cancel");
+        t.addLine("Tune: LB/RB select param | Dpad Up/Down change value | Dpad Left/Right change step | Start prints values");
     }
 
     private static double clamp01(double v) {

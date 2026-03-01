@@ -19,8 +19,8 @@ public class P2PController {
     public double maxFwd = 1.00;
     public double maxTurn = 0.80;
 
-    public double posTolIn = 0.75;
-    public double angTolDeg = 2.0;
+    public double posTolIn = 0.50;
+    public double angTolDeg = 1.0;
 
     public double headingBlendDistIn = 8.0;
 

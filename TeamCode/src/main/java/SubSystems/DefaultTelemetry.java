@@ -1,6 +1,7 @@
 package SubSystems;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -31,7 +32,10 @@ public class DefaultTelemetry {
         telemetry.addLine("--- Limelight (AprilTag) ---");
         telemetry.addData("Pipeline", Vision.INSTANCE.getPipelineName());
         telemetry.addData("Has Tag", Vision.INSTANCE.getTag());
-        telemetry.addData("BotPose", Vision.INSTANCE.getPose().getPosition().toString());
+        Pose3D llPose = Vision.INSTANCE.getPose();
+        String llPoseStr = "NULL";
+        try { if (llPose != null && llPose.getPosition() != null) { llPoseStr = llPose.getPosition().toString(); } } catch (Exception ignored) { llPoseStr = "INVALID"; }
+        telemetry.addData("BotPose", llPoseStr);
         telemetry.addData("TX", "%5.2f", Vision.INSTANCE.getTX());
         telemetry.addData("TY", "%5.2f", Vision.INSTANCE.getTY());
         telemetry.addData("TA", "%5.2f", Vision.INSTANCE.getTA());

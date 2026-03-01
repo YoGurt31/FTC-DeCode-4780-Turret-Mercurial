@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.Range;
 import SubSystems.Drive;
 
 @Configurable
-public class P2PTankController {
+public class P2PController {
 
     // TODO: TUNE ALL OF THESE
     public double kPDist = 0.00;

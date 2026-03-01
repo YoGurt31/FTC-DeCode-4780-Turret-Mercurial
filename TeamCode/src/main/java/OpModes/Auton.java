@@ -21,10 +21,9 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Pose2d;
 
 import Util.Actions;
-import Util.P2PTankController;
+import Util.P2PController;
 
 @SuppressWarnings("unused")
 public final class Auton {
@@ -72,7 +71,7 @@ public final class Auton {
         // Autonomous Sequence
         linsane.schedule(sequence(
                 waitUntil(linsane::inLoop),
-                exec(() -> runningAction = buildMain(new P2PTankController(), Constants.Field.getAlliance())),
+                exec(() -> runningAction = buildMain(new P2PController(), Constants.Field.getAlliance())),
                 waitUntil(() -> runningAction == null),
 
                 // End Auton
@@ -130,7 +129,7 @@ public final class Auton {
         // Autonomous Sequence
         linsane.schedule(sequence(
                 waitUntil(linsane::inLoop),
-                exec(() -> runningAction = buildMain(new P2PTankController(), Constants.Field.getAlliance())),
+                exec(() -> runningAction = buildMain(new P2PController(), Constants.Field.getAlliance())),
                 waitUntil(() -> runningAction == null),
 
                 // End Auton
@@ -146,7 +145,7 @@ public final class Auton {
         linsane.dropToScheduler();
     });
 
-    private static Action p2pTo(P2PTankController p2p, double xIn, double yIn, double headingDeg) {
+    private static Action p2pTo(P2PController p2p, double xIn, double yIn, double headingDeg) {
         return new Action() {
             private boolean started;
 
@@ -250,7 +249,7 @@ public final class Auton {
         return Actions.sequence(intake, cleanup);
     }
 
-    private static Action buildMain(P2PTankController p2p, Constants.Field.Alliance alliance) {
+    private static Action buildMain(P2PController p2p, Constants.Field.Alliance alliance) {
         Constants.Field.StartPose sp = (alliance == Constants.Field.Alliance.BLUE) ? Constants.Field.StartPose.BLUE_FAR : Constants.Field.StartPose.RED_FAR;
 
         Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
@@ -259,7 +258,7 @@ public final class Auton {
     }
 
     // TODO: BlueFar Path
-    private static Action blueFar(P2PTankController p2p, Constants.Field.Alliance alliance) {
+    private static Action blueFar(P2PController p2p, Constants.Field.Alliance alliance) {
         Action driveAndIntakeLine1 = Actions.parallel(
                 Actions.sequence(
                         p2pTo(p2p, -36, 24, 90),
@@ -284,7 +283,7 @@ public final class Auton {
     }
 
     // TODO: RedFar Path
-    private static Action redFar(P2PTankController p2p, Constants.Field.Alliance alliance) {
+    private static Action redFar(P2PController p2p, Constants.Field.Alliance alliance) {
         Action driveAndIntakeLine1 = Actions.parallel(
                 Actions.sequence(
                         p2pTo(p2p, -36, -24, -90),

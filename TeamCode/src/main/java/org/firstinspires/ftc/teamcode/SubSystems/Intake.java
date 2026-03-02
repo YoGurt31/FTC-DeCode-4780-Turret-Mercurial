@@ -1,4 +1,4 @@
-package SubSystems;
+package org.firstinspires.ftc.teamcode.SubSystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import Util.Constants;
+import org.firstinspires.ftc.teamcode.Util.Constants;
 
 public class Intake {
     public static final Intake INSTANCE = new Intake();

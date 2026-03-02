@@ -1,4 +1,4 @@
-package Util;
+package org.firstinspires.ftc.teamcode.Util;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import SubSystems.Drive;
+import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 
 @TeleOp(name = "P2P Tuner", group = "Tuning")
 @Configurable

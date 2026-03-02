@@ -1,17 +1,17 @@
-package Util;
+package org.firstinspires.ftc.teamcode.Util;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
-import SubSystems.Drive;
+import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 
 @Configurable
 public class P2PController {
 
     // TODO: TUNE ALL OF THESE
-    public double kPDist = 0.00;
-    public double kPAng = 0.00;
+    public double kPDist = 0.035;
+    public double kPAng = 0.0025;
 
     public double kSFwd = 0.00;
     public double kSTurn = 0.00;
@@ -29,7 +29,7 @@ public class P2PController {
     public double turnSign = 1.0;
 
     public double timeoutSec = 0.0;
-    public long settleMs = 150;
+    public long settleMs = 500;
 
     private boolean busy;
     private long startTimeMs;

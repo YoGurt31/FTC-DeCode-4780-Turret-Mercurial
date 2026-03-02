@@ -1,4 +1,4 @@
-package SubSystems;
+package org.firstinspires.ftc.teamcode.SubSystems;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
-import Util.Constants;
+import org.firstinspires.ftc.teamcode.Util.Constants;
 
 public class Drive {
     public static final Drive INSTANCE = new Drive();
@@ -171,15 +171,7 @@ public class Drive {
         double xIn = llPose.getPosition().x * Constants.Relocalize.METERS_TO_IN;
         double yIn = llPose.getPosition().y * Constants.Relocalize.METERS_TO_IN;
 
-        if (Constants.Relocalize.SWAP_XY) {
-            double tmp = xIn; xIn = yIn; yIn = tmp;
-        }
-
-        xIn *= Constants.Relocalize.LL_X_TO_PP_SIGN;
-        yIn *= Constants.Relocalize.LL_Y_TO_PP_SIGN;
-
         double yawDeg = llPose.getOrientation().getYaw(AngleUnit.DEGREES);
-        yawDeg = yawDeg * Constants.Relocalize.LL_YAW_SIGN + Constants.Relocalize.LL_YAW_OFFSET_DEG;
         yawDeg = Constants.wrapDeg(yawDeg);
 
         double currentH = Constants.wrapDeg(getHeading());

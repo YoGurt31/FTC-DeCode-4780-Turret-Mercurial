@@ -1,24 +1,25 @@
-package OpModes;
+package org.firstinspires.ftc.teamcode.OpModes;
 
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.exec;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 
-import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.util.Range;
 
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
-import SubSystems.DefaultTelemetry;
-import SubSystems.Drive;
-import SubSystems.Elevator;
-import SubSystems.Flywheel;
-import SubSystems.Intake;
-import SubSystems.Release;
-import SubSystems.Turret;
-import SubSystems.Vision;
-import Util.Constants;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.SubSystems.DefaultTelemetry;
+import org.firstinspires.ftc.teamcode.SubSystems.Drive;
+import org.firstinspires.ftc.teamcode.SubSystems.Elevator;
+import org.firstinspires.ftc.teamcode.SubSystems.Flywheel;
+import org.firstinspires.ftc.teamcode.SubSystems.Intake;
+import org.firstinspires.ftc.teamcode.SubSystems.Release;
+import org.firstinspires.ftc.teamcode.SubSystems.Turret;
+import org.firstinspires.ftc.teamcode.SubSystems.Vision;
+import org.firstinspires.ftc.teamcode.Util.Constants;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -32,7 +33,7 @@ public final class TeleOp {
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Vision.INSTANCE.setPipeline(Constants.Vision.LOCALIZATION_PIPELINE);
+            Vision.INSTANCE.setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -52,7 +53,7 @@ public final class TeleOp {
                 Drive.INSTANCE.updateOdometry();
                 Vision.INSTANCE.updateRobotYawDeg(Drive.INSTANCE.getHeading());
                 Vision.INSTANCE.update();
-                Vision.INSTANCE.setPipeline(Constants.Vision.LOCALIZATION_PIPELINE);
+                Vision.INSTANCE.setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
                 Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
 
                 // Drive
@@ -90,8 +91,8 @@ public final class TeleOp {
 
                 // Turret - AimBot + Flywheel + Release
                 if (linsane.gamepad1().right_trigger >= 0.10) {
-                    Pose2d pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
-                    Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.position.x, pose.position.y, alliance)); // Predicted
+                    Pose2D pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
+                    Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), alliance)); // Predicted
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();
                 } else if (linsane.gamepad1().left_trigger >= 0.10) {

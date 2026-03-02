@@ -1,4 +1,4 @@
-package SubSystems;
+package org.firstinspires.ftc.teamcode.SubSystems;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 
-import Util.Constants;
+import org.firstinspires.ftc.teamcode.Util.Constants;
 
 public class DefaultTelemetry {
     public static final DefaultTelemetry INSTANCE = new DefaultTelemetry();

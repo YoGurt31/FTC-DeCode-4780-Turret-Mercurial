@@ -1,11 +1,21 @@
-package Util;
+package org.firstinspires.ftc.teamcode.Util;
 
-import com.acmerobotics.roadrunner.Pose2d;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+
 @Configurable
 public final class Constants {
+
+    @Configurable
+    public static final class Auton {
+        public static final double FEED_PULSE_SEC = 0.05;
+        public static final double SHOT_TOTAL_SEC = 1.00;
+        public static final double GAP_SEC = 2.00;
+    }
 
     @Configurable
     public static final class Drive {
@@ -56,16 +66,7 @@ public final class Constants {
     public static final class Relocalize {
         public static final long STATIONARY_TIME_MS = 3000;
         public static final long COOLDOWN_MS = 250;
-
         public static final double METERS_TO_IN = 39.3701;
-
-        // TODO: DETERMINE CONVERSIONS
-        public static int LL_X_TO_PP_SIGN = +1;
-        public static int LL_Y_TO_PP_SIGN = +1;
-        public static boolean SWAP_XY = false;
-
-        public static double LL_YAW_SIGN = 1.0;
-        public static double LL_YAW_OFFSET_DEG = 0.0;
     }
 
 
@@ -133,7 +134,7 @@ public final class Constants {
         public static final double B = 1198.15909;
         public static final double C = 1198.15909;
         public static final double M = 0.182786;
-        public static final double R = 51.88337;
+        public static final double R = 52.0; // 51.88337
 
         public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;
@@ -157,8 +158,7 @@ public final class Constants {
     public static final class Vision {
         public static final String LIMELIGHT_NAME = "limelight";
         public static final int DEFAULT_PIPELINE = 0;
-        public static final int LOCALIZATION_PIPELINE = DEFAULT_PIPELINE;
-        public static final int ARTIFACT_PIPELINE = 1;
+        public static final int ARTIFACT_PIPELINE = DEFAULT_PIPELINE;
     }
 
     public static final class Field {
@@ -167,10 +167,10 @@ public final class Constants {
         public static final double BLUE_GOAL_Y = 66.0;
 
         public enum StartPose {
-            BLUE_CLOSE(61.0, 40.0, 180.0),
-            BLUE_FAR(-61.0, 16.0, 0.0),
-            RED_CLOSE(61.0, -40.0, 180.0),
-            RED_FAR(-61.0, -16.0, 0.0);
+            BLUE_CLOSE(60.0, 40.0, 180.0),
+            BLUE_FAR(-60.0, 16.0, 0.0),
+            RED_CLOSE(60.0, -40.0, 180.0),
+            RED_FAR(-60.0, -16.0, 0.0);
 
             public final double START_X_IN, START_Y_IN, START_HEADING_DEG;
 
@@ -181,8 +181,8 @@ public final class Constants {
             }
         }
 
-        public static Pose2d predictPose(double x, double y, double headingRad, double vx, double vy, double flyTimeSec) {
-            return new Pose2d(x + vx * flyTimeSec, y + vy * flyTimeSec, headingRad);
+        public static Pose2D predictPose(double x, double y, double headingDeg, double vx, double vy, double flyTimeSec) {
+            return new Pose2D(DistanceUnit.INCH, x + vx * flyTimeSec, y + vy * flyTimeSec, AngleUnit.DEGREES, headingDeg);
         }
 
         public static double computeGoalHeadingDeg(double robotX, double robotY, Alliance alliance) {
@@ -309,7 +309,7 @@ public final class Constants {
         }
 
         public static double distanceToGoal() {
-            return Math.hypot(Constants.Field.GOAL_X - SubSystems.Drive.INSTANCE.getX(), ((Constants.Field.getAlliance() == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y) - SubSystems.Drive.INSTANCE.getY());
+            return Math.hypot(Constants.Field.GOAL_X - org.firstinspires.ftc.teamcode.SubSystems.Drive.INSTANCE.getX(), ((Constants.Field.getAlliance() == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y) - org.firstinspires.ftc.teamcode.SubSystems.Drive.INSTANCE.getY());
         }
 
     }

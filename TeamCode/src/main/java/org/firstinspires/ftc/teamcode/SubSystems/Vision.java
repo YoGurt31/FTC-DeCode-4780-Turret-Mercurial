@@ -1,4 +1,4 @@
-package SubSystems;
+package org.firstinspires.ftc.teamcode.SubSystems;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
-import Util.Constants;
+import org.firstinspires.ftc.teamcode.Util.Constants;
 
 public class Vision {
     public static final Vision INSTANCE = new Vision();
@@ -41,7 +41,7 @@ public class Vision {
         limelight = hw.get(Limelight3A.class, Constants.Vision.LIMELIGHT_NAME);
         limelight.start();
         lastPipeline = -1;
-        setPipeline(Constants.Vision.LOCALIZATION_PIPELINE);
+        setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
     }
 
     public void update() {
@@ -149,7 +149,7 @@ public class Vision {
         if (limelight.getStatus() == null) return "Unknown";
 
         int idx = limelight.getStatus().getPipelineIndex();
-        if (idx == Constants.Vision.DEFAULT_PIPELINE || idx == Constants.Vision.LOCALIZATION_PIPELINE) return "AprilTag";
+        if (idx == Constants.Vision.DEFAULT_PIPELINE || idx == Constants.Vision.ARTIFACT_PIPELINE) return "AprilTag";
         return "Unknown";
     }
 

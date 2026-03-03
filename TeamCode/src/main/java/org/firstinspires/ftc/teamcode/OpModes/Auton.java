@@ -26,7 +26,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import dev.frozenmilk.dairy.mercurial.continuations.Closure;
 
-import org.firstinspires.ftc.teamcode.Util.P2PController;
+import org.firstinspires.ftc.teamcode.Util.PID2Point;
 
 @SuppressWarnings("unused")
 public final class Auton {
@@ -61,7 +61,7 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(new P2PController(), Constants.Field.getAlliance()),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(new PID2Point(), Constants.Field.getAlliance()),
                 // End Auton
                 exec(() -> {
                     Drive.INSTANCE.stop();
@@ -105,7 +105,7 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(new P2PController(), Constants.Field.getAlliance()),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(new PID2Point(), Constants.Field.getAlliance()),
 
                 // End Auton
                 exec(() -> {
@@ -119,11 +119,11 @@ public final class Auton {
         linsane.dropToScheduler();
     });
 
-    private static Closure p2pTo(P2PController p2p, double xIn, double yIn, double headingDeg) {
+    private static Closure p2pTo(PID2Point p2p, double xIn, double yIn, double headingDeg) {
         return jumpScope(jumpHandle -> sequence(exec(() -> p2p.beginAbs(xIn, yIn, headingDeg)), loop(ifHuh(p2p::step, noop()).elseHuh(jumpHandle.jump())), exec(Drive.INSTANCE::stop)));
     }
 
-    private static Closure p2pGoTo(P2PController p2p, double forwardIn, double leftIn, double endHeadingDeg) {
+    private static Closure p2pGoTo(PID2Point p2p, double forwardIn, double leftIn, double endHeadingDeg) {
         return jumpScope(jumpHandle -> sequence(exec(() -> {
             Drive.INSTANCE.updateOdometry();
             double x0 = Drive.INSTANCE.getX();
@@ -138,7 +138,7 @@ public final class Auton {
         }), loop(ifHuh(p2p::step, noop()).elseHuh(jumpHandle.jump())), exec(Drive.INSTANCE::stop)));
     }
 
-    private static Closure p2pTurnTo(P2PController p2p, double targetHeadingDeg) {
+    private static Closure p2pTurnTo(PID2Point p2p, double targetHeadingDeg) {
         return jumpScope(jumpHandle -> sequence(exec(() -> {
             Drive.INSTANCE.updateOdometry();
             double x0 = Drive.INSTANCE.getX();
@@ -229,14 +229,14 @@ public final class Auton {
         return sequence(spinUpAndAlignUntilReady, shot, gap, shot, gap, shot, cleanup);
     }
 
-    private static Closure buildMain(P2PController p2p, Constants.Field.Alliance alliance) {
+    private static Closure buildMain(PID2Point p2p, Constants.Field.Alliance alliance) {
         Constants.Field.StartPose sp = (alliance == Constants.Field.Alliance.BLUE) ? Constants.Field.StartPose.BLUE_FAR : Constants.Field.StartPose.RED_FAR;
         Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
         return (alliance == Constants.Field.Alliance.BLUE) ? blueFar(p2p, alliance) : redFar(p2p, alliance);
     }
 
     // TODO: BlueFar Path
-    private static Closure blueFar(P2PController p2p, Constants.Field.Alliance alliance) {
+    private static Closure blueFar(PID2Point p2p, Constants.Field.Alliance alliance) {
         Closure driveAndIntakeLine1 = parallel(sequence(p2pTo(p2p, -36, 24, 90), p2pTo(p2p, -36, 54, 90)), intakeArtifactsAction());
         Closure driveAndIntakeHPZ = parallel(p2pTo(p2p, -60, 54, 90), intakeArtifactsAction());
 
@@ -244,7 +244,7 @@ public final class Auton {
     }
 
     // TODO: RedFar Path
-    private static Closure redFar(P2PController p2p, Constants.Field.Alliance alliance) {
+    private static Closure redFar(PID2Point p2p, Constants.Field.Alliance alliance) {
         Closure driveAndIntakeLine1 = parallel(sequence(p2pTo(p2p, -36, -24, -90), p2pTo(p2p, -36, -54, -90)), intakeArtifactsAction());
         Closure driveAndIntakeHPZ = parallel(p2pTo(p2p, -60, -54, -90), intakeArtifactsAction());
 

@@ -22,7 +22,7 @@ public class P2PTuner extends LinearOpMode {
     public static double GOTO_LEFT_IN = 12.0;
     public static double TURN_TEST_DEG = 90.0;
 
-    private final P2PController p2p = new P2PController();
+    private final PID2Point p2p = new PID2Point();
 
     private Waypoint[] sequence = null;
     private int seqIndex = 0;

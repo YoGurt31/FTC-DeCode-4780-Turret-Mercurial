@@ -63,6 +63,18 @@ public final class Constants {
     }
 
     @Configurable
+    public static final class PurePursuit {
+        public static double TRACK_WIDTH_IN = 12.0;
+        public static double LOOKAHEAD_IN = 10.0;
+        public static double MIN_POWER = 0.10;
+        public static double MAX_POWER = 0.80;
+        public static double END_POS_TOL_IN = 1.5;
+        public static double SLOW_DOWN_RADIUS_IN = 12.0;
+        public static double MAX_CURVATURE = 1.5;
+        public static long SETTLE_MS = 250;
+    }
+
+    @Configurable
     public static final class Relocalize {
         public static final long STATIONARY_TIME_MS = 3000;
         public static final long COOLDOWN_MS = 250;
@@ -137,9 +149,9 @@ public final class Constants {
         public static final double R = 52.0; // 51.88337
 
         public static double[] DISTANCE_FROM_TARGET = new double[]
-                {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130};
+                {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190};
         public static double[] RPS = new double[]
-                {10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
+                {10, 10, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 
         public static double TARGET_SMOOTH_ALPHA = 0.15;
 

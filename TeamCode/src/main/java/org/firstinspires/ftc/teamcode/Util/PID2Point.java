@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 
 @Configurable
-public class P2PController {
+public class PID2Point {
 
     // TODO: TUNE ALL OF THESE
     public double kPDist = 0.035;

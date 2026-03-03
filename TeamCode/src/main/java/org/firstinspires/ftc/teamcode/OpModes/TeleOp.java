@@ -91,7 +91,7 @@ public final class TeleOp {
 
                 // Turret - AimBot + Flywheel + Release
                 if (linsane.gamepad1().right_trigger >= 0.10) {
-                    Pose2D pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Math.toRadians(Drive.INSTANCE.getHeading()), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
+                    Pose2D pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Drive.INSTANCE.getHeading(), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
                     Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), alliance)); // Predicted
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();

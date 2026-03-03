@@ -128,27 +128,6 @@ public class Flywheel {
         return (getRps1() + getRps2()) / 2.0;
     }
 
-    // TODO: FINALIZE DynamicRPS EQUATION
-//    public double getTargetRps() {
-//        // 1) Compute Distance
-//        double robotX = Drive.INSTANCE.getX();
-//        double robotY = Drive.INSTANCE.getY();
-//
-//        Constants.Field.Alliance Alliance = Constants.Field.getAlliance();
-//        double goalX = Constants.Field.GOAL_X;
-//        double goalY = (Alliance == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y;
-//        double distance = Math.hypot(goalX - robotX, goalY - robotY);
-//
-//        // 2-1) Linear Model
-//        double linearRPS = (Constants.Flywheel.M * distance) + Constants.Flywheel.R;
-//
-//        // 2-2) Sqrt Model
-//        double sqrtRPS = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
-//
-//        // 3) Safety Clamp
-//        return Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, linearRPS));
-//    }
-
     public double getTargetRps() {
         // 1) Compute Distance
         double robotX = Drive.INSTANCE.getX();

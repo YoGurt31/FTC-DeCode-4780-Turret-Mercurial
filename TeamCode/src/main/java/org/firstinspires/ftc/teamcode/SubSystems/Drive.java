@@ -116,9 +116,6 @@ public class Drive {
 
         drive = Range.clip(drive, -1.0, 1.0);
 
-        if (Math.abs(drive) < 0.05) drive = 0;
-        if (Math.abs(turn) < 0.05) turn = 0;
-
         double left = drive + turn;
         double right = drive - turn;
 

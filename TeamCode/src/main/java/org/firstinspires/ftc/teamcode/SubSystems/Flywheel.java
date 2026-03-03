@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.teamcode.SubSystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -23,6 +22,7 @@ public class Flywheel {
     private boolean enabled = false;
     private boolean autoRange = true;
     private double manualTargetRps = 0.0;
+    private double targetRPS = Double.NaN;
 
     private double lastF = Double.NaN;
     private double lastVoltage = Double.NaN;
@@ -85,6 +85,7 @@ public class Flywheel {
     public void stop() {
         enabled = false;
         manualTargetRps = 0.0;
+        targetRPS = Double.NaN;
         lastF = Double.NaN;
         lastVoltage = Double.NaN;
         if (fly1 != null) fly1.setPower(0);
@@ -128,6 +129,26 @@ public class Flywheel {
     }
 
     // TODO: FINALIZE DynamicRPS EQUATION
+//    public double getTargetRps() {
+//        // 1) Compute Distance
+//        double robotX = Drive.INSTANCE.getX();
+//        double robotY = Drive.INSTANCE.getY();
+//
+//        Constants.Field.Alliance Alliance = Constants.Field.getAlliance();
+//        double goalX = Constants.Field.GOAL_X;
+//        double goalY = (Alliance == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y;
+//        double distance = Math.hypot(goalX - robotX, goalY - robotY);
+//
+//        // 2-1) Linear Model
+//        double linearRPS = (Constants.Flywheel.M * distance) + Constants.Flywheel.R;
+//
+//        // 2-2) Sqrt Model
+//        double sqrtRPS = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
+//
+//        // 3) Safety Clamp
+//        return Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, linearRPS));
+//    }
+
     public double getTargetRps() {
         // 1) Compute Distance
         double robotX = Drive.INSTANCE.getX();
@@ -138,14 +159,45 @@ public class Flywheel {
         double goalY = (Alliance == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y;
         double distance = Math.hypot(goalX - robotX, goalY - robotY);
 
-        // 2-1) Linear Model
-        double linearRPS = (Constants.Flywheel.M * distance) + Constants.Flywheel.R;
+        // 2) Dynamic RPS Model
+        double tableRPS = Double.NaN;
+        double[] Xs = Constants.Flywheel.DISTANCE_FROM_TARGET;
+        double[] Ys = Constants.Flywheel.RPS;
 
-        // 2-2) Sqrt Model
-        double sqrtRPS = Math.sqrt(Constants.Flywheel.A * distance + Constants.Flywheel.B) + Constants.Flywheel.C;
+        if (Xs != null && Ys != null && Xs.length >= 2 && Xs.length == Ys.length) {
+            if (distance <= Xs[0]) {
+                tableRPS = Ys[0];
+            } else if (distance >= Xs[Xs.length - 1]) {
+                tableRPS = Ys[Ys.length - 1];
+            } else {
+                for (int i = 0; i < Xs.length - 1; i++) {
+                    double x0 = Xs[i];
+                    double x1 = Xs[i + 1];
+                    if (distance >= x0 && distance <= x1) {
+                        double y0 = Ys[i];
+                        double y1 = Ys[i + 1];
+                        double t = (distance - x0) / (x1 - x0);
+                        tableRPS = y0 + t * (y1 - y0);
+                        break;
+                    }
+                }
+            }
+        }
 
         // 3) Safety Clamp
-        return Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, linearRPS));
+        tableRPS = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, tableRPS));
+
+        // 4) Smooth Target
+        double a = Constants.Flywheel.TARGET_SMOOTH_ALPHA;
+        if (a < 0.0) a = 0.0;
+        if (a > 1.0) a = 1.0;
+        if (Double.isNaN(targetRPS)) {
+            targetRPS = tableRPS;
+        } else {
+            targetRPS = targetRPS + a * (tableRPS - targetRPS);
+        }
+
+        return targetRPS;
     }
 
     public boolean isReady() {

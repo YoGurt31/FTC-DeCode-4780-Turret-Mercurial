@@ -60,7 +60,7 @@ public final class TeleOp {
                 double driveCmd = -linsane.gamepad1().left_stick_y;
                 double turnCmd = linsane.gamepad1().right_stick_x;
 
-                // Auto Relocalizer
+                // Auto Relocalization
                 long nowMs = System.currentTimeMillis();
                 Pose3D tagPose = Vision.INSTANCE.getPose();
                 boolean stationary = Math.abs(driveCmd) < 0.05 && Math.abs(turnCmd) < 0.05;

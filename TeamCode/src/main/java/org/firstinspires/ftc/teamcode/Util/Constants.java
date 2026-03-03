@@ -136,6 +136,13 @@ public final class Constants {
         public static final double M = 0.182786;
         public static final double R = 52.0; // 51.88337
 
+        public static double[] DISTANCE_FROM_TARGET = new double[]
+                {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130};
+        public static double[] RPS = new double[]
+                {10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
+
+        public static double TARGET_SMOOTH_ALPHA = 0.15;
+
         public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;
 

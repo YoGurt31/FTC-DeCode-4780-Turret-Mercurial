@@ -110,11 +110,21 @@ public final class Constants {
         public static final double TICKS_PER_REV = 28.0;
 
         public static double[] DISTANCE_FROM_TARGET = new double[]
-                {60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155};
+                {
+                        60, 65, 70, 75, 80,
+                        85, 90, 95, 100, 105,
+                        110, 115, 120, 125, 130,
+                        135, 140, 145, 150, 155
+                };
         public static double[] RPS = new double[]
-                {61.50, 62.50, 62.50, 62.75, 63.00, 63.00, 63.00, 63.25, 63.25, 63.25, 63.25, 63.50, 63.50, 64.00, 66.75, 67.00, 67.00, 67.25, 69.00, 70.25};
+                {
+                        61.50, 62.50, 62.50, 62.75, 63.00,
+                        63.00, 63.00, 63.25, 63.25, 63.25,
+                        63.25, 63.50, 63.50, 64.00, 66.75,
+                        67.00, 67.00, 67.25, 69.00, 70.25
+                };
 
-        public static double TARGET_SMOOTH_ALPHA = 0.15;
+        public static double TARGET_SMOOTH_ALPHA = 0.25;
 
         public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;

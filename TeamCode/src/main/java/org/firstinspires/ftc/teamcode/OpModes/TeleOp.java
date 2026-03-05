@@ -29,13 +29,14 @@ public final class TeleOp {
         return Mercurial.teleop(linsane -> {
 
             // Hardware Init
-            Drive.INSTANCE.setResetPinPointOnInit(false);
+            Drive.INSTANCE.setResetPinPointOnInit(true); // XXX: Set To False
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Vision.INSTANCE.setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
+            Turret.INSTANCE.zeroTurret(); // XXX: Remove
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -97,9 +98,9 @@ public final class TeleOp {
                     Release.INSTANCE.open();
                 } else if (linsane.gamepad1().left_trigger >= 0.10) {
                     Turret.INSTANCE.lockTurret();
-                    if (Vision.INSTANCE.getTag() != null && Vision.INSTANCE.getTag().getTargetArea() >= 0.10 && Constants.Drive.isAllowedTagId(Vision.INSTANCE.getTag().getFiducialId(), alliance)) {
-                        double headingErrDeg = Vision.INSTANCE.getTag().getTargetXDegrees();
-                        double cmd = headingErrDeg * Constants.Drive.KP * Constants.Drive.TX_SIGN;
+                    if (Vision.INSTANCE.getTag() != null && Constants.Drive.isAllowedTagId(Vision.INSTANCE.getTag().getFiducialId(), alliance)) {
+                        double headingErrDeg = Vision.INSTANCE.getTX();
+                        double cmd = headingErrDeg * Constants.Drive.KP;
                         turnCmd = Range.clip(cmd, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
                     }
                     Flywheel.INSTANCE.enableAutoRange();

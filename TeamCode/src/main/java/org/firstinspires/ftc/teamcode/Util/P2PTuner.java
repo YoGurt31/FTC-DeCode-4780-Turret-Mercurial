@@ -29,7 +29,7 @@ public class P2PTuner extends LinearOpMode {
 
     private final ElapsedTime runTimer = new ElapsedTime();
 
-    private boolean lastA, lastB, lastX, lastY, lastBack, lastStart;
+    private boolean lastA, lastB, lastX, lastY, lastBack, lastStart, lastOptions;
     private boolean lastDpadUp, lastDpadDown, lastDpadLeft, lastDpadRight;
     private boolean lastLB, lastRB;
 
@@ -71,7 +71,7 @@ public class P2PTuner extends LinearOpMode {
 
         telemetry.setMsTransmissionInterval(50);
         telemetry.addLine("P2P Tuner Ready. Press Play.");
-        telemetry.addLine("Tests: A turn | B drive | X goTo | Y square");
+        telemetry.addLine("Tests: A turn | B drive | X goTo | Y square | Options cancel");
         telemetry.addLine("Tune: LB/RB Select Param | DPad Up/Down Change Value | DPad Left/Right Change Step");
         telemetry.update();
 
@@ -201,28 +201,44 @@ public class P2PTuner extends LinearOpMode {
         boolean x = gamepad1.x;
         boolean y = gamepad1.y;
         boolean back = gamepad1.back;
+        boolean options = gamepad1.options;
 
-        if (back && !lastBack) {
+        if ((back && !lastBack) || (options && !lastOptions)) {
             sequence = null;
             seqIndex = 0;
             p2p.cancel();
+            Drive.INSTANCE.stop();
         }
 
-        boolean idle = (sequence == null && !p2p.isBusy());
-
-        if (idle && a && !lastA) {
+        if (a && !lastA) {
+            sequence = null;
+            seqIndex = 0;
+            p2p.cancel();
+            Drive.INSTANCE.stop();
             startTurnTest(+TURN_TEST_DEG);
         }
 
-        if (idle && b && !lastB) {
+        if (b && !lastB) {
+            sequence = null;
+            seqIndex = 0;
+            p2p.cancel();
+            Drive.INSTANCE.stop();
             startDriveTest(DRIVE_TEST_IN);
         }
 
-        if (idle && x && !lastX) {
+        if (x && !lastX) {
+            sequence = null;
+            seqIndex = 0;
+            p2p.cancel();
+            Drive.INSTANCE.stop();
             startGoToTest(GOTO_FWD_IN, GOTO_LEFT_IN);
         }
 
-        if (idle && y && !lastY) {
+        if (y && !lastY) {
+            sequence = null;
+            seqIndex = 0;
+            p2p.cancel();
+            Drive.INSTANCE.stop();
             startSquareTest(DRIVE_TEST_IN);
         }
 
@@ -231,6 +247,7 @@ public class P2PTuner extends LinearOpMode {
         lastX = x;
         lastY = y;
         lastBack = back;
+        lastOptions = options;
     }
 
     private void startTurnTest(double deltaDeg) {
@@ -380,7 +397,7 @@ public class P2PTuner extends LinearOpMode {
         t.addData("blendDistIn", p2p.headingBlendDistIn);
 
         t.addLine("== Controls ==");
-        t.addLine("Tests: A turn | B drive | X goTo | Y square | Back cancel");
+        t.addLine("Tests: A turn | B drive | X goTo | Y square | Back/Options cancel");
         t.addLine("Tune: LB/RB select param | Dpad Up/Down change value | Dpad Left/Right change step | Start prints values");
     }
 

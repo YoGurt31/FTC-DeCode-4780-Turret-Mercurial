@@ -36,14 +36,14 @@ public class PPTuner extends LinearOpMode {
 
         PurePursuit pp = new PurePursuit();
 
-        double trackWidthIn = pp.trackWidthIn;
-        double lookaheadIn = pp.lookaheadIn;
-        double minPower = pp.minPower;
-        double maxPower = pp.maxPower;
-        double endPosTolIn = pp.endPosTolIn;
-        double slowDownRadiusIn = pp.slowDownRadiusIn;
-        long settleMs = pp.settleMs;
-        double maxCurvature = pp.maxCurvature;
+        double trackWidthIn = Constants.PurePursuit.TRACK_WIDTH_IN;
+        double lookaheadIn = Constants.PurePursuit.LOOKAHEAD_IN;
+        double minPower = Constants.PurePursuit.MIN_POWER;
+        double maxPower = Constants.PurePursuit.MAX_POWER;
+        double endPosTolIn = Constants.PurePursuit.END_POS_TOL_IN;
+        double slowDownRadiusIn = Constants.PurePursuit.SLOW_DOWN_RADIUS_IN;
+        double maxCurvature = Constants.PurePursuit.MAX_CURVATURE;
+        long settleMs = Constants.PurePursuit.SETTLE_MS;
 
         List<PathDef> paths = buildPaths();
         int pathIndex = 0;

@@ -28,9 +28,8 @@ public final class Constants {
         public static final DcMotorSimple.Direction RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
 
         // AprilTag Alignment
-        public static double KP = 0.0250;
+        public static double KP = 0.02;
         public static double MAX_TURN = 0.75;
-        public static double TX_SIGN = 1.0; // TODO: NEGATE IF ROBOT ROTATES WRONG WAY
 
         public static boolean FILTER_BY_ALLIANCE = false;
         public static int[] BLUE_TAG_IDS = new int[]{};
@@ -65,11 +64,11 @@ public final class Constants {
     @Configurable
     public static final class PurePursuit {
         public static double TRACK_WIDTH_IN = 12.0;
-        public static double LOOKAHEAD_IN = 10.0;
-        public static double MIN_POWER = 0.10;
-        public static double MAX_POWER = 0.80;
-        public static double END_POS_TOL_IN = 1.5;
-        public static double SLOW_DOWN_RADIUS_IN = 12.0;
+        public static double LOOKAHEAD_IN = 12.0;
+        public static double MIN_POWER = 0.20;
+        public static double MAX_POWER = 1.00;
+        public static double END_POS_TOL_IN = 1.0;
+        public static double SLOW_DOWN_RADIUS_IN = 18.0;
         public static double MAX_CURVATURE = 1.5;
         public static long SETTLE_MS = 250;
     }
@@ -141,17 +140,10 @@ public final class Constants {
 
         public static final double TICKS_PER_REV = 28.0;
 
-        // TODO: GET BETTER VALUES
-        public static final double A = 25.46382;
-        public static final double B = 1198.15909;
-        public static final double C = 1198.15909;
-        public static final double M = 0.182786;
-        public static final double R = 52.0; // 51.88337
-
         public static double[] DISTANCE_FROM_TARGET = new double[]
-                {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190};
+                {60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155};
         public static double[] RPS = new double[]
-                {10, 10, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+                {61.50, 62.50, 62.50, 62.75, 63.00, 63.00, 63.00, 63.25, 63.25, 63.25, 63.25, 63.50, 63.50, 64.00, 66.75, 67.00, 67.00, 67.25, 69.00, 70.25};
 
         public static double TARGET_SMOOTH_ALPHA = 0.15;
 

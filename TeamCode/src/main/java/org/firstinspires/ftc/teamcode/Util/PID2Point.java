@@ -10,23 +10,23 @@ import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 public class PID2Point {
 
     // TODO: TUNE ALL OF THESE
-    public double kPDist = 0.035;
-    public double kPAng = 0.0025;
+    public static double kPDist = 0.03;
+    public static double kPAng = 0.0085;
 
-    public double kSFwd = 0.00;
-    public double kSTurn = 0.00;
+    public static double kSFwd = 0.15;
+    public static double kSTurn = 0.15;
 
-    public double maxFwd = 1.00;
-    public double maxTurn = 0.80;
+    public static double maxFwd = 1.00;
+    public static double maxTurn = 0.75;
 
-    public double posTolIn = 0.50;
-    public double angTolDeg = 1.0;
+    public static double posTolIn = 0.50;
+    public static double angTolDeg = 1.0;
 
-    public double headingBlendDistIn = 8.0;
+    public static double headingBlendDistIn = 8.0;
 
     public boolean useFacingScale = true;
 
-    public double turnSign = 1.0;
+    public double turnSign = -1.0;
 
     public double timeoutSec = 0.0;
     public long settleMs = 500;

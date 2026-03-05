@@ -175,7 +175,7 @@ public final class Auton {
         Closure spinUpAndAlignUntilReady = sequence(race(jumpScope(jumpHandle -> loop(ifHuh(() -> Flywheel.INSTANCE.isReady() && (!Vision.INSTANCE.hasTag() || Math.abs(Vision.INSTANCE.getTX()) <= 1.0), jumpHandle.jump()).elseHuh(exec(() -> {
             lockTurret.run();
 
-            double turn = Range.clip((Vision.INSTANCE.getTX() * Constants.Drive.KP) * Constants.Drive.TX_SIGN, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
+            double turn = Range.clip((Vision.INSTANCE.getTX() * Constants.Drive.KP), -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
 
             if (!Vision.INSTANCE.hasTag() || Math.abs(Vision.INSTANCE.getTX()) <= 1.0) {
                 turn = 0.0;

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Util;
 
 import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class PurePursuit {
         public final double x, y;
         public Waypoint(double x, double y) { this.x = x; this.y = y; }
     }
-
+    
     public double trackWidthIn = Constants.PurePursuit.TRACK_WIDTH_IN;
     public double lookaheadIn = Constants.PurePursuit.LOOKAHEAD_IN;
     public double minPower = Constants.PurePursuit.MIN_POWER;
@@ -21,6 +22,16 @@ public class PurePursuit {
     public double slowDownRadiusIn = Constants.PurePursuit.SLOW_DOWN_RADIUS_IN;
     public double maxCurvature = Constants.PurePursuit.MAX_CURVATURE;
     public long settleMs = Constants.PurePursuit.SETTLE_MS;
+
+    // Anti-jitter tuning
+    // If the lookahead point is almost straight ahead, ignore tiny lateral error that can cause oscillation.
+    public double localYDeadbandIn = 0.50;
+    // Low-pass filter for curvature (0..1). Higher = more responsive, lower = smoother.
+    public double curvatureAlpha = 0.25;
+    // Allow min power to be reduced near the end so it can settle without hunting.
+    public double minPowerNearEnd = 0.0;
+
+    private double filteredCurvature = 0.0;
 
     private final List<Waypoint> path = new ArrayList<>();
     private boolean busy = false;
@@ -33,6 +44,7 @@ public class PurePursuit {
         segmentIndex = 0;
         busy = path.size() >= 2;
         settleStartMs = -1;
+        filteredCurvature = 0.0;
     }
 
     public boolean isBusy() { return busy; }
@@ -40,6 +52,7 @@ public class PurePursuit {
     public void cancel() {
         busy = false;
         settleStartMs = -1;
+        filteredCurvature = 0.0;
         Drive.INSTANCE.stop();
     }
 
@@ -77,32 +90,54 @@ public class PurePursuit {
         double dx = look.x - rx;
         double dy = look.y - ry;
 
+        // world -> robot frame (robot-forward = +X, robot-left = +Y)
         double cos = Math.cos(-headingRad);
         double sin = Math.sin(-headingRad);
 
         double localX = dx * cos - dy * sin;
         double localY = dx * sin + dy * cos;
 
+        boolean nearEnd = endDist < slowDownRadiusIn;
+
+        // Only consider reversing when we are close to the end AND the lookahead is clearly behind us.
+        // Prevents the "drive past / flip / drive again" behavior.
+        double reverseTriggerIn = 2.0;
+        boolean targetBehind = localX < -reverseTriggerIn;
+
         double L = Math.max(lookaheadIn, 1e-6);
 
-        double curvature = (2.0 * localY) / (L * L);
+        // Deadband tiny lateral error to prevent straight-line oscillation at high speed.
+        double yForCurv = (Math.abs(localY) < localYDeadbandIn) ? 0.0 : localY;
+
+        double curvature = (2.0 * yForCurv) / (L * L);
         curvature = Range.clip(curvature, -maxCurvature, maxCurvature);
+
+        // Smooth curvature to prevent rapid sign-flips from noise.
+        double a = Range.clip(curvatureAlpha, 0.0, 1.0);
+        filteredCurvature = filteredCurvature + a * (curvature - filteredCurvature);
+        curvature = filteredCurvature;
 
         double power = maxPower;
         if (endDist < slowDownRadiusIn) {
             double scale = Range.clip(endDist / slowDownRadiusIn, 0.15, 1.0);
             power *= scale;
         }
-        power = applyMinPower(power, minPower);
+
+        double minP = nearEnd ? minPowerNearEnd : minPower;
+        power = applyMinPower(power, minP);
+
+        if (nearEnd && targetBehind) {
+            power = -Math.abs(power);
+        }
 
         double omega = power * curvature;
         double left = power - omega * (trackWidthIn / 2.0);
         double right = power + omega * (trackWidthIn / 2.0);
 
         double max = Math.max(Math.abs(left), Math.abs(right));
-        if (max > 1.0) {
-            left /= max;
-            right /= max;
+        if (max > maxPower) {
+            left = left / max * maxPower;
+            right = right / max * maxPower;
         }
 
         left = Range.clip(left, -maxPower, maxPower);

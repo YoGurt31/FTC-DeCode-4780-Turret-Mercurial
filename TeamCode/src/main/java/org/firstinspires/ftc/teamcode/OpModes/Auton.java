@@ -3,16 +3,13 @@ package org.firstinspires.ftc.teamcode.OpModes;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.exec;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
-import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.parallel;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitSeconds;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.jumpScope;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.ifHuh;
-import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.noop;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.race;
 
 import org.firstinspires.ftc.teamcode.SubSystems.Drive;
-import org.firstinspires.ftc.teamcode.SubSystems.Elevator;
 import org.firstinspires.ftc.teamcode.SubSystems.Flywheel;
 import org.firstinspires.ftc.teamcode.SubSystems.Intake;
 import org.firstinspires.ftc.teamcode.SubSystems.Release;
@@ -25,8 +22,6 @@ import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 import com.qualcomm.robotcore.util.Range;
 
 import dev.frozenmilk.dairy.mercurial.continuations.Closure;
-
-import org.firstinspires.ftc.teamcode.Util.PID2Point;
 
 @SuppressWarnings("unused")
 public final class Auton {
@@ -41,10 +36,8 @@ public final class Auton {
 
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Intake.INSTANCE.setScale(0.5);
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Turret.INSTANCE.zeroTurret();
 
@@ -57,11 +50,10 @@ public final class Auton {
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.apply();
             Release.INSTANCE.apply();
-            Elevator.INSTANCE.updateRise();
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(new PID2Point(), Constants.Field.getAlliance()),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(Constants.Field.getAlliance()),
                 // End Auton
                 exec(() -> {
                     Drive.INSTANCE.stop();
@@ -84,10 +76,8 @@ public final class Auton {
 
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Intake.INSTANCE.setScale(0.5);
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-        Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Turret.INSTANCE.zeroTurret();
 
@@ -101,11 +91,10 @@ public final class Auton {
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.apply();
             Release.INSTANCE.apply();
-            Elevator.INSTANCE.updateRise();
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(new PID2Point(), Constants.Field.getAlliance()),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(Constants.Field.getAlliance()),
 
                 // End Auton
                 exec(() -> {
@@ -118,34 +107,6 @@ public final class Auton {
         // Shut Off
         linsane.dropToScheduler();
     });
-
-    private static Closure p2pTo(PID2Point p2p, double xIn, double yIn, double headingDeg) {
-        return jumpScope(jumpHandle -> sequence(exec(() -> p2p.beginAbs(xIn, yIn, headingDeg)), loop(ifHuh(p2p::step, noop()).elseHuh(jumpHandle.jump())), exec(Drive.INSTANCE::stop)));
-    }
-
-    private static Closure p2pGoTo(PID2Point p2p, double forwardIn, double leftIn, double endHeadingDeg) {
-        return jumpScope(jumpHandle -> sequence(exec(() -> {
-            Drive.INSTANCE.updateOdometry();
-            double x0 = Drive.INSTANCE.getX();
-            double y0 = Drive.INSTANCE.getY();
-            double h0 = Drive.INSTANCE.getHeading();
-            double hRad = Math.toRadians(h0);
-
-            double tx = x0 + forwardIn * Math.cos(hRad) - leftIn * Math.sin(hRad);
-            double ty = y0 + forwardIn * Math.sin(hRad) + leftIn * Math.cos(hRad);
-
-            p2p.beginAbs(tx, ty, endHeadingDeg);
-        }), loop(ifHuh(p2p::step, noop()).elseHuh(jumpHandle.jump())), exec(Drive.INSTANCE::stop)));
-    }
-
-    private static Closure p2pTurnTo(PID2Point p2p, double targetHeadingDeg) {
-        return jumpScope(jumpHandle -> sequence(exec(() -> {
-            Drive.INSTANCE.updateOdometry();
-            double x0 = Drive.INSTANCE.getX();
-            double y0 = Drive.INSTANCE.getY();
-            p2p.beginAbs(x0, y0, targetHeadingDeg);
-        }), loop(ifHuh(p2p::step, noop()).elseHuh(jumpHandle.jump())), exec(Drive.INSTANCE::stop)));
-    }
 
     private static Closure intakeArtifactsAction() {
         Closure intake = race(loop(exec(() -> {
@@ -229,25 +190,14 @@ public final class Auton {
         return sequence(spinUpAndAlignUntilReady, shot, gap, shot, gap, shot, cleanup);
     }
 
-    private static Closure buildMain(PID2Point p2p, Constants.Field.Alliance alliance) {
-        Constants.Field.StartPose sp = (alliance == Constants.Field.Alliance.BLUE) ? Constants.Field.StartPose.BLUE_FAR : Constants.Field.StartPose.RED_FAR;
+    private static Closure buildMain(Constants.Field.Alliance alliance) {
+        Constants.Field.StartPose sp = (alliance == Constants.Field.Alliance.BLUE)
+                ? Constants.Field.StartPose.BLUE_FAR
+                : Constants.Field.StartPose.RED_FAR;
+
         Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
-        return (alliance == Constants.Field.Alliance.BLUE) ? blueFar(p2p, alliance) : redFar(p2p, alliance);
-    }
 
-    // TODO: BlueFar Path
-    private static Closure blueFar(PID2Point p2p, Constants.Field.Alliance alliance) {
-        Closure driveAndIntakeLine1 = parallel(sequence(p2pTo(p2p, -36, 24, 90), p2pTo(p2p, -36, 54, 90)), intakeArtifactsAction());
-        Closure driveAndIntakeHPZ = parallel(p2pTo(p2p, -60, 54, 90), intakeArtifactsAction());
-
-        return sequence(shootArtifactsAction(alliance), driveAndIntakeLine1, p2pTo(p2p, -60, 12, 180), shootArtifactsAction(alliance), driveAndIntakeHPZ, p2pTo(p2p, -60, 12, 180), shootArtifactsAction(alliance));
-    }
-
-    // TODO: RedFar Path
-    private static Closure redFar(PID2Point p2p, Constants.Field.Alliance alliance) {
-        Closure driveAndIntakeLine1 = parallel(sequence(p2pTo(p2p, -36, -24, -90), p2pTo(p2p, -36, -54, -90)), intakeArtifactsAction());
-        Closure driveAndIntakeHPZ = parallel(p2pTo(p2p, -60, -54, -90), intakeArtifactsAction());
-
-        return sequence(shootArtifactsAction(alliance), driveAndIntakeLine1, p2pTo(p2p, -60, -12, 180), shootArtifactsAction(alliance), driveAndIntakeHPZ, p2pTo(p2p, -60, -12, 180), shootArtifactsAction(alliance));
+        // No pathing: just run the shooting routine from the start pose.
+        return shootArtifactsAction(alliance);
     }
 }

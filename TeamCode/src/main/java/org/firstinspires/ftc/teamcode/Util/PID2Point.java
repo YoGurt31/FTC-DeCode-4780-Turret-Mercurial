@@ -19,33 +19,26 @@ public class PID2Point {
     public static double maxFwd = 1.00;
     public static double maxTurn = 0.75;
 
-    public static double posTolIn = 0.50;
+    public static double distTolIn = 0.50;
     public static double angTolDeg = 1.0;
 
-    public static double headingBlendDistIn = 8.0;
+    public static double turnSign = -1.0;
 
-    public boolean useFacingScale = true;
+    public static double timeoutSec = 0.0;
 
-    public double turnSign = -1.0;
-
-    public double timeoutSec = 0.0;
     public long settleMs = 500;
 
-    private boolean busy;
-    private long startTimeMs;
-    private long settleStartMs = -1;
-
-    private double targetXAbs;
-    private double targetYAbs;
-    private double targetHAbs;
-
-    public void goToPose(LinearOpMode opMode, double targetXIn, double targetYIn, double targetHeadingDeg) {
+    public void DriveDistance(LinearOpMode opMode, double inches) {
         if (opMode == null) return;
+
+        Drive.INSTANCE.updateOdometry();
+
+        final double startX = Drive.INSTANCE.getX();
+        final double startY = Drive.INSTANCE.getY();
+        final double startH = Drive.INSTANCE.getHeading();
 
         final long startTime = System.currentTimeMillis();
         long settleStart = -1;
-
-        targetHeadingDeg = Constants.wrapDeg(targetHeadingDeg);
 
         while (opMode.opModeIsActive()) {
             if (timeoutSec > 0.0) {
@@ -59,34 +52,29 @@ public class PID2Point {
             double y = Drive.INSTANCE.getY();
             double h = Drive.INSTANCE.getHeading();
 
-            double ex = targetXIn - x;
-            double ey = targetYIn - y;
-            double dist = Math.hypot(ex, ey);
+            double hRad = Math.toRadians(startH);
+            double dx = x - startX;
+            double dy = y - startY;
+            double traveled = dx * Math.cos(hRad) + dy * Math.sin(hRad);
 
-            double angleToPointDeg = Math.toDegrees(Math.atan2(ey, ex));
+            double remaining = inches - traveled;
 
-            double desiredHeadingDeg = (dist > headingBlendDistIn) ? angleToPointDeg : targetHeadingDeg;
-            desiredHeadingDeg = Constants.wrapDeg(desiredHeadingDeg);
+            double headingErrDeg = Constants.wrapDeg(startH - h);
 
-            double headingErrDeg = Constants.wrapDeg(desiredHeadingDeg - h);
-            double finalHeadingErrDeg = Constants.wrapDeg(targetHeadingDeg - h);
+            boolean atDist = Math.abs(remaining) <= distTolIn;
+            boolean atAng = Math.abs(headingErrDeg) <= angTolDeg;
 
-            boolean atPos = dist <= posTolIn;
-            boolean atAng = Math.abs(finalHeadingErrDeg) <= angTolDeg;
-
-            if (atPos && atAng) {
+            if (atDist && atAng) {
                 if (settleStart < 0) settleStart = System.currentTimeMillis();
+                Drive.INSTANCE.drive(0.0, 0.0);
                 if (System.currentTimeMillis() - settleStart >= settleMs) break;
+                opMode.idle();
+                continue;
             } else {
                 settleStart = -1;
             }
 
-            double fwd = Range.clip(dist * kPDist, -maxFwd, maxFwd);
-
-            if (useFacingScale) {
-                double facingScale = Math.cos(Math.toRadians(headingErrDeg));
-                fwd *= Range.clip(facingScale, 0.0, 1.0);
-            }
+            double fwd = Range.clip(remaining * kPDist, -maxFwd, maxFwd);
 
             if (kSFwd > 0.0 && Math.abs(fwd) > 1e-6) {
                 if (Math.abs(fwd) < kSFwd) fwd = kSFwd * Math.signum(fwd);
@@ -98,11 +86,6 @@ public class PID2Point {
                 if (Math.abs(turn) < kSTurn) turn = kSTurn * Math.signum(turn);
             }
 
-            if (atPos && atAng) {
-                fwd = 0.0;
-                turn = 0.0;
-            }
-
             Drive.INSTANCE.drive(fwd, turn);
             opMode.idle();
         }
@@ -110,130 +93,47 @@ public class PID2Point {
         Drive.INSTANCE.stop();
     }
 
-    public void beginAbs(double targetXIn, double targetYIn, double targetHeadingDeg) {
-        Drive.INSTANCE.updateOdometry();
+    public void TurnTo(LinearOpMode opMode, double deg) {
+        if (opMode == null) return;
 
-        this.targetXAbs = targetXIn;
-        this.targetYAbs = targetYIn;
-        this.targetHAbs = Constants.wrapDeg(targetHeadingDeg);
+        double targetHeadingDeg = Constants.wrapDeg(deg);
 
-        this.busy = true;
-        this.startTimeMs = System.currentTimeMillis();
-        this.settleStartMs = -1;
-    }
+        final long startTime = System.currentTimeMillis();
+        long settleStart = -1;
 
-    public boolean isBusy() {
-        return busy;
-    }
+        while (opMode.opModeIsActive()) {
+            if (timeoutSec > 0.0) {
+                double elapsed = (System.currentTimeMillis() - startTime) / 1000.0;
+                if (elapsed >= timeoutSec) break;
+            }
 
-    public void cancel() {
-        busy = false;
-        settleStartMs = -1;
+            Drive.INSTANCE.updateOdometry();
+
+            double h = Drive.INSTANCE.getHeading();
+            double headingErrDeg = Constants.wrapDeg(targetHeadingDeg - h);
+
+            boolean atAng = Math.abs(headingErrDeg) <= angTolDeg;
+
+            if (atAng) {
+                if (settleStart < 0) settleStart = System.currentTimeMillis();
+                Drive.INSTANCE.drive(0.0, 0.0);
+                if (System.currentTimeMillis() - settleStart >= settleMs) break;
+                opMode.idle();
+                continue;
+            } else {
+                settleStart = -1;
+            }
+
+            double turn = Range.clip((headingErrDeg * kPAng) * turnSign, -maxTurn, maxTurn);
+
+            if (kSTurn > 0.0 && Math.abs(headingErrDeg) > angTolDeg) {
+                if (Math.abs(turn) < kSTurn) turn = kSTurn * Math.signum(turn);
+            }
+
+            Drive.INSTANCE.drive(0.0, turn);
+            opMode.idle();
+        }
+
         Drive.INSTANCE.stop();
-    }
-
-    public boolean step() {
-        if (!busy) return false;
-
-        if (timeoutSec > 0.0) {
-            double elapsed = (System.currentTimeMillis() - startTimeMs) / 1000.0;
-            if (elapsed >= timeoutSec) {
-                cancel();
-                return false;
-            }
-        }
-
-        Drive.INSTANCE.updateOdometry();
-
-        double x = Drive.INSTANCE.getX();
-        double y = Drive.INSTANCE.getY();
-        double h = Drive.INSTANCE.getHeading();
-
-        double ex = targetXAbs - x;
-        double ey = targetYAbs - y;
-        double dist = Math.hypot(ex, ey);
-
-        double angleToPointDeg = Math.toDegrees(Math.atan2(ey, ex));
-
-        double desiredHeadingDeg = (dist > headingBlendDistIn) ? angleToPointDeg : targetHAbs;
-        desiredHeadingDeg = Constants.wrapDeg(desiredHeadingDeg);
-
-        double headingErrDeg = Constants.wrapDeg(desiredHeadingDeg - h);
-        double finalHeadingErrDeg = Constants.wrapDeg(targetHAbs - h);
-
-        boolean atPos = dist <= posTolIn;
-        boolean atAng = Math.abs(finalHeadingErrDeg) <= angTolDeg;
-
-        if (atPos && atAng) {
-            if (settleStartMs < 0) settleStartMs = System.currentTimeMillis();
-            Drive.INSTANCE.drive(0.0, 0.0);
-            if (System.currentTimeMillis() - settleStartMs >= settleMs) {
-                cancel();
-                return false;
-            }
-            return true;
-        } else {
-            settleStartMs = -1;
-        }
-
-        double fwd = Range.clip(dist * kPDist, -maxFwd, maxFwd);
-
-        if (useFacingScale) {
-            double facingScale = Math.cos(Math.toRadians(headingErrDeg));
-            fwd *= Range.clip(facingScale, 0.0, 1.0);
-        }
-
-        if (kSFwd > 0.0 && Math.abs(fwd) > 1e-6) {
-            if (Math.abs(fwd) < kSFwd) fwd = kSFwd * Math.signum(fwd);
-        }
-
-        double turn = Range.clip((headingErrDeg * kPAng) * turnSign, -maxTurn, maxTurn);
-
-        if (kSTurn > 0.0 && Math.abs(headingErrDeg) > angTolDeg) {
-            if (Math.abs(turn) < kSTurn) turn = kSTurn * Math.signum(turn);
-        }
-
-        Drive.INSTANCE.drive(fwd, turn);
-        return true;
-    }
-
-    public void driveTo(LinearOpMode opMode, double forwardIn) {
-        Drive.INSTANCE.updateOdometry();
-
-        double startX = Drive.INSTANCE.getX();
-        double startY = Drive.INSTANCE.getY();
-        double startH = Drive.INSTANCE.getHeading();
-
-        double hRad = Math.toRadians(startH);
-
-        double targetX = startX + forwardIn * Math.cos(hRad);
-        double targetY = startY + forwardIn * Math.sin(hRad);
-
-        goToPose(opMode, targetX, targetY, startH);
-    }
-
-    public void turnTo(LinearOpMode opMode, double targetHeadingDeg) {
-        Drive.INSTANCE.updateOdometry();
-        goToPose(opMode, Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), targetHeadingDeg);
-    }
-
-    public void goTo(LinearOpMode opMode, double forwardIn, double leftIn, double endHeadingDeg) {
-        Drive.INSTANCE.updateOdometry();
-
-        double startX = Drive.INSTANCE.getX();
-        double startY = Drive.INSTANCE.getY();
-        double startH = Drive.INSTANCE.getHeading();
-
-        double hRad = Math.toRadians(startH);
-
-        double targetX = startX + forwardIn * Math.cos(hRad) - leftIn * Math.sin(hRad);
-        double targetY = startY + forwardIn * Math.sin(hRad) + leftIn * Math.cos(hRad);
-
-        goToPose(opMode, targetX, targetY, endHeadingDeg);
-    }
-
-    public void goTo(LinearOpMode opMode, double forwardIn, double leftIn) {
-        Drive.INSTANCE.updateOdometry();
-        goTo(opMode, forwardIn, leftIn, Drive.INSTANCE.getHeading());
     }
 }

@@ -62,49 +62,18 @@ public final class Constants {
     }
 
     @Configurable
-    public static final class PurePursuit {
-        public static double TRACK_WIDTH_IN = 12.0;
-        public static double LOOKAHEAD_IN = 12.0;
-        public static double MIN_POWER = 0.20;
-        public static double MAX_POWER = 1.00;
-        public static double END_POS_TOL_IN = 1.0;
-        public static double SLOW_DOWN_RADIUS_IN = 18.0;
-        public static double MAX_CURVATURE = 1.5;
-        public static long SETTLE_MS = 250;
-    }
-
-    @Configurable
     public static final class Relocalize {
         public static final long STATIONARY_TIME_MS = 3000;
         public static final long COOLDOWN_MS = 250;
         public static final double METERS_TO_IN = 39.3701;
     }
 
-
-    @Configurable
-    public static final class Elevator {
-        public static final String GEAR_SHIFT = "gS";
-        public static final String ELEVATOR_LEFT = "eL";
-        public static final String ELEVATOR_RIGHT = "eR";
-
-        public static double GEAR_SHIFT_DEFAULT = 0.5;
-        public static double ELEVATOR_LEFT_DEFAULT = 0.5;
-        public static double ELEVATOR_RIGHT_DEFAULT = 0.5;
-
-        public static double GEAR_SHIFT_PRESET = 0.55;
-        public static double ELEVATOR_LEFT_PRESET = 1.0;
-        public static double ELEVATOR_RIGHT_PRESET = 0.0;
-    }
-
     @Configurable
     public static final class Intake {
         public static final String ROLLER_INTAKE = "rI";
 
-        public static final double INTAKE_POWER = 1.0;
-        public static final double OUTTAKE_POWER = -1.0;
-
-        public static double TRANSFER_SCALE_CLOSE = 1.0;
-        public static double TRANSFER_SCALE_FAR = 0.8;
+        public static final double CLOSE_RANGE_SCALE = 1.0;
+        public static final double FAR_RANGE_SCALE = 0.8;
     }
 
     @Configurable

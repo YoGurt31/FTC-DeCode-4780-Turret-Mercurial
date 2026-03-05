@@ -13,7 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.SubSystems.DefaultTelemetry;
 import org.firstinspires.ftc.teamcode.SubSystems.Drive;
-import org.firstinspires.ftc.teamcode.SubSystems.Elevator;
 import org.firstinspires.ftc.teamcode.SubSystems.Flywheel;
 import org.firstinspires.ftc.teamcode.SubSystems.Intake;
 import org.firstinspires.ftc.teamcode.SubSystems.Release;
@@ -39,15 +38,10 @@ public final class TeleOp {
             Turret.INSTANCE.zeroTurret(); // XXX: Remove
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Elevator.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 
             // AprilTag Auto Relocalizer
             final long[] lastRelocalizeMs = {0};
             final long[] stableSinceMs = {0};
-
-            // Elevator
-            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().options && linsane.gamepad1().share), exec(Elevator.INSTANCE::applyPreset));
-            linsane.bindSpawn(linsane.risingEdge(() -> linsane.gamepad1().dpad_up), exec(Elevator.INSTANCE::startRise));
 
             // Main Loop
             linsane.schedule(sequence(waitUntil(linsane::inLoop), loop(exec(() -> {
@@ -55,7 +49,6 @@ public final class TeleOp {
                 Vision.INSTANCE.updateRobotYawDeg(Drive.INSTANCE.getHeading());
                 Vision.INSTANCE.update();
                 Vision.INSTANCE.setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
-                Intake.INSTANCE.setScale(Constants.Field.inFarZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()) ? Constants.Intake.TRANSFER_SCALE_FAR : Constants.Intake.TRANSFER_SCALE_CLOSE);
 
                 // Drive
                 double driveCmd = -linsane.gamepad1().left_stick_y;
@@ -93,7 +86,8 @@ public final class TeleOp {
                 // Turret - AimBot + Flywheel + Release
                 if (linsane.gamepad1().right_trigger >= 0.10) {
                     Pose2D pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Drive.INSTANCE.getHeading(), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
-                    Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), alliance)); // Predicted
+                    Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), alliance));
+                    Intake.INSTANCE.setScale(Constants.Field.distanceToGoal() <= 125 ? Constants.Intake.CLOSE_RANGE_SCALE : Constants.Intake.FAR_RANGE_SCALE);
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();
                 } else if (linsane.gamepad1().left_trigger >= 0.10) {
@@ -103,6 +97,7 @@ public final class TeleOp {
                         double cmd = headingErrDeg * Constants.Drive.KP;
                         turnCmd = Range.clip(cmd, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
                     }
+                    Intake.INSTANCE.setScale(Constants.Field.distanceToGoal() <= 125 ? Constants.Intake.CLOSE_RANGE_SCALE : Constants.Intake.FAR_RANGE_SCALE);
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();
                 } else {
@@ -115,7 +110,6 @@ public final class TeleOp {
                 Intake.INSTANCE.apply();
                 Flywheel.INSTANCE.apply();
                 Release.INSTANCE.apply();
-                Elevator.INSTANCE.updateRise();
 
                 if (telemetry) {
                     DefaultTelemetry.INSTANCE.update(linsane.telemetry());

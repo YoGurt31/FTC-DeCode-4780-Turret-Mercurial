@@ -98,7 +98,7 @@ public final class TeleOp {
                     Release.INSTANCE.open();
                 } else if (linsane.gamepad1().left_trigger >= 0.10) {
                     Turret.INSTANCE.lockTurret();
-                    if (Vision.INSTANCE.getTag() != null && Constants.Drive.isAllowedTagId(Vision.INSTANCE.getTag().getFiducialId(), alliance)) {
+                    if (Vision.INSTANCE.getTag() != null) {
                         double headingErrDeg = Vision.INSTANCE.getTX();
                         double cmd = headingErrDeg * Constants.Drive.KP;
                         turnCmd = Range.clip(cmd, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);

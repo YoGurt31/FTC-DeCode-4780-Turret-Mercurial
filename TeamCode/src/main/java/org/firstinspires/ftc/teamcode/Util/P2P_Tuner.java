@@ -30,20 +30,7 @@ public final class P2P_Tuner {
 
     private static final class State {
         Mode mode = Mode.IDLE;
-
-        double startX;
-        double startY;
-        double startH;
-        double targetDistance;
-
-        double targetHeading;
-
-        long startTimeMs;
-        long settleStartMs = -1;
-
-        double lastTraveled;
-        double lastRemaining;
-        double lastHeadingErr;
+        final PID2Point.ActionState action = new PID2Point.ActionState();
     }
 
     public static final Mercurial.RegisterableProgram p2pTuner = Mercurial.teleop(ctx -> {
@@ -84,9 +71,9 @@ public final class P2P_Tuner {
             t.addData("H (deg)", Drive.INSTANCE.getHeading());
 
             t.addLine("--- Live Errors ---");
-            t.addData("traveled (in)", s.lastTraveled);
-            t.addData("remaining (in)", s.lastRemaining);
-            t.addData("headingErr (deg)", s.lastHeadingErr);
+            t.addData("traveled (in)", s.action.lastTraveled);
+            t.addData("remaining (in)", s.action.lastRemaining);
+            t.addData("headingErr (deg)", s.action.lastHeadingErr);
 
             t.addLine("--- PID2Point Tunables ---");
             t.addData("kPDist", PID2Point.kPDist);
@@ -104,15 +91,13 @@ public final class P2P_Tuner {
         })));
 
         // --- Buttons ---
-
-        // Stop current action
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().back), exec(() -> stop(s)));
 
-        // DPad drive distance
+        // DPad driveDistance
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().dpad_up), exec(() -> startDriveDistance(s, +Math.abs(driveDistanceIn))));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().dpad_down), exec(() -> startDriveDistance(s, -Math.abs(driveDistanceIn))));
 
-        // Face buttons turnTo
+        // Face Buttons turnTo
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().a), exec(() -> startTurnTo(s, 0.0)));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().b), exec(() -> startTurnTo(s, 90.0)));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x), exec(() -> startTurnTo(s, -90.0)));
@@ -123,10 +108,11 @@ public final class P2P_Tuner {
 
     private static void stop(State s) {
         s.mode = Mode.IDLE;
-        s.settleStartMs = -1;
-        s.lastTraveled = 0.0;
-        s.lastRemaining = 0.0;
-        s.lastHeadingErr = 0.0;
+        s.action.settleStartMs = -1;
+        s.action.lastTraveled = 0.0;
+        s.action.lastRemaining = 0.0;
+        s.action.lastHeadingErr = 0.0;
+        s.action.done = true;
         Drive.INSTANCE.stop();
     }
 
@@ -138,125 +124,25 @@ public final class P2P_Tuner {
 
     private static void startDriveDistance(State s, double distanceIn) {
         maybeResetPose();
-
-        Drive.INSTANCE.updateOdometry();
-        s.startX = Drive.INSTANCE.getX();
-        s.startY = Drive.INSTANCE.getY();
-        s.startH = Drive.INSTANCE.getHeading();
-        s.targetDistance = distanceIn;
-
-        s.startTimeMs = System.currentTimeMillis();
-        s.settleStartMs = -1;
+        PID2Point.beginDriveDistance(s.action, distanceIn);
         s.mode = Mode.DRIVE_DISTANCE;
     }
 
     private static void startTurnTo(State s, double headingDeg) {
         maybeResetPose();
-
-        Drive.INSTANCE.updateOdometry();
-        s.targetHeading = Constants.wrapDeg(headingDeg);
-
-        s.startTimeMs = System.currentTimeMillis();
-        s.settleStartMs = -1;
+        PID2Point.beginTurnTo(s.action, headingDeg);
         s.mode = Mode.TURN_TO;
     }
 
-    // Returns true when finished.
     private static boolean tickDriveDistance(State s) {
-        long now = System.currentTimeMillis();
-
-        if (PID2Point.timeoutSec > 0.0) {
-            double elapsed = (now - s.startTimeMs) / 1000.0;
-            if (elapsed >= PID2Point.timeoutSec) {
-                stop(s);
-                return true;
-            }
-        }
-
-        double x = Drive.INSTANCE.getX();
-        double y = Drive.INSTANCE.getY();
-        double h = Drive.INSTANCE.getHeading();
-
-        // project traveled distance along the starting heading
-        double hRad = Math.toRadians(s.startH);
-        double dx = x - s.startX;
-        double dy = y - s.startY;
-        double traveled = dx * Math.cos(hRad) + dy * Math.sin(hRad);
-
-        double remaining = s.targetDistance - traveled;
-        double headingErrDeg = Constants.wrapDeg(s.startH - h);
-
-        s.lastTraveled = traveled;
-        s.lastRemaining = remaining;
-        s.lastHeadingErr = headingErrDeg;
-
-        boolean atDist = Math.abs(remaining) <= PID2Point.distTolIn;
-        boolean atAng = Math.abs(headingErrDeg) <= PID2Point.angTolDeg;
-
-        if (atDist && atAng) {
-            if (s.settleStartMs < 0) s.settleStartMs = now;
-            Drive.INSTANCE.drive(0.0, 0.0);
-            if (now - s.settleStartMs >= new PID2Point().settleMs) {
-                stop(s);
-                return true;
-            }
-            return false;
-        } else {
-            s.settleStartMs = -1;
-        }
-
-        double fwd = Range.clip(remaining * PID2Point.kPDist, -PID2Point.maxFwd, PID2Point.maxFwd);
-        if (PID2Point.kSFwd > 0.0 && Math.abs(fwd) > 1e-6) {
-            if (Math.abs(fwd) < PID2Point.kSFwd) fwd = PID2Point.kSFwd * Math.signum(fwd);
-        }
-
-        double turn = Range.clip((headingErrDeg * PID2Point.kPAng) * PID2Point.turnSign, -PID2Point.maxTurn, PID2Point.maxTurn);
-        if (PID2Point.kSTurn > 0.0 && Math.abs(headingErrDeg) > PID2Point.angTolDeg) {
-            if (Math.abs(turn) < PID2Point.kSTurn) turn = PID2Point.kSTurn * Math.signum(turn);
-        }
-
-        Drive.INSTANCE.drive(fwd, turn);
-        return false;
+        boolean done = PID2Point.tickDriveDistance(s.action);
+        if (done) stop(s);
+        return done;
     }
 
-    // Returns true when finished.
     private static boolean tickTurnTo(State s) {
-        long now = System.currentTimeMillis();
-
-        if (PID2Point.timeoutSec > 0.0) {
-            double elapsed = (now - s.startTimeMs) / 1000.0;
-            if (elapsed >= PID2Point.timeoutSec) {
-                stop(s);
-                return true;
-            }
-        }
-
-        double h = Drive.INSTANCE.getHeading();
-        double headingErrDeg = Constants.wrapDeg(s.targetHeading - h);
-
-        s.lastTraveled = 0.0;
-        s.lastRemaining = 0.0;
-        s.lastHeadingErr = headingErrDeg;
-
-        boolean atAng = Math.abs(headingErrDeg) <= PID2Point.angTolDeg;
-        if (atAng) {
-            if (s.settleStartMs < 0) s.settleStartMs = now;
-            Drive.INSTANCE.drive(0.0, 0.0);
-            if (now - s.settleStartMs >= new PID2Point().settleMs) {
-                stop(s);
-                return true;
-            }
-            return false;
-        } else {
-            s.settleStartMs = -1;
-        }
-
-        double turn = Range.clip((headingErrDeg * PID2Point.kPAng) * PID2Point.turnSign, -PID2Point.maxTurn, PID2Point.maxTurn);
-        if (PID2Point.kSTurn > 0.0 && Math.abs(headingErrDeg) > PID2Point.angTolDeg) {
-            if (Math.abs(turn) < PID2Point.kSTurn) turn = PID2Point.kSTurn * Math.signum(turn);
-        }
-
-        Drive.INSTANCE.drive(0.0, turn);
-        return false;
+        boolean done = PID2Point.tickTurnTo(s.action);
+        if (done) stop(s);
+        return done;
     }
 }

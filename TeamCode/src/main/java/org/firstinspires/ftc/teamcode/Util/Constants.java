@@ -72,6 +72,8 @@ public final class Constants {
     public static final class Intake {
         public static final String ROLLER_INTAKE = "rI";
 
+        public static final double TICKS_PER_REV = 28.0;
+
         public static final double CLOSE_RANGE_SCALE = 1.0;
         public static final double FAR_RANGE_SCALE = 0.8;
     }

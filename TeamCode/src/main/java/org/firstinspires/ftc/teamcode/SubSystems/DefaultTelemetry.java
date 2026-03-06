@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.hardware.limelightvision.LLResult;
 
 import org.firstinspires.ftc.teamcode.Util.Constants;
 
@@ -57,9 +58,8 @@ public class DefaultTelemetry {
 
         // Intake
         telemetry.addLine("=== Intake ===");
-        boolean intakeActive = Intake.INSTANCE.getMode() != Intake.Mode.IDLE;
-        telemetry.addData("Roller Status", intakeActive ? "ACTIVE" : "IDLE");
-        telemetry.addData("Sorting", Intake.INSTANCE.getSortingStatus());
+        telemetry.addData("Intake Status", Intake.INSTANCE.getStatus());
+        telemetry.addData("Intake RPS", "%5.2f", Intake.INSTANCE.getRps());
         telemetry.addLine();
 
         // Turret

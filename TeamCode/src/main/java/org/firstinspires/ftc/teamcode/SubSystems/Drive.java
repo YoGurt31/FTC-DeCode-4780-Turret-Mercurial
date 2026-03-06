@@ -161,31 +161,20 @@ public class Drive {
         return pinpoint.getPosition().getHeading(AngleUnit.DEGREES);
     }
 
+    // FIXME
     public void relocalizePose(Pose3D llPose) {
         if (llPose == null) return;
         if (pinpoint == null) return;
 
-        double camPoseXIn = llPose.getPosition().x * Constants.Relocalize.METERS_TO_IN;
-        double camPoseYIn = llPose.getPosition().y * Constants.Relocalize.METERS_TO_IN;
-
+        double robotXIn = llPose.getPosition().x * Constants.Relocalize.METERS_TO_IN;
+        double robotYIn = llPose.getPosition().y * Constants.Relocalize.METERS_TO_IN;
         double yawDeg = llPose.getOrientation().getYaw(AngleUnit.DEGREES);
-        yawDeg = Constants.wrapDeg(yawDeg);
 
-        double currentH = Constants.wrapDeg(getHeading());
-        double altYaw = Constants.wrapDeg(yawDeg + 180.0);
-        double err1 = Math.abs(Constants.wrapDeg(yawDeg - currentH));
-        double err2 = Math.abs(Constants.wrapDeg(altYaw - currentH));
-        if (err2 < err1) yawDeg = altYaw;
-
-        final double camForwardIn = -7.125;
-        final double camLeftIn = 0;
-
-        double hRad = Math.toRadians(yawDeg);
-        double dxField = camForwardIn * Math.cos(hRad) - camLeftIn * Math.sin(hRad);
-        double dyField = camForwardIn * Math.sin(hRad) + camLeftIn * Math.cos(hRad);
-
-        double robotXIn = camPoseXIn - dxField;
-        double robotYIn = camPoseYIn - dyField;
+//        double currentH = getHeading();
+//        double altYaw = Constants.wrapDeg(yawDeg + 180.0);
+//        double err1 = Math.abs(Constants.wrapDeg(yawDeg - currentH));
+//        double err2 = Math.abs(Constants.wrapDeg(altYaw - currentH));
+//        if (err2 < err1) yawDeg = altYaw;
 
         try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, robotXIn, robotYIn, AngleUnit.DEGREES, yawDeg)); } catch (Exception ignored) { }
     }

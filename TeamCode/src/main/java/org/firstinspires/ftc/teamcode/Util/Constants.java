@@ -131,6 +131,7 @@ public final class Constants {
         public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;
 
+        // TODO: RETUNE
         public static double F(double voltage) {
             if (voltage <= 1e-6) return 12.5;
             return 12.5 * (13.5 / voltage);

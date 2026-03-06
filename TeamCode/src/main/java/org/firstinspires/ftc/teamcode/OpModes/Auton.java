@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.SubSystems.Release;
 import org.firstinspires.ftc.teamcode.SubSystems.Turret;
 import org.firstinspires.ftc.teamcode.SubSystems.Vision;
 import org.firstinspires.ftc.teamcode.Util.Constants;
+import org.firstinspires.ftc.teamcode.Util.PID2Point;
 
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
@@ -53,7 +54,7 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(Constants.Field.getAlliance()),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildRedFar(),
                 // End Auton
                 exec(() -> {
                     Drive.INSTANCE.stop();
@@ -94,15 +95,15 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildMain(Constants.Field.getAlliance()),
-
+        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildBlueFar(),
                 // End Auton
                 exec(() -> {
                     Drive.INSTANCE.stop();
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
                     Release.INSTANCE.close();
-                })));
+                })
+        ));
 
         // Shut Off
         linsane.dropToScheduler();
@@ -120,36 +121,31 @@ public final class Auton {
             Intake.INSTANCE.apply();
         });
 
-        return sequence(intake, cleanup);
+        return sequence(
+                intake,
+                cleanup
+        );
     }
 
     private static Closure shootArtifactsAction(Constants.Field.Alliance alliance) {
 
-        Runnable lockTurret = () -> {
-            if (alliance == Constants.Field.Alliance.BLUE) {
-                Turret.INSTANCE.lockTurretAt(15.0);
-            } else {
-                Turret.INSTANCE.lockTurretAt(-15.0);
-            }
+        Runnable autoAimTurret = () -> {
+            double x = Drive.INSTANCE.getX();
+            double y = Drive.INSTANCE.getY();
+            double heading = Drive.INSTANCE.getHeading();
+            double goalHeading = Constants.Field.computeGoalHeadingDeg(x, y, alliance);
+            Turret.INSTANCE.autoAimTurret(heading, goalHeading);
         };
 
         Closure spinUpAndAlignUntilReady = sequence(race(jumpScope(jumpHandle -> loop(ifHuh(() -> Flywheel.INSTANCE.isReady() && (!Vision.INSTANCE.hasTag() || Math.abs(Vision.INSTANCE.getTX()) <= 1.0), jumpHandle.jump()).elseHuh(exec(() -> {
-            lockTurret.run();
-
-            double turn = Range.clip((Vision.INSTANCE.getTX() * Constants.Drive.KP), -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
-
-            if (!Vision.INSTANCE.hasTag() || Math.abs(Vision.INSTANCE.getTX()) <= 1.0) {
-                turn = 0.0;
-            }
-
-            Drive.INSTANCE.drive(0.0, turn);
-
+            autoAimTurret.run();
+            Drive.INSTANCE.drive(0.0, 0.0);
             Flywheel.INSTANCE.enableAutoRange();
             Flywheel.INSTANCE.apply();
         })))), waitSeconds(2.25)), exec(Drive.INSTANCE::stop));
 
         Runnable holdAimAndSpin = () -> {
-            lockTurret.run();
+            autoAimTurret.run();
             Flywheel.INSTANCE.enableAutoRange();
             Flywheel.INSTANCE.apply();
             Drive.INSTANCE.drive(0.0, 0.0);
@@ -171,7 +167,7 @@ public final class Auton {
             Intake.INSTANCE.apply();
         };
 
-        Closure shot = sequence(race(loop(exec(feedPulse)), waitSeconds(Constants.Auton.FEED_PULSE_SEC)), race(loop(exec(stopFeeder)), waitSeconds(Math.max(0.0, Constants.Auton.SHOT_TOTAL_SEC - Constants.Auton.FEED_PULSE_SEC))));
+        Closure shoot = sequence(race(loop(exec(feedPulse)), waitSeconds(Constants.Auton.FEED_PULSE_SEC)), race(loop(exec(stopFeeder)), waitSeconds(Math.max(0.0, Constants.Auton.SHOT_TOTAL_SEC - Constants.Auton.FEED_PULSE_SEC))));
 
         Closure gap = sequence(exec(() -> {
             Drive.INSTANCE.drive(0.0, 0.0);
@@ -187,17 +183,63 @@ public final class Auton {
             Turret.INSTANCE.stop();
         });
 
-        return sequence(spinUpAndAlignUntilReady, shot, gap, shot, gap, shot, cleanup);
+        return sequence(
+                spinUpAndAlignUntilReady,
+                shoot,
+                gap,
+                shoot,
+                gap,
+                shoot,
+                cleanup
+        );
     }
 
-    private static Closure buildMain(Constants.Field.Alliance alliance) {
-        Constants.Field.StartPose sp = (alliance == Constants.Field.Alliance.BLUE)
-                ? Constants.Field.StartPose.BLUE_FAR
-                : Constants.Field.StartPose.RED_FAR;
+    private static Closure driveAndIntakeArtifactsAction(double distanceIn) {
+        return sequence(
+                exec(() -> {
+                    Release.INSTANCE.close();
+                    Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                    Intake.INSTANCE.apply();
+                }),
+                PID2Point.DriveDistance(distanceIn),
+                exec(() -> {
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    Intake.INSTANCE.apply();
+                })
+        );
+    }
+
+    // FIXME
+    private static Closure buildRedFar() {
+        Constants.Field.StartPose sp = Constants.Field.StartPose.RED_FAR;
 
         Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
 
-        // No pathing: just run the shooting routine from the start pose.
-        return shootArtifactsAction(alliance);
+        return sequence(
+                shootArtifactsAction(Constants.Field.Alliance.RED),
+                PID2Point.DriveDistance(12.0),
+                PID2Point.TurnTo(100.0),
+                driveAndIntakeArtifactsAction(48.0),
+                PID2Point.TurnTo(90.0),
+                PID2Point.DriveDistance(-60.0),
+                shootArtifactsAction(Constants.Field.Alliance.RED)
+        );
+    }
+
+    // FIXME
+    private static Closure buildBlueFar() {
+        Constants.Field.StartPose sp = Constants.Field.StartPose.BLUE_FAR;
+
+        Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
+
+        return sequence(
+                shootArtifactsAction(Constants.Field.Alliance.BLUE),
+                PID2Point.DriveDistance(12.0),
+                PID2Point.TurnTo(-100.0),
+                driveAndIntakeArtifactsAction(48.0),
+                PID2Point.TurnTo(-90.0),
+                PID2Point.DriveDistance(-60.0),
+                shootArtifactsAction(Constants.Field.Alliance.BLUE)
+        );
     }
 }

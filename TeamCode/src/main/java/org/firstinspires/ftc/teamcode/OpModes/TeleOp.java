@@ -87,7 +87,7 @@ public final class TeleOp {
                 if (linsane.gamepad1().right_trigger >= 0.10) {
                     Pose2D pose = Constants.Field.predictPose(Drive.INSTANCE.getX(), Drive.INSTANCE.getY(), Drive.INSTANCE.getHeading(), Drive.INSTANCE.getVx(), Drive.INSTANCE.getVy(), Constants.Ballistic.flyTime(Constants.Field.distanceToGoal(), Flywheel.INSTANCE.getTargetRps()));
                     Turret.INSTANCE.autoAimTurret(Drive.INSTANCE.getHeading(), Constants.Field.computeGoalHeadingDeg(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), alliance));
-                    Intake.INSTANCE.setScale(Constants.Field.distanceToGoal() <= 125 ? Constants.Intake.CLOSE_RANGE_SCALE : Constants.Intake.FAR_RANGE_SCALE);
+                    Intake.INSTANCE.setScale(Constants.Field.distanceToGoal() <= 120 ? Constants.Intake.CLOSE_RANGE_SCALE : Constants.Intake.FAR_RANGE_SCALE);
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();
                 } else if (linsane.gamepad1().left_trigger >= 0.10) {
@@ -97,10 +97,11 @@ public final class TeleOp {
                         double cmd = headingErrDeg * Constants.Drive.KP;
                         turnCmd = Range.clip(cmd, -Constants.Drive.MAX_TURN, Constants.Drive.MAX_TURN);
                     }
-                    Intake.INSTANCE.setScale(Constants.Field.distanceToGoal() <= 125 ? Constants.Intake.CLOSE_RANGE_SCALE : Constants.Intake.FAR_RANGE_SCALE);
+                    Intake.INSTANCE.setScale(Constants.Field.distanceToGoal() <= 120 ? Constants.Intake.CLOSE_RANGE_SCALE : Constants.Intake.FAR_RANGE_SCALE);
                     Flywheel.INSTANCE.enableAutoRange();
                     Release.INSTANCE.open();
                 } else {
+                    Intake.INSTANCE.setScale(Constants.Intake.CLOSE_RANGE_SCALE);
                     Turret.INSTANCE.stop();
                     Flywheel.INSTANCE.setVelocityRps(Constants.Flywheel.MIN_RPS);
                     Release.INSTANCE.close();

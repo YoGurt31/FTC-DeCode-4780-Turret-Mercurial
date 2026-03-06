@@ -83,6 +83,9 @@ public class Flywheel {
     }
 
     public void stop() {
+        fly1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fly2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        Flywheel.INSTANCE.setVelocityRps(0);
         enabled = false;
         manualTargetRps = 0.0;
         targetRPS = Double.NaN;

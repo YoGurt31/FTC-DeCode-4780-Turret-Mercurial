@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.Util;
 
 import com.qualcomm.robotcore.util.Range;
+import com.bylazar.configurables.annotations.Configurable;
 
 import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Configurable
 public class PurePursuit {
 
     public static class Waypoint {
@@ -19,31 +21,31 @@ public class PurePursuit {
     }
 
     // Core tuning
-    public double trackWidthIn = 12.0;
-    public double lookaheadIn = 18.0;
+    public static double trackWidthIn = 12.0;
+    public static double lookaheadIn = 18.0;
 
-    public double maxPower = 1.0;     // you can keep = 1.0
-    public double minPower = 0.1;     // used only when far from end
+    public static double maxPower = 1.0;     // keep = 1.0 for fast runs
+    public static double minPower = 0.1;     // used only when far from end
 
-    public double endPosTolIn = 1.0;
-    public double slowDownRadiusIn = 36.0;
-    public long settleMs = 250;
+    public static double endPosTolIn = 1.0;
+    public static double slowDownRadiusIn = 36.0;
+    public static long settleMs = 250;
 
     // Safety / smoothness
-    public double maxCurvature = 1.5;
+    public static double maxCurvature = 1.5;
 
     // Reduce jitter at high speed
-    public double curvatureAlpha = 0.25;       // 0..1, lower = smoother
-    public double localYDeadbandIn = 0.50;     // ignore tiny lateral noise
+    public static double curvatureAlpha = 0.25;       // 0..1, lower = smoother
+    public static double localYDeadbandIn = 0.50;     // ignore tiny lateral noise
 
     // Speed regulation (keeps maxPower fast on straights, slows in turns/end to prevent hunting)
-    public double curvatureSpeedGain = 1.25;   // higher => more slowdown in turns
-    public double endSlowMinScale = 0.12;      // minimum scale inside slowDownRadius
-    public double minPowerDisableDistIn = 18.0;// inside this, minPower is disabled so it can settle
+    public static double curvatureSpeedGain = 1.25;   // higher => more slowdown in turns
+    public static double endSlowMinScale = 0.12;      // minimum scale inside slowDownRadius
+    public static double minPowerDisableDistIn = 18.0;// inside this, minPower is disabled so it can settle
 
     // Optional reverse driving (OFF by default because it causes the 180° flip behavior)
-    public boolean allowReverse = false;
-    public double reverseTriggerIn = 3.0;
+    public static boolean allowReverse = false;
+    public static double reverseTriggerIn = 3.0;
 
     private final List<Waypoint> path = new ArrayList<>();
     private boolean busy = false;

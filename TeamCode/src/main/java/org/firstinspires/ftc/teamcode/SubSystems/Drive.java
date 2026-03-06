@@ -165,8 +165,8 @@ public class Drive {
         if (llPose == null) return;
         if (pinpoint == null) return;
 
-        double xIn = llPose.getPosition().x * Constants.Relocalize.METERS_TO_IN;
-        double yIn = llPose.getPosition().y * Constants.Relocalize.METERS_TO_IN;
+        double camPoseXIn = llPose.getPosition().x * Constants.Relocalize.METERS_TO_IN;
+        double camPoseYIn = llPose.getPosition().y * Constants.Relocalize.METERS_TO_IN;
 
         double yawDeg = llPose.getOrientation().getYaw(AngleUnit.DEGREES);
         yawDeg = Constants.wrapDeg(yawDeg);
@@ -177,7 +177,17 @@ public class Drive {
         double err2 = Math.abs(Constants.wrapDeg(altYaw - currentH));
         if (err2 < err1) yawDeg = altYaw;
 
-        try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, xIn, yIn, AngleUnit.DEGREES, yawDeg)); } catch (Exception ignored) { }
+        final double camForwardIn = -7.125;
+        final double camLeftIn = 0;
+
+        double hRad = Math.toRadians(yawDeg);
+        double dxField = camForwardIn * Math.cos(hRad) - camLeftIn * Math.sin(hRad);
+        double dyField = camForwardIn * Math.sin(hRad) + camLeftIn * Math.cos(hRad);
+
+        double robotXIn = camPoseXIn - dxField;
+        double robotYIn = camPoseYIn - dyField;
+
+        try { pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, robotXIn, robotYIn, AngleUnit.DEGREES, yawDeg)); } catch (Exception ignored) { }
     }
 
     public double getBatteryVoltage() {

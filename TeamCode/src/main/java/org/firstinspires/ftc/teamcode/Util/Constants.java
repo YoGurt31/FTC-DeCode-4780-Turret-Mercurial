@@ -50,7 +50,7 @@ public final class Constants {
     public static final class PinPoint {
         public static final String PINPOINT = "pinpoint";
 
-        public static final boolean X_REVERSED = true;
+        public static final boolean X_REVERSED = false;
         public static final boolean Y_REVERSED = false;
 
         public static double X_OFFSET_MM = -102.00;

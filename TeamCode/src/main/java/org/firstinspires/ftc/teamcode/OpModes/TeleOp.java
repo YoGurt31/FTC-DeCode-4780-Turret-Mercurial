@@ -34,7 +34,6 @@ public final class TeleOp {
             Vision.INSTANCE.setPipeline(Constants.Vision.ARTIFACT_PIPELINE);
             Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Turret.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
-            Turret.INSTANCE.zeroTurret(); // XXX: Remove
             Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Release.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
 

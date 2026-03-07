@@ -50,7 +50,7 @@ public final class Constants {
     public static final class PinPoint {
         public static final String PINPOINT = "pinpoint";
 
-        public static final boolean X_REVERSED = false;
+        public static final boolean X_REVERSED = true;
         public static final boolean Y_REVERSED = false;
 
         public static double X_OFFSET_MM = -102.00;
@@ -73,6 +73,9 @@ public final class Constants {
         public static final String ROLLER_INTAKE = "rI";
 
         public static final double TICKS_PER_REV = 28.0;
+
+        public static final double MAX_INTAKE_RPS = 20.0;
+        public static final double MOTOR_PER_INTAKE = 3.0;
 
         public static final double CLOSE_RANGE_SCALE = 1.0;
         public static final double FAR_RANGE_SCALE = 0.8;

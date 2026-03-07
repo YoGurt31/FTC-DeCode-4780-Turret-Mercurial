@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.OpModes;
 
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.exec;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
+import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.parallel;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.sequence;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitUntil;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.waitSeconds;
@@ -142,7 +143,7 @@ public final class Auton {
             Drive.INSTANCE.drive(0.0, 0.0);
             Flywheel.INSTANCE.enableAutoRange();
             Flywheel.INSTANCE.apply();
-        })))), waitSeconds(2.25)), exec(Drive.INSTANCE::stop));
+        })))), waitSeconds(3.00)), exec(Drive.INSTANCE::stop));
 
         Runnable holdAimAndSpin = () -> {
             autoAimTurret.run();
@@ -196,12 +197,14 @@ public final class Auton {
 
     private static Closure driveAndIntakeArtifactsAction(double distanceIn) {
         return sequence(
-                exec(() -> {
-                    Release.INSTANCE.close();
-                    Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
-                    Intake.INSTANCE.apply();
-                }),
-                PID2Point.DriveDistance(distanceIn),
+                parallel(
+                        exec(() -> {
+                            Release.INSTANCE.close();
+                            Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                            Intake.INSTANCE.apply();
+                        }),
+                        PID2Point.DriveDistance(distanceIn)
+                ),
                 exec(() -> {
                     Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     Intake.INSTANCE.apply();
@@ -218,9 +221,9 @@ public final class Auton {
         return sequence(
                 shootArtifactsAction(Constants.Field.Alliance.RED),
                 PID2Point.DriveDistance(12.0),
-                PID2Point.TurnTo(100.0),
-                driveAndIntakeArtifactsAction(48.0),
-                PID2Point.TurnTo(90.0),
+                PID2Point.TurnTo(-100.0),
+                driveAndIntakeArtifactsAction(40.0),
+                PID2Point.TurnTo(-90.0),
                 PID2Point.DriveDistance(-60.0),
                 shootArtifactsAction(Constants.Field.Alliance.RED)
         );
@@ -235,9 +238,9 @@ public final class Auton {
         return sequence(
                 shootArtifactsAction(Constants.Field.Alliance.BLUE),
                 PID2Point.DriveDistance(12.0),
-                PID2Point.TurnTo(-100.0),
-                driveAndIntakeArtifactsAction(48.0),
-                PID2Point.TurnTo(-90.0),
+                PID2Point.TurnTo(100.0),
+                driveAndIntakeArtifactsAction(40.0),
+                PID2Point.TurnTo(90.0),
                 PID2Point.DriveDistance(-60.0),
                 shootArtifactsAction(Constants.Field.Alliance.BLUE)
         );

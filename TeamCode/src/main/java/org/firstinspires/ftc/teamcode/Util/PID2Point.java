@@ -14,15 +14,14 @@ import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 @Configurable
 public class PID2Point {
 
-    // TODO: TUNE THESE
     public static double kPDist = 0.03;
-    public static double kPAng = 0.0085;
+    public static double kPAng = 0.009;
 
     public static double kSFwd = 0.15;
-    public static double kSTurn = 0.15;
+    public static double kSTurn = 0.2;
 
     public static double maxFwd = 1.00;
-    public static double maxTurn = 0.75;
+    public static double maxTurn = 0.8;
 
     public static double distTolIn = 0.50;
     public static double angTolDeg = 1.0;

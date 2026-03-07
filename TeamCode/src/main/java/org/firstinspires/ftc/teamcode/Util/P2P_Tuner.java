@@ -36,6 +36,9 @@ public final class P2P_Tuner {
     public static final Mercurial.RegisterableProgram p2pTuner = Mercurial.teleop(ctx -> {
         State s = new State();
 
+        Drive.INSTANCE.setResetPinPointOnInit(true);
+        Drive.INSTANCE.init(ctx.hardwareMap(), ctx.telemetry());
+
         ctx.schedule(loop(exec(() -> {
             Drive.INSTANCE.updateOdometry();
 

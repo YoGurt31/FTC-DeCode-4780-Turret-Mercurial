@@ -30,9 +30,7 @@ public class Intake {
     private Mode mode = Mode.IDLE;
 
     private double scale = 1.0;
-    private static final double MAX_INTAKE_RPS = 30.0;
-    private static final double MOTOR_PER_INTAKE = 3.0;
-    private double targetRPS = MAX_INTAKE_RPS;
+    private double targetRPS = Constants.Intake.MAX_INTAKE_RPS;
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
@@ -63,13 +61,13 @@ public class Intake {
     private double intakeRpsToTicksPerSec(double intakeRps) {
         if (roller == null) return 0.0;
 
-        double motorRps = intakeRps * MOTOR_PER_INTAKE;
+        double motorRps = intakeRps * Constants.Intake.MOTOR_PER_INTAKE;
         return motorRps * Constants.Intake.TICKS_PER_REV;
     }
 
     public double getRps() {
         if (roller == null) return 0.0;
-        return (roller.getVelocity() / Constants.Intake.TICKS_PER_REV) / MOTOR_PER_INTAKE;
+        return (roller.getVelocity() / Constants.Intake.TICKS_PER_REV) / Constants.Intake.MOTOR_PER_INTAKE;
     }
 
     public void apply() {
@@ -77,14 +75,14 @@ public class Intake {
 
         switch (mode) {
             case INTAKE: {
-                double base = Range.clip(targetRPS, 0.0, MAX_INTAKE_RPS);
+                double base = Range.clip(targetRPS, 0.0, Constants.Intake.MAX_INTAKE_RPS);
                 double cmdIntakeRps = base * scale;
                 roller.setVelocity(intakeRpsToTicksPerSec(cmdIntakeRps));
                 break;
             }
 
             case EJECT: {
-                double cmdIntakeRps = MAX_INTAKE_RPS * scale;
+                double cmdIntakeRps = Constants.Intake.MAX_INTAKE_RPS * scale;
                 roller.setVelocity(-intakeRpsToTicksPerSec(cmdIntakeRps));
                 break;
             }

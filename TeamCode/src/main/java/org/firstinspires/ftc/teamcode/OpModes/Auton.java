@@ -117,7 +117,21 @@ public final class Auton {
 
         Drive.INSTANCE.setPose(Constants.Field.StartPose.RED_FAR.START_X_IN, Constants.Field.StartPose.RED_FAR.START_Y_IN, Constants.Field.StartPose.RED_FAR.START_HEADING_DEG);
 
-        return sequence(shootArtifacts(Constants.Field.Alliance.RED), PID2Point.DriveDistance(12.0), PID2Point.TurnTo(-100.0), driveAndIntakeArtifacts(40.0), PID2Point.TurnTo(-90.0), PID2Point.DriveDistance(-60.0), shootArtifacts(Constants.Field.Alliance.RED));
+        return sequence(
+                shootArtifacts(Constants.Field.Alliance.RED),
+                PID2Point.DriveDistance(27.0),
+                PID2Point.TurnTo(-90.0),
+                driveAndIntakeArtifacts(40.0),
+                PID2Point.DriveDistance(-34.0),
+                PID2Point.TurnTo(0.0),
+                PID2Point.DriveDistance(-18.0),
+                shootArtifacts(Constants.Field.Alliance.RED),
+                PID2Point.TurnTo(-98.0),
+                driveAndIntakeArtifacts(34.0),
+                driveAndIntakeArtifacts(-34.0),
+                shootArtifacts(Constants.Field.Alliance.RED),
+                driveAndIntakeArtifacts(10.0)
+        );
     }
 
     // XXX: CREATE PATHING
@@ -125,7 +139,21 @@ public final class Auton {
 
         Drive.INSTANCE.setPose(Constants.Field.StartPose.BLUE_FAR.START_X_IN, Constants.Field.StartPose.BLUE_FAR.START_Y_IN, Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG);
 
-        return sequence(shootArtifacts(Constants.Field.Alliance.BLUE), PID2Point.DriveDistance(12.0), PID2Point.TurnTo(100.0), driveAndIntakeArtifacts(40.0), PID2Point.TurnTo(90.0), PID2Point.DriveDistance(-60.0), shootArtifacts(Constants.Field.Alliance.BLUE));
+        return sequence(
+                shootArtifacts(Constants.Field.Alliance.BLUE),
+                PID2Point.DriveDistance(27.0),
+                PID2Point.TurnTo(90.0),
+                driveAndIntakeArtifacts(40.0),
+                PID2Point.DriveDistance(-34.0),
+                PID2Point.TurnTo(0.0),
+                PID2Point.DriveDistance(-18.0),
+                shootArtifacts(Constants.Field.Alliance.BLUE),
+                PID2Point.TurnTo(98.0),
+                driveAndIntakeArtifacts(34.0),
+                driveAndIntakeArtifacts(-34.0),
+                shootArtifacts(Constants.Field.Alliance.BLUE),
+                driveAndIntakeArtifacts(10.0)
+        );
     }
 
     // XXX: ACTIONS LIBRARY

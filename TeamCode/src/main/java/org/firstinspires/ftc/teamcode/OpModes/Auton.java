@@ -133,8 +133,8 @@ public final class Auton {
                 PID2Point.DriveDistance(-18.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
                 PID2Point.TurnTo(-99.0),
-                driveAndIntakeArtifacts(37),
-                intakeArtifacts(3),
+                driveAndIntakeArtifacts(37.5),
+                intakeArtifacts(4),
                 PID2Point.DriveDistance(-36.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
                 PID2Point.DriveDistance(10.0)
@@ -154,8 +154,8 @@ public final class Auton {
                 PID2Point.DriveDistance(-18.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
                 PID2Point.TurnTo(99.0),
-                driveAndIntakeArtifacts(37),
-                intakeArtifacts(3),
+                driveAndIntakeArtifacts(37.5),
+                intakeArtifacts(4),
                 PID2Point.DriveDistance(-36.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
                 PID2Point.DriveDistance(10.0)
@@ -276,6 +276,13 @@ public final class Auton {
 
     private static Closure driveAndIntakeArtifacts(double distanceIn) {
         return sequence(parallel(intakeArtifactsWhileDriving(), PID2Point.DriveDistance(distanceIn)), exec(() -> {
+            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+            Intake.INSTANCE.apply();
+        }));
+    }
+
+    private static Closure turnAndIntakeArtifacts(double deg) {
+        return sequence(parallel(intakeArtifactsWhileDriving(), PID2Point.TurnTo(deg)), exec(() -> {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
         }));

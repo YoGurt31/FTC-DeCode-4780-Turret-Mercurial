@@ -126,11 +126,12 @@ public final class Auton {
                 PID2Point.TurnTo(0.0),
                 PID2Point.DriveDistance(-18.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
-                PID2Point.TurnTo(-98.0),
-                driveAndIntakeArtifacts(34.0),
-                driveAndIntakeArtifacts(-34.0),
+                PID2Point.TurnTo(-97.0),
+                driveAndIntakeArtifacts(36),
+                intakeArtifacts(3),
+                PID2Point.DriveDistance(-36.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
-                driveAndIntakeArtifacts(10.0)
+                PID2Point.DriveDistance(10.0)
         );
     }
 
@@ -148,11 +149,12 @@ public final class Auton {
                 PID2Point.TurnTo(0.0),
                 PID2Point.DriveDistance(-18.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
-                PID2Point.TurnTo(98.0),
-                driveAndIntakeArtifacts(34.0),
-                driveAndIntakeArtifacts(-34.0),
+                PID2Point.TurnTo(97.0),
+                driveAndIntakeArtifacts(36),
+                intakeArtifacts(3),
+                PID2Point.DriveDistance(-36.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
-                driveAndIntakeArtifacts(10.0)
+                PID2Point.DriveDistance(10.0)
         );
     }
 

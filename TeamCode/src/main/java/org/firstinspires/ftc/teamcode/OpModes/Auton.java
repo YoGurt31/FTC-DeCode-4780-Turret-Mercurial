@@ -29,6 +29,7 @@ public final class Auton {
     public static final Mercurial.RegisterableProgram RedFar = Mercurial.autonomous(linsane -> {
 
         // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Constants.Field.setAlliance(Constants.Field.Alliance.RED);
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -41,9 +42,6 @@ public final class Auton {
         // Background Update Loop
         linsane.schedule(loop(sequence(waitUntil(linsane::inLoop), exec(() -> {
             Drive.INSTANCE.updateOdometry();
-            if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()))
-                Release.INSTANCE.open();
-            else Release.INSTANCE.close();
             Vision.INSTANCE.update();
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.apply();
@@ -67,6 +65,7 @@ public final class Auton {
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
                     Release.INSTANCE.close();
+                    Release.INSTANCE.apply();
                 })));
 
         // Shut Off
@@ -76,6 +75,7 @@ public final class Auton {
     public static final Mercurial.RegisterableProgram BlueFar = Mercurial.autonomous(linsane -> {
 
         // Hardware Init
+        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -88,9 +88,6 @@ public final class Auton {
         // Background Update Loop
         linsane.schedule(loop(sequence(waitUntil(linsane::inLoop), exec(() -> {
             Drive.INSTANCE.updateOdometry();
-            if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()))
-                Release.INSTANCE.open();
-            else Release.INSTANCE.close();
             Vision.INSTANCE.update();
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.apply();
@@ -114,6 +111,7 @@ public final class Auton {
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
                     Release.INSTANCE.close();
+                    Release.INSTANCE.apply();
                 })));
 
         // Shut Off
@@ -130,14 +128,21 @@ public final class Auton {
                 driveAndIntakeArtifacts(40.0),
                 PID2Point.DriveDistance(-34.0),
                 PID2Point.TurnTo(0.0),
-                PID2Point.DriveDistance(-18.0),
+                PID2Point.DriveDistance(-20.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
-                PID2Point.TurnTo(-99.0),
-                driveAndIntakeArtifacts(37.5),
-                intakeArtifacts(4),
-                PID2Point.DriveDistance(-36.0),
+                PID2Point.TurnTo(-97.5),
+                driveAndIntakeArtifacts(36),
+                parallel(
+                        PID2Point.TurnTo(-90),
+                        intakeArtifacts(2)
+                ),
+                parallel(
+                        PID2Point.TurnTo(-95),
+                        intakeArtifacts(1)
+                ),
+                driveAndIntakeArtifacts(-38),
                 shootArtifacts(Constants.Field.Alliance.RED),
-                PID2Point.DriveDistance(10.0)
+                PID2Point.DriveDistance(30.0)
         );
     }
 
@@ -151,14 +156,21 @@ public final class Auton {
                 driveAndIntakeArtifacts(40.0),
                 PID2Point.DriveDistance(-34.0),
                 PID2Point.TurnTo(0.0),
-                PID2Point.DriveDistance(-18.0),
+                PID2Point.DriveDistance(-20.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
-                PID2Point.TurnTo(99.0),
-                driveAndIntakeArtifacts(37.5),
-                intakeArtifacts(4),
-                PID2Point.DriveDistance(-36.0),
+                PID2Point.TurnTo(97.5),
+                driveAndIntakeArtifacts(36),
+                parallel(
+                        PID2Point.TurnTo(90),
+                        intakeArtifacts(2)
+                ),
+                parallel(
+                        PID2Point.TurnTo(95),
+                        intakeArtifacts(1)
+                ),
+                driveAndIntakeArtifacts(-38),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
-                PID2Point.DriveDistance(10.0)
+                PID2Point.DriveDistance(30.0)
         );
     }
 
@@ -200,6 +212,8 @@ public final class Auton {
             double y = Drive.INSTANCE.getY();
             double heading = Drive.INSTANCE.getHeading();
             double goalHeading = Constants.Field.computeGoalHeadingDeg(x, y, alliance);
+            Release.INSTANCE.open();
+            Release.INSTANCE.apply();
             Turret.INSTANCE.autoAimTurret(heading, goalHeading);
             Flywheel.INSTANCE.enableAutoRange();
             Flywheel.INSTANCE.apply();
@@ -247,17 +261,29 @@ public final class Auton {
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.stop();
             Turret.INSTANCE.stop();
+            Release.INSTANCE.close();
+            Release.INSTANCE.apply();
         });
     }
 
     private static Closure shootArtifacts(Constants.Field.Alliance alliance) {
         return sequence(
+                exec(() -> {
+                    Drive.INSTANCE.drive(0.0, 0.0);
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    Intake.INSTANCE.apply();
+                    Release.INSTANCE.open();
+                    Release.INSTANCE.apply();
+                }),
+
                 singleShot(alliance),
 
                 sequence(exec(() -> {
                     Drive.INSTANCE.drive(0.0, 0.0);
                     Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     Intake.INSTANCE.apply();
+                    Release.INSTANCE.open();
+                    Release.INSTANCE.apply();
                 })),
 
                 singleShot(alliance),
@@ -266,6 +292,8 @@ public final class Auton {
                     Drive.INSTANCE.drive(0.0, 0.0);
                     Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     Intake.INSTANCE.apply();
+                    Release.INSTANCE.open();
+                    Release.INSTANCE.apply();
                 })),
 
                 singleShot(alliance),

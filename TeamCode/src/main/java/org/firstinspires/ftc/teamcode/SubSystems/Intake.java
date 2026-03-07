@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -29,9 +28,6 @@ public class Intake {
 
     private Mode mode = Mode.IDLE;
 
-    private double scale = 1.0;
-    private double targetRPS = Constants.Intake.MAX_INTAKE_RPS;
-
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
 
@@ -39,15 +35,11 @@ public class Intake {
         roller.setDirection(DcMotorSimple.Direction.REVERSE);
 
         roller.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        roller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        roller.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         roller.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         setMode(Mode.IDLE);
         apply();
-    }
-
-    public void setScale(double s) {
-        scale = Range.clip(s, 0.0, 1.0);
     }
 
     public void setMode(Mode newMode) {
@@ -58,38 +50,21 @@ public class Intake {
         return mode;
     }
 
-    private double intakeRpsToTicksPerSec(double intakeRps) {
-        if (roller == null) return 0.0;
-
-        double motorRps = intakeRps * Constants.Intake.MOTOR_PER_INTAKE;
-        return motorRps * Constants.Intake.TICKS_PER_REV;
-    }
-
-    public double getRps() {
-        if (roller == null) return 0.0;
-        return (roller.getVelocity() / Constants.Intake.TICKS_PER_REV) / Constants.Intake.MOTOR_PER_INTAKE;
-    }
-
     public void apply() {
         if (roller == null) return;
 
         switch (mode) {
-            case INTAKE: {
-                double base = Range.clip(targetRPS, 0.0, Constants.Intake.MAX_INTAKE_RPS);
-                double cmdIntakeRps = base * scale;
-                roller.setVelocity(intakeRpsToTicksPerSec(cmdIntakeRps));
+            case INTAKE:
+                roller.setPower(1.0);
                 break;
-            }
 
-            case EJECT: {
-                double cmdIntakeRps = Constants.Intake.MAX_INTAKE_RPS * scale;
-                roller.setVelocity(-intakeRpsToTicksPerSec(cmdIntakeRps));
+            case EJECT:
+                roller.setPower(-1.0);
                 break;
-            }
 
             case IDLE:
             default:
-                roller.setVelocity(0.0);
+                roller.setPower(0.0);
                 break;
         }
     }

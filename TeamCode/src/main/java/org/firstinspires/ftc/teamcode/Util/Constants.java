@@ -70,14 +70,6 @@ public final class Constants {
     @Configurable
     public static final class Intake {
         public static final String ROLLER_INTAKE = "rI";
-
-        public static final double TICKS_PER_REV = 28.0;
-
-        public static final double MAX_INTAKE_RPS = 20.0;
-        public static final double MOTOR_PER_INTAKE = 3.0;
-
-        public static final double CLOSE_RANGE_SCALE = 1.0;
-        public static final double FAR_RANGE_SCALE = 0.8;
     }
 
     @Configurable
@@ -118,34 +110,36 @@ public final class Constants {
                         60, 65, 70, 75, 80,
                         85, 90, 95, 100, 105,
                         110, 115, 120, 125, 130,
-                        135, 140, 145, 150, 155
+                        135, 140, 145, 150
                 };
         public static double[] RPS = new double[]
                 {
-                        61.50, 62.50, 62.50, 62.75, 63.00,
-                        63.00, 63.00, 63.25, 63.25, 63.25,
-                        63.25, 63.50, 63.50, 64.00, 66.75,
-                        67.00, 67.00, 67.25, 69.00, 70.25
+                        67.00, 66.00, 68.00, 68.50, 68.75,
+                        68.75, 68.75, 69.50, 69.50, 69.50,
+                        70.00, 70.00, 70.00, 70.00, 70.00,
+                        70.50, 70.50, 71.00, 77.00
                 };
 
         public static double TARGET_SMOOTH_ALPHA = 0.25;
 
-        public static final double CUBIC_A = 0.0000200416;
-        public static final double CUBIC_B = -0.00527749;
-        public static final double CUBIC_C = 0.483641;
-        public static final double CUBIC_D = 47.58819;
+        public static final double CUBIC_A = 0.0000506927;
+        public static final double CUBIC_B = -0.0154964;
+        public static final double CUBIC_C = 1.57116;
+        public static final double CUBIC_D = 16.48389;
 
-        public static double MIN_RPS = 60.0;
+        public static double TEST_RPS = 0.0;
+
+        public static double MIN_RPS = 00.0;
         public static double MAX_RPS = 100.0;
 
-        // TODO: RETUNE
         public static double F(double voltage) {
-            if (voltage <= 1e-6) return 12.5;
-            return 12.5 * (13.5 / voltage);
+            if (voltage <= 1e-6) return 15.0;
+            return 15.0 * (13 / voltage);
         }
-        public static double P = 55.0;
+        public static double P = 250.0;
         public static double I = 0.0;
         public static double D = 0.0;
+        public static double F = 15.0;
     }
 
     public static final class Releases {
@@ -168,9 +162,9 @@ public final class Constants {
 
         public enum StartPose {
             BLUE_CLOSE(60.0, 40.0, 180.0),
-            BLUE_FAR(-60.0, 16.0, 0.0),
+            BLUE_FAR(-64.0, 16.0, 0.0),
             RED_CLOSE(60.0, -40.0, 180.0),
-            RED_FAR(-60.0, -16.0, 0.0);
+            RED_FAR(-64.0, -16.0, 0.0);
 
             public final double START_X_IN, START_Y_IN, START_HEADING_DEG;
 

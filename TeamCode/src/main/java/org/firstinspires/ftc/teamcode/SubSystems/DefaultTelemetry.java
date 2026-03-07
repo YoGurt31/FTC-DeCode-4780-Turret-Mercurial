@@ -59,7 +59,6 @@ public class DefaultTelemetry {
         // Intake
         telemetry.addLine("=== Intake ===");
         telemetry.addData("Intake Status", Intake.INSTANCE.getStatus());
-        telemetry.addData("Intake RPS", "%5.2f", Intake.INSTANCE.getRps());
         telemetry.addLine();
 
         // Turret

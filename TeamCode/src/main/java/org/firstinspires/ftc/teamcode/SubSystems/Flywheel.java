@@ -66,6 +66,8 @@ public class Flywheel {
         if (voltageChanged || fChanged) {
             fly1.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage()));
             fly2.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage()));
+//            fly1.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F);
+//            fly2.setVelocityPIDFCoefficients(Constants.Flywheel.P, Constants.Flywheel.I, Constants.Flywheel.D, Constants.Flywheel.F);
             lastVoltage = Drive.INSTANCE.getBatteryVoltage();
             lastF = Constants.Flywheel.F(Drive.INSTANCE.getBatteryVoltage());
         }

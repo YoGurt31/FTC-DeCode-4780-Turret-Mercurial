@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Util;
+package org.firstinspires.ftc.teamcode.Util.Tuners;
 
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.exec;
 import static dev.frozenmilk.dairy.mercurial.continuations.Continuations.loop;
@@ -10,10 +10,11 @@ import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SubSystems.Drive;
+import org.firstinspires.ftc.teamcode.Util.PID2Point;
 
 @SuppressWarnings("unused")
 @Configurable
-public final class P2P_Tuner {
+public final class P2PTuner {
 
     public static double driveDistanceIn = 24.0;
 
@@ -103,7 +104,7 @@ public final class P2P_Tuner {
         // Face Buttons turnTo
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().a), exec(() -> startTurnTo(s, 0.0)));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().b), exec(() -> startTurnTo(s, 90.0)));
-        ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x), exec(() -> startTurnTo(s, -45.0)));
+        ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x), exec(() -> startTurnTo(s, -90.0)));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().y), exec(() -> startTurnTo(s, 180.0)));
 
         ctx.dropToScheduler();

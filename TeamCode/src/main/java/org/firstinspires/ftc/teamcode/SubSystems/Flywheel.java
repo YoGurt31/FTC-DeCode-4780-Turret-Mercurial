@@ -141,7 +141,8 @@ public class Flywheel {
         double goalY = (Alliance == Constants.Field.Alliance.RED) ? Constants.Field.RED_GOAL_Y : Constants.Field.BLUE_GOAL_Y;
         double distance = Math.hypot(goalX - robotX, goalY - robotY);
 
-        // 2) Dynamic RPS Model
+        // 2) Dynamic RPS Model(s)
+        double cubicRPS = (Constants.Flywheel.CUBIC_A * Math.pow(distance, 3)) + (Constants.Flywheel.CUBIC_B * Math.pow(distance, 2)) + (Constants.Flywheel.CUBIC_C * distance) + (Constants.Flywheel.CUBIC_D);
         double tableRPS = Double.NaN;
         double[] Xs = Constants.Flywheel.DISTANCE_FROM_TARGET;
         double[] Ys = Constants.Flywheel.RPS;
@@ -166,17 +167,20 @@ public class Flywheel {
             }
         }
 
+        // XXX: Pick & Choose
+        double RPS = (0.5 * tableRPS) + (0.5 * cubicRPS);
+
         // 3) Safety Clamp
-        tableRPS = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, tableRPS));
+        RPS = Math.max(Constants.Flywheel.MIN_RPS, Math.min(Constants.Flywheel.MAX_RPS, RPS));
 
         // 4) Smooth Target
         double a = Constants.Flywheel.TARGET_SMOOTH_ALPHA;
         if (a < 0.0) a = 0.0;
         if (a > 1.0) a = 1.0;
         if (Double.isNaN(targetRPS)) {
-            targetRPS = tableRPS;
+            targetRPS = RPS;
         } else {
-            targetRPS = targetRPS + a * (tableRPS - targetRPS);
+            targetRPS = targetRPS + a * (RPS - targetRPS);
         }
 
         return targetRPS;

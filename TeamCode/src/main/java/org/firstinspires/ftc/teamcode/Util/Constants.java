@@ -131,6 +131,11 @@ public final class Constants {
 
         public static double TARGET_SMOOTH_ALPHA = 0.25;
 
+        public static final double CUBIC_A = 0.0000200416;
+        public static final double CUBIC_B = -0.00527749;
+        public static final double CUBIC_C = 0.483641;
+        public static final double CUBIC_D = 47.58819;
+
         public static double MIN_RPS = 60.0;
         public static double MAX_RPS = 100.0;
 

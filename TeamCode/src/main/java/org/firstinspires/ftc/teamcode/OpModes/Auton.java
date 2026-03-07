@@ -252,7 +252,7 @@ public final class Auton {
                     Drive.INSTANCE.drive(0.0, 0.0);
                     Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     Intake.INSTANCE.apply();
-                }), waitSeconds(Constants.Auton.GAP_SEC)),
+                })),
 
                 singleShot(alliance),
 
@@ -260,7 +260,7 @@ public final class Auton {
                     Drive.INSTANCE.drive(0.0, 0.0);
                     Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     Intake.INSTANCE.apply();
-                }), waitSeconds(Constants.Auton.GAP_SEC)),
+                })),
 
                 singleShot(alliance),
 

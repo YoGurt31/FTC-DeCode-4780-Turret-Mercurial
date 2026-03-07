@@ -83,6 +83,10 @@ public class Turret {
         return turretErrDeg;
     }
 
+    public boolean isAligned() {
+        return Math.abs(Turret.INSTANCE.getErrorDeg()) <= 1.0;
+    }
+
     public double turretErrDeg(double desiredDeg, double currentDeg) {
         double errShort = Constants.wrapDeg(desiredDeg - currentDeg);
         double errLong;

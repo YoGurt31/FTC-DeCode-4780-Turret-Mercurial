@@ -21,8 +21,6 @@ import org.firstinspires.ftc.teamcode.Util.PID2Point;
 
 import dev.frozenmilk.dairy.mercurial.ftc.Mercurial;
 
-import com.qualcomm.robotcore.util.Range;
-
 import dev.frozenmilk.dairy.mercurial.continuations.Closure;
 
 @SuppressWarnings("unused")
@@ -31,7 +29,6 @@ public final class Auton {
     public static final Mercurial.RegisterableProgram RedFar = Mercurial.autonomous(linsane -> {
 
         // Hardware Init
-        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Constants.Field.setAlliance(Constants.Field.Alliance.RED);
         Drive.INSTANCE.setPose(Constants.Field.StartPose.RED_FAR.START_X_IN, Constants.Field.StartPose.RED_FAR.START_Y_IN, Constants.Field.StartPose.RED_FAR.START_HEADING_DEG);
@@ -46,7 +43,8 @@ public final class Auton {
         // Background Update Loop
         linsane.schedule(loop(sequence(waitUntil(linsane::inLoop), exec(() -> {
             Drive.INSTANCE.updateOdometry();
-            if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY())) Release.INSTANCE.open();
+            if (Constants.Field.inShootZone(Drive.INSTANCE.getX(), Drive.INSTANCE.getY()))
+                Release.INSTANCE.open();
             else Release.INSTANCE.close();
             Vision.INSTANCE.update();
             Intake.INSTANCE.apply();
@@ -55,7 +53,10 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildRedFar(),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop),
+
+                buildRedFar(),
+
                 // End Auton
                 exec(() -> {
                     Drive.INSTANCE.stop();
@@ -71,7 +72,6 @@ public final class Auton {
     public static final Mercurial.RegisterableProgram BlueFar = Mercurial.autonomous(linsane -> {
 
         // Hardware Init
-        Drive.INSTANCE.setResetPinPointOnInit(true);
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
         Drive.INSTANCE.setPose(Constants.Field.StartPose.BLUE_FAR.START_X_IN, Constants.Field.StartPose.BLUE_FAR.START_Y_IN, Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG);
@@ -96,153 +96,134 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop), buildBlueFar(),
+        linsane.schedule(sequence(waitUntil(linsane::inLoop),
+
+                buildBlueFar(),
+
                 // End Auton
                 exec(() -> {
                     Drive.INSTANCE.stop();
                     Intake.INSTANCE.stop();
                     Flywheel.INSTANCE.stop();
                     Release.INSTANCE.close();
-                })
-        ));
+                })));
 
         // Shut Off
         linsane.dropToScheduler();
     });
 
-    private static Closure intakeArtifactsAction() {
-        Closure intake = race(loop(exec(() -> {
+    // XXX: CREATE PATHING
+    private static Closure buildRedFar() {
+
+        Drive.INSTANCE.setPose(Constants.Field.StartPose.RED_FAR.START_X_IN, Constants.Field.StartPose.RED_FAR.START_Y_IN, Constants.Field.StartPose.RED_FAR.START_HEADING_DEG);
+
+        return sequence(shootArtifacts(Constants.Field.Alliance.RED), PID2Point.DriveDistance(12.0), PID2Point.TurnTo(-100.0), driveAndIntakeArtifacts(40.0), PID2Point.TurnTo(-90.0), PID2Point.DriveDistance(-60.0), shootArtifacts(Constants.Field.Alliance.RED));
+    }
+
+    // XXX: CREATE PATHING
+    private static Closure buildBlueFar() {
+
+        Drive.INSTANCE.setPose(Constants.Field.StartPose.BLUE_FAR.START_X_IN, Constants.Field.StartPose.BLUE_FAR.START_Y_IN, Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG);
+
+        return sequence(shootArtifacts(Constants.Field.Alliance.BLUE), PID2Point.DriveDistance(12.0), PID2Point.TurnTo(100.0), driveAndIntakeArtifacts(40.0), PID2Point.TurnTo(90.0), PID2Point.DriveDistance(-60.0), shootArtifacts(Constants.Field.Alliance.BLUE));
+    }
+
+    // XXX: ACTIONS LIBRARY
+    private static Closure intakeArtifacts() {
+        return sequence(exec(() -> {
             Release.INSTANCE.close();
             Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
             Intake.INSTANCE.apply();
-        })), waitSeconds(3.00));
-
-        Closure cleanup = exec(() -> {
+        }), waitUntil(Drive.INSTANCE::isBusy), waitUntil(() -> !Drive.INSTANCE.isBusy()), exec(() -> {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
-        });
-
-        return sequence(
-                intake,
-                cleanup
-        );
+        }));
     }
 
-    private static Closure shootArtifactsAction(Constants.Field.Alliance alliance) {
-
-        Runnable autoAimTurret = () -> {
+    private static Closure turretAutoAim(Constants.Field.Alliance alliance) {
+        return exec(() -> {
             double x = Drive.INSTANCE.getX();
             double y = Drive.INSTANCE.getY();
             double heading = Drive.INSTANCE.getHeading();
             double goalHeading = Constants.Field.computeGoalHeadingDeg(x, y, alliance);
             Turret.INSTANCE.autoAimTurret(heading, goalHeading);
-        };
-
-        Closure spinUpAndAlignUntilReady = sequence(race(jumpScope(jumpHandle -> loop(ifHuh(() -> Flywheel.INSTANCE.isReady() && (!Vision.INSTANCE.hasTag() || Math.abs(Vision.INSTANCE.getTX()) <= 1.0), jumpHandle.jump()).elseHuh(exec(() -> {
-            autoAimTurret.run();
-            Drive.INSTANCE.drive(0.0, 0.0);
-            Flywheel.INSTANCE.enableAutoRange();
-            Flywheel.INSTANCE.apply();
-        })))), waitSeconds(3.00)), exec(Drive.INSTANCE::stop));
-
-        Runnable holdAimAndSpin = () -> {
-            autoAimTurret.run();
             Flywheel.INSTANCE.enableAutoRange();
             Flywheel.INSTANCE.apply();
             Drive.INSTANCE.drive(0.0, 0.0);
-        };
+        });
+    }
 
-        Runnable feedPulse = () -> {
-            holdAimAndSpin.run();
-            if (Flywheel.INSTANCE.isReady() && ((!Vision.INSTANCE.hasTag()) || Math.abs(Vision.INSTANCE.getTX()) <= 1.0)) {
+    private static Closure waitForReady(Constants.Field.Alliance alliance) {
+        return sequence(race(jumpScope(jumpHandle -> loop(ifHuh(() -> Flywheel.INSTANCE.isReady() && Turret.INSTANCE.isAligned(), jumpHandle.jump()).elseHuh(sequence(turretAutoAim(alliance), exec(() -> {
+            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+            Intake.INSTANCE.apply();
+        }))))), waitSeconds(3.00)), exec(Drive.INSTANCE::stop));
+    }
+
+    private static Closure feedPulse(Constants.Field.Alliance alliance) {
+        return race(loop(sequence(turretAutoAim(alliance), exec(() -> {
+            if (Flywheel.INSTANCE.isReady() && Turret.INSTANCE.isAligned()) {
                 Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
             } else {
                 Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             }
             Intake.INSTANCE.apply();
-        };
+        }))), waitSeconds(Constants.Auton.FEED_PULSE_SEC));
+    }
 
-        Runnable stopFeeder = () -> {
-            holdAimAndSpin.run();
+    private static Closure stopFeed(Constants.Field.Alliance alliance) {
+        return race(loop(sequence(turretAutoAim(alliance), exec(() -> {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
-        };
+        }))), waitSeconds(Math.max(0.0, Constants.Auton.SHOT_TOTAL_SEC - Constants.Auton.FEED_PULSE_SEC)));
+    }
 
-        Closure shoot = sequence(race(loop(exec(feedPulse)), waitSeconds(Constants.Auton.FEED_PULSE_SEC)), race(loop(exec(stopFeeder)), waitSeconds(Math.max(0.0, Constants.Auton.SHOT_TOTAL_SEC - Constants.Auton.FEED_PULSE_SEC))));
+    private static Closure singleShot(Constants.Field.Alliance alliance) {
+        return sequence(
+                waitForReady(alliance),
+                feedPulse(alliance),
+                stopFeed(alliance)
+        );
+    }
 
-        Closure gap = sequence(exec(() -> {
-            Drive.INSTANCE.drive(0.0, 0.0);
-            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
-            Intake.INSTANCE.apply();
-        }), waitSeconds(Constants.Auton.GAP_SEC));
-
-        Closure cleanup = exec(() -> {
+    private static Closure shootingCleanup() {
+        return exec(() -> {
             Drive.INSTANCE.drive(0.0, 0.0);
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
             Flywheel.INSTANCE.stop();
             Turret.INSTANCE.stop();
         });
-
-        return sequence(
-                spinUpAndAlignUntilReady,
-                shoot,
-                gap,
-                shoot,
-                gap,
-                shoot,
-                cleanup
-        );
     }
 
-    private static Closure driveAndIntakeArtifactsAction(double distanceIn) {
+    private static Closure shootArtifacts(Constants.Field.Alliance alliance) {
         return sequence(
-                parallel(
-                        exec(() -> {
-                            Release.INSTANCE.close();
-                            Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
-                            Intake.INSTANCE.apply();
-                        }),
-                        PID2Point.DriveDistance(distanceIn)
-                ),
-                exec(() -> {
+                singleShot(alliance),
+
+                sequence(exec(() -> {
+                    Drive.INSTANCE.drive(0.0, 0.0);
                     Intake.INSTANCE.setMode(Intake.Mode.IDLE);
                     Intake.INSTANCE.apply();
-                })
+                }), waitSeconds(Constants.Auton.GAP_SEC)),
+
+                singleShot(alliance),
+
+                sequence(exec(() -> {
+                    Drive.INSTANCE.drive(0.0, 0.0);
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    Intake.INSTANCE.apply();
+                }), waitSeconds(Constants.Auton.GAP_SEC)),
+
+                singleShot(alliance),
+
+                shootingCleanup()
         );
     }
 
-    // FIXME
-    private static Closure buildRedFar() {
-        Constants.Field.StartPose sp = Constants.Field.StartPose.RED_FAR;
-
-        Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
-
-        return sequence(
-                shootArtifactsAction(Constants.Field.Alliance.RED),
-                PID2Point.DriveDistance(12.0),
-                PID2Point.TurnTo(-100.0),
-                driveAndIntakeArtifactsAction(40.0),
-                PID2Point.TurnTo(-90.0),
-                PID2Point.DriveDistance(-60.0),
-                shootArtifactsAction(Constants.Field.Alliance.RED)
-        );
-    }
-
-    // FIXME
-    private static Closure buildBlueFar() {
-        Constants.Field.StartPose sp = Constants.Field.StartPose.BLUE_FAR;
-
-        Drive.INSTANCE.setPose(sp.START_X_IN, sp.START_Y_IN, sp.START_HEADING_DEG);
-
-        return sequence(
-                shootArtifactsAction(Constants.Field.Alliance.BLUE),
-                PID2Point.DriveDistance(12.0),
-                PID2Point.TurnTo(100.0),
-                driveAndIntakeArtifactsAction(40.0),
-                PID2Point.TurnTo(90.0),
-                PID2Point.DriveDistance(-60.0),
-                shootArtifactsAction(Constants.Field.Alliance.BLUE)
-        );
+    private static Closure driveAndIntakeArtifacts(double distanceIn) {
+        return sequence(parallel(intakeArtifacts(), PID2Point.DriveDistance(distanceIn)), exec(() -> {
+            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+            Intake.INSTANCE.apply();
+        }));
     }
 }

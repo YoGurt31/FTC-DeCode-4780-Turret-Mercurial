@@ -103,7 +103,7 @@ public final class P2P_Tuner {
         // Face Buttons turnTo
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().a), exec(() -> startTurnTo(s, 0.0)));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().b), exec(() -> startTurnTo(s, 90.0)));
-        ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x), exec(() -> startTurnTo(s, -90.0)));
+        ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x), exec(() -> startTurnTo(s, -45.0)));
         ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().y), exec(() -> startTurnTo(s, 180.0)));
 
         ctx.dropToScheduler();

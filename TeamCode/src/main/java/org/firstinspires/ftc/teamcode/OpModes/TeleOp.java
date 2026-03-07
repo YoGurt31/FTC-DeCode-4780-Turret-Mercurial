@@ -28,7 +28,6 @@ public final class TeleOp {
         return Mercurial.teleop(linsane -> {
 
             // Hardware Init
-            Drive.INSTANCE.setResetPinPointOnInit(true); // XXX: Set To False
             Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
             Constants.Field.setAlliance(alliance);
             Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());

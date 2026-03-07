@@ -15,13 +15,16 @@ import org.firstinspires.ftc.teamcode.SubSystems.Drive;
 public class PID2Point {
 
     public static double kPDist = 0.03;
-    public static double kPAng = 0.009;
+    public static double kPAng = 0.01;
 
     public static double kSFwd = 0.15;
     public static double kSTurn = 0.2;
 
     public static double maxFwd = 1.00;
     public static double maxTurn = 0.8;
+    public static double minTurn = 0.25;
+    public static double slowTurnMax = 0.35;
+    public static double slowTurnStartDeg = 45.0;
 
     public static double distTolIn = 0.50;
     public static double angTolDeg = 1.0;
@@ -132,9 +135,14 @@ public class PID2Point {
             fwd = kSFwd * Math.signum(fwd);
         }
 
-        double turn = Range.clip((headingErrDeg * kPAng) * turnSign, -maxTurn, maxTurn);
-        if (kSTurn > 0.0 && Math.abs(headingErrDeg) > angTolDeg && Math.abs(turn) < kSTurn) {
-            turn = kSTurn * Math.signum(turn);
+        double absHeadingErr = Math.abs(headingErrDeg);
+        double turnMax = (absHeadingErr <= slowTurnStartDeg) ? slowTurnMax : maxTurn;
+
+        double turn = Range.clip((headingErrDeg * kPAng) * turnSign, -turnMax, turnMax);
+
+        if (absHeadingErr > angTolDeg) {
+            double minCmd = Math.max(kSTurn, minTurn);
+            if (Math.abs(turn) < minCmd) turn = minCmd * Math.signum(turn);
         }
 
         Drive.INSTANCE.drive(fwd, turn);
@@ -179,9 +187,14 @@ public class PID2Point {
 
         s.settleStartMs = -1;
 
-        double turn = Range.clip((headingErrDeg * kPAng) * turnSign, -maxTurn, maxTurn);
-        if (kSTurn > 0.0 && Math.abs(headingErrDeg) > angTolDeg && Math.abs(turn) < kSTurn) {
-            turn = kSTurn * Math.signum(turn);
+        double absErr = Math.abs(headingErrDeg);
+        double turnMax = (absErr <= slowTurnStartDeg) ? slowTurnMax : maxTurn;
+
+        double turn = Range.clip((headingErrDeg * kPAng) * turnSign, -turnMax, turnMax);
+
+        if (absErr > angTolDeg) {
+            double minCmd = Math.max(kSTurn, minTurn);
+            if (Math.abs(turn) < minCmd) turn = minCmd * Math.signum(turn);
         }
 
         Drive.INSTANCE.drive(0.0, turn);

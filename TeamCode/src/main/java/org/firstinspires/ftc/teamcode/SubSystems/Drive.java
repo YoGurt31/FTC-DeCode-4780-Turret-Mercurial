@@ -100,6 +100,11 @@ public class Drive {
         }
     }
 
+    public boolean isBusy() {
+        if (pinpoint == null) return false;
+        return Math.hypot(getVx(), getVy()) > 0.5;
+    }
+
     public void updateOdometry() {
         if (pinpoint == null) return;
         try {

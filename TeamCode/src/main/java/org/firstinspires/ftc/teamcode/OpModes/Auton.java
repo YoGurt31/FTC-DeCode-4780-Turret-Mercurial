@@ -129,15 +129,35 @@ public final class Auton {
     }
 
     // XXX: ACTIONS LIBRARY
-    private static Closure intakeArtifacts() {
-        return sequence(exec(() -> {
-            Release.INSTANCE.close();
-            Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
-            Intake.INSTANCE.apply();
-        }), waitUntil(Drive.INSTANCE::isBusy), waitUntil(() -> !Drive.INSTANCE.isBusy()), exec(() -> {
-            Intake.INSTANCE.setMode(Intake.Mode.IDLE);
-            Intake.INSTANCE.apply();
-        }));
+    private static Closure intakeArtifacts(double seconds) {
+        return sequence(
+                exec(() -> {
+                    Release.INSTANCE.close();
+                    Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                    Intake.INSTANCE.apply();
+                }),
+                waitSeconds(seconds),
+                exec(() -> {
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    Intake.INSTANCE.apply();
+                })
+        );
+    }
+
+    private static Closure intakeArtifactsWhileDriving() {
+        return sequence(
+                exec(() -> {
+                    Release.INSTANCE.close();
+                    Intake.INSTANCE.setMode(Intake.Mode.INTAKE);
+                    Intake.INSTANCE.apply();
+                }),
+                waitUntil(Drive.INSTANCE::isBusy),
+                waitUntil(() -> !Drive.INSTANCE.isBusy()),
+                exec(() -> {
+                    Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                    Intake.INSTANCE.apply();
+                })
+        );
     }
 
     private static Closure turretAutoAim(Constants.Field.Alliance alliance) {
@@ -221,7 +241,7 @@ public final class Auton {
     }
 
     private static Closure driveAndIntakeArtifacts(double distanceIn) {
-        return sequence(parallel(intakeArtifacts(), PID2Point.DriveDistance(distanceIn)), exec(() -> {
+        return sequence(parallel(intakeArtifactsWhileDriving(), PID2Point.DriveDistance(distanceIn)), exec(() -> {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
         }));

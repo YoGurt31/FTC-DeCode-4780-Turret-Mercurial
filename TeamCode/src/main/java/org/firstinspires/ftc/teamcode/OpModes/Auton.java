@@ -126,8 +126,8 @@ public final class Auton {
                 PID2Point.TurnTo(0.0),
                 PID2Point.DriveDistance(-18.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
-                PID2Point.TurnTo(-97.0),
-                driveAndIntakeArtifacts(36),
+                PID2Point.TurnTo(-99.0),
+                driveAndIntakeArtifacts(37),
                 intakeArtifacts(3),
                 PID2Point.DriveDistance(-36.0),
                 shootArtifacts(Constants.Field.Alliance.RED),
@@ -149,8 +149,8 @@ public final class Auton {
                 PID2Point.TurnTo(0.0),
                 PID2Point.DriveDistance(-18.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
-                PID2Point.TurnTo(97.0),
-                driveAndIntakeArtifacts(36),
+                PID2Point.TurnTo(99.0),
+                driveAndIntakeArtifacts(37),
                 intakeArtifacts(3),
                 PID2Point.DriveDistance(-36.0),
                 shootArtifacts(Constants.Field.Alliance.BLUE),
@@ -207,7 +207,7 @@ public final class Auton {
         return sequence(race(jumpScope(jumpHandle -> loop(ifHuh(() -> Flywheel.INSTANCE.isReady() && Turret.INSTANCE.isAligned(), jumpHandle.jump()).elseHuh(sequence(turretAutoAim(alliance), exec(() -> {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
-        }))))), waitSeconds(3.00)), exec(Drive.INSTANCE::stop));
+        })))))), exec(Drive.INSTANCE::stop));
     }
 
     private static Closure feedPulse(Constants.Field.Alliance alliance) {

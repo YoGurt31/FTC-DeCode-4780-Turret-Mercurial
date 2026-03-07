@@ -13,7 +13,7 @@ public final class Constants {
     @Configurable
     public static final class Auton {
         public static final double FEED_PULSE_SEC = 0.15;
-        public static final double SHOT_TOTAL_SEC = 1.00;
+        public static final double SHOT_TOTAL_SEC = 0.75;
     }
 
     @Configurable

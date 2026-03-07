@@ -31,8 +31,6 @@ public final class Auton {
         // Hardware Init
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Constants.Field.setAlliance(Constants.Field.Alliance.RED);
-        Drive.INSTANCE.setPose(Constants.Field.StartPose.RED_FAR.START_X_IN, Constants.Field.StartPose.RED_FAR.START_Y_IN, Constants.Field.StartPose.RED_FAR.START_HEADING_DEG);
-
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -53,8 +51,14 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop),
-
+        linsane.schedule(sequence(
+                waitUntil(linsane::inLoop),
+                applyStartPose(
+                        Constants.Field.Alliance.RED,
+                        Constants.Field.StartPose.RED_FAR.START_X_IN,
+                        Constants.Field.StartPose.RED_FAR.START_Y_IN,
+                        Constants.Field.StartPose.RED_FAR.START_HEADING_DEG
+                ),
                 buildRedFar(),
 
                 // End Auton
@@ -74,8 +78,6 @@ public final class Auton {
         // Hardware Init
         Drive.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Constants.Field.setAlliance(Constants.Field.Alliance.BLUE);
-        Drive.INSTANCE.setPose(Constants.Field.StartPose.BLUE_FAR.START_X_IN, Constants.Field.StartPose.BLUE_FAR.START_Y_IN, Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG);
-
         Vision.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Intake.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
         Flywheel.INSTANCE.init(linsane.hardwareMap(), linsane.telemetry());
@@ -96,8 +98,14 @@ public final class Auton {
         }))));
 
         // Autonomous Sequence
-        linsane.schedule(sequence(waitUntil(linsane::inLoop),
-
+        linsane.schedule(sequence(
+                waitUntil(linsane::inLoop),
+                applyStartPose(
+                        Constants.Field.Alliance.BLUE,
+                        Constants.Field.StartPose.BLUE_FAR.START_X_IN,
+                        Constants.Field.StartPose.BLUE_FAR.START_Y_IN,
+                        Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG
+                ),
                 buildBlueFar(),
 
                 // End Auton
@@ -114,8 +122,6 @@ public final class Auton {
 
     // XXX: CREATE PATHING
     private static Closure buildRedFar() {
-
-        Drive.INSTANCE.setPose(Constants.Field.StartPose.RED_FAR.START_X_IN, Constants.Field.StartPose.RED_FAR.START_Y_IN, Constants.Field.StartPose.RED_FAR.START_HEADING_DEG);
 
         return sequence(
                 shootArtifacts(Constants.Field.Alliance.RED),
@@ -137,8 +143,6 @@ public final class Auton {
 
     // XXX: CREATE PATHING
     private static Closure buildBlueFar() {
-
-        Drive.INSTANCE.setPose(Constants.Field.StartPose.BLUE_FAR.START_X_IN, Constants.Field.StartPose.BLUE_FAR.START_Y_IN, Constants.Field.StartPose.BLUE_FAR.START_HEADING_DEG);
 
         return sequence(
                 shootArtifacts(Constants.Field.Alliance.BLUE),
@@ -275,5 +279,13 @@ public final class Auton {
             Intake.INSTANCE.setMode(Intake.Mode.IDLE);
             Intake.INSTANCE.apply();
         }));
+    }
+
+    private static Closure applyStartPose(Constants.Field.Alliance alliance, double startXIn, double startYIn, double startHeadingDeg) {
+        return exec(() -> {
+            Constants.Field.setAlliance(alliance);
+            Drive.INSTANCE.setPose(startXIn, startYIn, startHeadingDeg);
+            Drive.INSTANCE.updateOdometry();
+        });
     }
 }
